@@ -7,28 +7,31 @@
 1. [Google Cloud Console](https://console.cloud.google.com/)에서 새 프로젝트를 만듭니다.
 2. "API 및 서비스 → 라이브러리"에서 **YouTube Data API v3**를 검색해 사용 설정합니다.
 3. "API 및 서비스 → OAuth 동의 화면"에서 User Type을 **외부(External)**로 설정하고, "테스트 사용자"에 본인 구글 계정을 추가합니다 (앱을 게시 상태로 전환하지 않으면 Google의 앱 검토 없이 계속 사용 가능합니다 — 1인 사용 목적이므로 이걸로 충분합니다).
-4. "API 및 서비스 → 사용자 인증 정보 → 사용자 인증 정보 만들기 → OAuth 클라이언트 ID"에서 애플리케이션 유형을 **데스크톱 앱**으로 선택해 생성합니다. `client_id`, `client_secret`을 기록해 둡니다.
-5. 로컬 컴퓨터에서 아래와 같은 1회성 스크립트를 실행해 `refresh_token`을 발급받습니다 (이 저장소에는 포함하지 않는, 로컬에서만 실행하는 스크립트입니다):
+4. "API 및 서비스 → 사용자 인증 정보 → 사용자 인증 정보 만들기 → OAuth 클라이언트 ID"에서 애플리케이션 유형을 **"TV 및 제한된 입력 기기(TVs and Limited Input devices)"**로 선택해 생성합니다. `client_id`, `client_secret`을 기록해 둡니다.
 
-   ```python
-   from google_auth_oauthlib.flow import InstalledAppFlow
+   > 이 유형을 쓰는 이유: 일반적인 "데스크톱 앱" 유형은 로컬 컴퓨터에 임시 웹 서버를 띄워 브라우저 리다이렉트를 받는 방식(`run_local_server`)이라 PC가 필요합니다. "TV 및 제한된 입력 기기" 유형은 **Device Authorization Grant** 플로우를 쓰는데, 로컬 서버가 전혀 필요 없고 사용자는 그냥 아무 브라우저(폰 포함)에서 URL을 열어 코드만 입력하면 됩니다. 모바일에서 진행하기에 이 방식이 적합합니다.
 
-   flow = InstalledAppFlow.from_client_config(
-       {
-           "installed": {
-               "client_id": "YOUR_CLIENT_ID",
-               "client_secret": "YOUR_CLIENT_SECRET",
-               "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-               "token_uri": "https://oauth2.googleapis.com/token",
-           }
-       },
-       scopes=["https://www.googleapis.com/auth/youtube.upload"],
-   )
-   credentials = flow.run_local_server(port=0)
-   print("refresh_token:", credentials.refresh_token)
+5. **refresh_token 발급 (Device Flow, 모바일 가능)**: 아래 두 개의 HTTP 요청만으로 발급받을 수 있습니다 (curl 또는 이 저장소를 다루고 있는 에이전트 세션에서 대신 실행해도 됩니다).
+
+   1) 디바이스 코드 요청:
+   ```bash
+   curl -s -X POST https://oauth2.googleapis.com/device/code \
+     -d client_id=YOUR_CLIENT_ID \
+     -d scope="https://www.googleapis.com/auth/youtube.upload"
    ```
+   응답에 `verification_url`(또는 `verification_uri`)과 `user_code`, `device_code`가 들어 있습니다.
 
-   실행하면 브라우저가 열리고 본인 유튜브 채널 계정으로 로그인/동의하면 터미널에 `refresh_token`이 출력됩니다.
+   2) 폰 브라우저로 `verification_url`을 열어 `user_code`를 입력하고, 본인 유튜브 채널 계정으로 로그인/동의합니다.
+
+   3) 동의 후 아래 요청으로 토큰을 받습니다 (동의 전에 호출하면 `authorization_pending` 에러가 나며, 몇 초 후 재시도하면 됩니다):
+   ```bash
+   curl -s -X POST https://oauth2.googleapis.com/token \
+     -d client_id=YOUR_CLIENT_ID \
+     -d client_secret=YOUR_CLIENT_SECRET \
+     -d device_code=DEVICE_CODE_FROM_STEP_1 \
+     -d grant_type=urn:ietf:params:oauth:grant-type:device_code
+   ```
+   응답의 `refresh_token` 값을 저장합니다. `client_id`/`client_secret`과 함께 이 값이 GitHub Secrets에 들어갈 세 값입니다.
 
 6. Cloud Console → "API 및 서비스 → 할당량"에서 `youtube.googleapis.com` 의 `videos.insert` 쿼터 비용을 확인하세요. (최근 정책 변경 가능성이 있으므로, 하루에 몇 개까지 업로드해도 안전한지 이 값으로 직접 확인한 뒤 워크플로우의 cron 주기를 정하는 것을 권장합니다.)
 
