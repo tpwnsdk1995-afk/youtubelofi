@@ -1,0 +1,198 @@
+{
+  "pools": {
+    "music_track": {
+      "remaining": [],
+      "history": [
+        "Midnight Study Session_7.mp3",
+        "Midnight Study Session_6.mp3",
+        "Midnight Study Session_5.mp3",
+        "Midnight Study Session_4.mp3",
+        "Midnight Study Session_3.mp3",
+        "Midnight Study Session_2.mp3",
+        "Midnight Study Session_1.mp3",
+        "Midnight Study Session.mp3",
+        "Midnight Library_9.mp3",
+        "Midnight Library_8.mp3",
+        "Midnight Library_7.mp3",
+        "Midnight Library_6.mp3",
+        "Midnight Library_5.mp3",
+        "Midnight Library_4.mp3",
+        "Midnight Library_31.mp3",
+        "Midnight Library_30.mp3",
+        "Midnight Library_3.mp3",
+        "Midnight Library_29.mp3",
+        "Midnight Library_28.mp3",
+        "Midnight Library_27.mp3",
+        "Midnight Library_26.mp3",
+        "Midnight Library_25.mp3",
+        "Midnight Library_24.mp3",
+        "Midnight Library_23.mp3",
+        "Midnight Library_22.mp3",
+        "Midnight Library_21.mp3",
+        "Midnight Library_20.mp3",
+        "Midnight Library_2.mp3",
+        "Midnight Library_19.mp3",
+        "Midnight Library_18.mp3",
+        "Midnight Library_17.mp3",
+        "Midnight Library_16.mp3",
+        "Midnight Library_15.mp3",
+        "Midnight Library_14.mp3",
+        "Midnight Library_13.mp3",
+        "Midnight Library_12.mp3",
+        "Midnight Library_11.mp3",
+        "Midnight Library_10.mp3",
+        "Midnight Library_1.mp3",
+        "Midnight Library.mp3"
+      ]
+    },
+    "scene": {
+      "remaining": [
+        "desk_anatomy_notes",
+        "whiteboard_study",
+        "library_reading_room",
+        "cubicle_desk",
+        "bed_study",
+        "cafe_corner_desk",
+        "night_desk_lamp",
+        "train_window_study"
+      ],
+      "history": [
+        "morning_balcony_desk"
+      ]
+    },
+    "hook_phrase": {
+      "remaining": [
+        "새벽 공부 루틴을 부드럽게 이어주는 로파이",
+        "미친 집중력 모드 ON",
+        "시험기간 각성 모드",
+        "방학에 몰래 공부하기",
+        "초집중 공부 모드",
+        "밤샘 공부할 때 듣는",
+        "카페인보다 강한 집중력",
+        "도서관 감성 로파이",
+        "혼자 공부할 때 듣기 좋은"
+      ],
+      "history": [
+        "잠 깨는 로파이 자극"
+      ]
+    },
+    "tagline": {
+      "remaining": [
+        "집중할 때 흐르는 잔잔한 음악 플레이리스트",
+        "ADHD도 공부하게 만드는 음악들",
+        "차분한 베이스 로파이 BGM",
+        "공부가 잘되는 로파이 모음",
+        "몰입감 최고의 스터디 플레이리스트",
+        "밤새 집중력 유지해주는 로파이 믹스"
+      ],
+      "history": [
+        "책상 앞을 떠나지 않게 만드는 배경음악"
+      ]
+    },
+    "title_emoji": {
+      "remaining": [
+        "🌙",
+        "📚",
+        "⚡",
+        "🎧",
+        "✍️",
+        "📖",
+        "☕",
+        "💡"
+      ],
+      "history": [
+        "📝"
+      ]
+    },
+    "description_blurb": {
+      "remaining": [
+        "새벽까지 이어지는 잔잔한 로파이 믹스입니다.",
+        "집중이 필요한 순간을 위한 논스톱 배경음악이에요.",
+        "책상 앞에 오래 앉아있을 때 틀어두기 좋은 믹스입니다."
+      ],
+      "history": [
+        "공부, 작업, 독서 어디에나 어울리는 잔잔한 로파이입니다."
+      ]
+    },
+    "tag": {
+      "remaining": [
+        "공부할때듣는음악",
+        "공부음악",
+        "공부플레이리스트",
+        "공부플리",
+        "noamusic"
+      ],
+      "history": [
+        "카공",
+        "새벽공부",
+        "합격",
+        "시험기간",
+        "시험",
+        "nightstudy",
+        "focusmusic",
+        "focus",
+        "studymotivation",
+        "studywithme",
+        "study",
+        "playlist",
+        "작업할때듣는음악",
+        "집중할때듣는음악",
+        "집중음악",
+        "집중력",
+        "공부할때듣기좋은음악",
+        "lofijazz",
+        "lofimusic",
+        "lofi"
+      ]
+    }
+  },
+  "recent_videos": [
+    {
+      "video_id": null,
+      "title": "Playlist (가사X) 잠 깨는 로파이 자극 📝 책상 앞을 떠나지 않게 만드는 배경음악",
+      "scene_id": "morning_balcony_desk"
+    }
+  ],
+  "track_names": {
+    "Midnight Library_12.mp3": "Tenderthrum",
+    "Midnight Library_5.mp3": "Tendermurmur",
+    "Midnight Library_1.mp3": "Cottonmere",
+    "Midnight Study Session_3.mp3": "Gentlehaze",
+    "Midnight Library_30.mp3": "Hushtone",
+    "Midnight Study Session_6.mp3": "Faintveil",
+    "Midnight Library_8.mp3": "Mistybloom",
+    "Midnight Library_20.mp3": "Dimshade",
+    "Midnight Library_17.mp3": "Slowhaze",
+    "Midnight Study Session_1.mp3": "Fadingthos",
+    "Midnight Library_9.mp3": "Emberfield",
+    "Midnight Library.mp3": "Deepfloe",
+    "Midnight Study Session_2.mp3": "Dimgleam",
+    "Midnight Study Session_7.mp3": "Mellglow",
+    "Midnight Library_16.mp3": "Raintone",
+    "Midnight Library_27.mp3": "Softell",
+    "Midnight Library_11.mp3": "Tenderwave",
+    "Midnight Library_19.mp3": "Deeptone",
+    "Midnight Library_7.mp3": "Amberhollow",
+    "Midnight Library_28.mp3": "Quietell",
+    "Midnight Library_6.mp3": "Mutedloom",
+    "Midnight Library_4.mp3": "Softsway",
+    "Midnight Library_26.mp3": "Deepwave",
+    "Midnight Library_25.mp3": "Mistygleam",
+    "Midnight Library_2.mp3": "Amberveil",
+    "Midnight Library_24.mp3": "Calmvale",
+    "Midnight Library_21.mp3": "Murmurglow",
+    "Midnight Library_23.mp3": "Amberfold",
+    "Midnight Library_29.mp3": "Mistythos",
+    "Midnight Library_13.mp3": "Rainlight",
+    "Midnight Library_18.mp3": "Mellveil",
+    "Midnight Library_14.mp3": "Ashthrum",
+    "Midnight Library_3.mp3": "Moonrest",
+    "Midnight Library_10.mp3": "Hushmere",
+    "Midnight Library_22.mp3": "Fadingecho",
+    "Midnight Library_31.mp3": "Duskveil",
+    "Midnight Study Session_4.mp3": "Rainfloe",
+    "Midnight Study Session_5.mp3": "Deepecho",
+    "Midnight Study Session.mp3": "Mutedshade",
+    "Midnight Library_15.mp3": "Moonhaze"
+  }
+}
