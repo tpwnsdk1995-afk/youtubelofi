@@ -4,7 +4,7 @@
 
 ## 동작 방식
 
-1. **음악 조립** (`scripts/assemble_music.py`) — `music_library/`에 사용자가 미리 채워 넣은 Suno 음원(무편집 mp3)을 셔플백 방식으로 골라 목표 길이(기본 2시간)만큼 크로스페이드로 이어붙입니다. API 호출 없음, 비용 $0.
+1. **음악 조립** (`scripts/assemble_music.py`) — `music_library/`에 사용자가 미리 채워 넣은 Suno 음원(무편집 mp3) 전체를 매번 셔플된 순서로 한 번씩 이어붙이고, 그중 일부(`audio.reuse_ratio`, 기본 25%)를 무작위로 한 번 더 섞어 넣습니다. 목표 길이를 강제하지 않아 어떤 곡이 재사용되느냐에 따라 매번 총 길이가 자연스럽게 달라집니다 (예: 라이브러리가 약 1시간 50분 분량이면 결과물은 대략 2시간 10분~2시간 30분 사이를 오갑니다). API 호출 없음, 비용 $0.
 2. **이미지 생성** (`scripts/generate_image.py`) — Gemini API(gemini-2.5-flash-image)로 씬 이미지를 1장 생성합니다 (무료 등급 하루 500장, 비용 $0).
 3. **영상 조립** (`scripts/build_video.py`) — 정적 이미지를 애니메이션 없이 오디오 길이만큼 반복하는 mp4를 ffmpeg로 만듭니다.
 4. **메타데이터 생성** (`scripts/generate_metadata.py`) — 제목/설명/태그를 여러 문구 풀의 조합으로 생성합니다.
@@ -30,7 +30,7 @@ python3 -m unittest discover -s tests
 
 ## 설정 변경
 
-- `config/settings.yml` — 영상 길이(`video.target_duration_seconds`), 해상도, fps, privacy_status 등
+- `config/settings.yml` — 곡 재사용 비율(`audio.reuse_ratio`), 해상도, fps, privacy_status 등
 - `config/scenes.yml` — 비주얼 씬 프롬프트 풀
 - `config/title_templates.yml` — 제목/설명/태그 문구 풀
 

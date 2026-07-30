@@ -1,10 +1,12 @@
-"""music_library/의 원본 mp3들을 셔플백으로 골라 ffmpeg acrossfade로 이어붙여
-목표 길이의 트랙 하나를 만든다. 외부 API 호출 없음 (비용 $0).
+"""music_library/의 원본 mp3 전체를 매 실행마다 셔플된 순서로 한 번씩 이어붙이고,
+그중 일부(reuse_ratio 비율)만 무작위로 한 번 더 섞어 넣어 2시간을 살짝 넘기면서도
+매번 다른 길이(2시간 10분, 2시간 15분 등)가 나오게 한다. 정확히 목표 길이에 맞추지
+않고, 이어붙인 결과를 그대로 사용한다. 외부 API 호출 없음 (비용 $0).
 """
 
 import argparse
 import json
-import math
+import random
 import subprocess
 import sys
 from pathlib import Path
@@ -44,41 +46,36 @@ def probe_duration(path):
     return float(data["format"]["duration"])
 
 
-def pick_tracks(state, library_dir, files, target_seconds, crossfade_seconds, approx_track_seconds, rng=None):
-    estimated_needed = math.ceil(target_seconds / approx_track_seconds)
-    if len(files) < estimated_needed:
-        raise LibraryTooSmallError(
-            f"music_library에 곡이 부족합니다 (보유 {len(files)}개, 필요 약 {estimated_needed}개). "
-            "Suno에서 새 배치를 다운로드해 music_library/에 추가해 주세요."
-        )
+def pick_tracks(state, library_dir, files, reuse_ratio=0.0, rng=None):
+    """라이브러리의 모든 곡을 한 번씩 뽑고(로테이션 상태에 반영), 그중 일부를
+    reuse_ratio 비율만큼 무작위로 골라 한 번 더 섞어 넣는다. 예: 40곡에
+    reuse_ratio=0.25면 10곡이 추가로 한 번 더 재생되어, 어떤 곡이 뽑히느냐에
+    따라 매번 총 길이가 자연스럽게 달라진다.
+    """
+    rng = rng or random
+    order = sm.draw(state, "music_track", files, count=len(files), rng=rng)
+
+    reuse_count = round(len(files) * reuse_ratio)
+    reuse_sample = rng.sample(files, min(reuse_count, len(files))) if reuse_count > 0 else []
+
+    combined = order + reuse_sample
+    rng.shuffle(combined)
 
     picked = []
-    total = 0.0
-    draws = 0
-    max_draws = estimated_needed * 3 + 5  # 무한루프 방지 안전장치
-    while True:
-        n = len(picked)
-        needed_raw = target_seconds + crossfade_seconds * max(n - 1, 0)
-        if total >= needed_raw:
-            break
-        if draws >= max_draws:
-            raise LibraryTooSmallError(
-                "실제 곡 길이가 예상보다 짧거나 읽을 수 없는 파일이 많아 목표 길이를 채우지 못했습니다. "
-                "music_library에 곡을 더 추가해 주세요."
-            )
-        draws += 1
-        name = sm.draw(state, "music_track", files, count=1, rng=rng)[0]
+    for name in combined:
         try:
             dur = probe_duration(Path(library_dir) / name)
         except subprocess.CalledProcessError:
-            print(f"WARNING: '{name}' 파일을 읽을 수 없어 건너뜁니다 (손상되었거나 지원하지 않는 형식일 수 있습니다).", file=sys.stderr)
+            print(
+                f"WARNING: '{name}' 파일을 읽을 수 없어 건너뜁니다 (손상되었거나 지원하지 않는 형식일 수 있습니다).",
+                file=sys.stderr,
+            )
             continue
         picked.append((name, dur))
-        total += dur
     return picked
 
 
-def build_crossfaded_track(library_dir, picked, crossfade_seconds, target_seconds, bitrate, output_path):
+def build_crossfaded_track(library_dir, picked, crossfade_seconds, bitrate, output_path):
     inputs = []
     for name, _ in picked:
         inputs += ["-i", str(Path(library_dir) / name)]
@@ -86,7 +83,6 @@ def build_crossfaded_track(library_dir, picked, crossfade_seconds, target_second
     if len(picked) == 1:
         cmd = [
             "ffmpeg", "-y", *inputs,
-            "-t", str(target_seconds),
             "-c:a", "libmp3lame", "-b:a", bitrate,
             str(output_path),
         ]
@@ -104,7 +100,6 @@ def build_crossfaded_track(library_dir, picked, crossfade_seconds, target_second
             "ffmpeg", "-y", *inputs,
             "-filter_complex", filter_complex,
             "-map", f"[{label}]",
-            "-t", str(target_seconds),
             "-c:a", "libmp3lame", "-b:a", bitrate,
             str(output_path),
         ]
@@ -112,24 +107,27 @@ def build_crossfaded_track(library_dir, picked, crossfade_seconds, target_second
     subprocess.run(cmd, check=True, capture_output=True)
 
 
-def assemble(library_dir, state, target_seconds, crossfade_seconds, approx_track_seconds, bitrate, output_path, rng=None):
+def assemble(library_dir, state, crossfade_seconds, bitrate, output_path, reuse_ratio=0.0, rng=None):
     files = list_library_files(library_dir)
     if not files:
         raise LibraryTooSmallError(
             "music_library가 비어 있습니다. Suno에서 다운로드한 mp3를 music_library/에 추가해 주세요."
         )
-    picked = pick_tracks(state, library_dir, files, target_seconds, crossfade_seconds, approx_track_seconds, rng=rng)
-    build_crossfaded_track(library_dir, picked, crossfade_seconds, target_seconds, bitrate, output_path)
+    picked = pick_tracks(state, library_dir, files, reuse_ratio=reuse_ratio, rng=rng)
+    if not picked:
+        raise LibraryTooSmallError(
+            "music_library의 모든 파일을 읽을 수 없습니다. 파일이 손상되지 않았는지 확인해 주세요."
+        )
+    build_crossfaded_track(library_dir, picked, crossfade_seconds, bitrate, output_path)
     return picked
 
 
 def main():
-    parser = argparse.ArgumentParser(description="music_library에서 곡을 골라 이어붙인다")
+    parser = argparse.ArgumentParser(description="music_library 전체를 한 번씩 이어붙인다")
     parser.add_argument("--library", default="music_library")
     parser.add_argument("--state", default="state/state.json")
-    parser.add_argument("--target-seconds", type=float, required=True)
     parser.add_argument("--crossfade-seconds", type=float, default=3)
-    parser.add_argument("--approx-track-seconds", type=float, default=180)
+    parser.add_argument("--reuse-ratio", type=float, default=0.25, help="일부 곡을 한 번 더 재생하는 비율 (0.25 = 25%%)")
     parser.add_argument("--bitrate", default="192k")
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
@@ -139,11 +137,10 @@ def main():
         picked = assemble(
             args.library,
             state,
-            args.target_seconds,
             args.crossfade_seconds,
-            args.approx_track_seconds,
             args.bitrate,
             args.output,
+            reuse_ratio=args.reuse_ratio,
         )
     except LibraryTooSmallError as e:
         print(f"ERROR: {e}", file=sys.stderr)

@@ -38,15 +38,14 @@ class TestPipeline(unittest.TestCase):
 
             settings = {
                 "video": {
-                    "target_duration_seconds": 10,
                     "resolution": "320x240",
                     "fps": 1,
                     "crf": 30,
                     "preset": "ultrafast",
                 },
                 "audio": {
-                    "approx_track_seconds": 5,
                     "crossfade_seconds": 1,
+                    "reuse_ratio": 0.25,
                     "bitrate": "96k",
                 },
                 "image": {"model": "gemini-2.5-flash-image", "aspect_ratio_hint": "16:9 widescreen"},
@@ -103,8 +102,8 @@ class TestPipeline(unittest.TestCase):
             root = Path(root)
             settings_path = root / "settings.yml"
             settings_path.write_text(yaml.dump({
-                "video": {"target_duration_seconds": 10, "resolution": "320x240", "fps": 1, "crf": 30, "preset": "ultrafast"},
-                "audio": {"approx_track_seconds": 5, "crossfade_seconds": 1, "bitrate": "96k"},
+                "video": {"resolution": "320x240", "fps": 1, "crf": 30, "preset": "ultrafast"},
+                "audio": {"crossfade_seconds": 1, "reuse_ratio": 0.25, "bitrate": "96k"},
                 "image": {}, "youtube": {}, "state_file": str(root / "state.json"),
                 "music_library_dir": str(root / "music_library"),
             }), encoding="utf-8")

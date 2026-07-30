@@ -59,8 +59,9 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
         print("== 1/4 음악 조립 ==")
         picked = assemble_music.assemble(
             library_dir, state,
-            v["target_duration_seconds"], a["crossfade_seconds"], a["approx_track_seconds"], a["bitrate"],
+            a["crossfade_seconds"], a["bitrate"],
             audio_path,
+            reuse_ratio=a.get("reuse_ratio", 0.0),
         )
         print(f"  {len(picked)}개 트랙 사용")
 

@@ -1,16 +1,16 @@
 # 파이프라인 전역 설정
 video:
-  # 목표 영상 길이(초). 기본 2시간. 필요 시 workflow_dispatch 입력이나 이 값을 바꿔서 1시간/4시간 등으로 조절.
-  target_duration_seconds: 7200
+  # 목표 길이를 강제하지 않음 - music_library 전체 분량 + reuse_ratio만큼 재사용된 길이가 그대로 영상 길이가 됨.
   resolution: "1920x1080"
   fps: 2 # 정적 이미지 반복이라 낮은 fps로도 충분. 재생 호환성을 위해 최소 1 이상 유지.
   crf: 20
   preset: fast
 
 audio:
-  # 라이브러리에서 뽑는 곡 1개당 예상 길이(초). 실제 길이는 ffprobe로 측정하며 이 값은 목표 곡 수 추정에만 사용.
-  approx_track_seconds: 180
   crossfade_seconds: 3
+  # 라이브러리 곡 중 이 비율만큼 무작위로 한 번 더 섞어 넣는다 (예: 40곡 중 25% = 10곡).
+  # 정확히 특정 길이에 맞추지 않고, 어떤 곡이 재사용되느냐에 따라 매번 자연스럽게 다른 길이가 나오게 하기 위함.
+  reuse_ratio: 0.25
   bitrate: "192k"
 
 image:
