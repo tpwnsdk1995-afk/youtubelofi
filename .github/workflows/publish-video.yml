@@ -2,7 +2,7 @@ name: Publish lofi video
 
 on:
   schedule:
-    - cron: "0 14 * * *" # 매일 UTC 14:00 (KST 23:00). 필요에 맞게 조정.
+    - cron: "0 10 * * *" # 매일 UTC 10:00 (KST 19:00). 필요에 맞게 조정.
   workflow_dispatch:
     inputs:
       dry_run:
