@@ -3,46 +3,46 @@
     "music_track": {
       "remaining": [],
       "history": [
-        "Midnight Study Session_7.mp3",
-        "Midnight Study Session_6.mp3",
-        "Midnight Study Session_5.mp3",
-        "Midnight Study Session_4.mp3",
-        "Midnight Study Session_3.mp3",
-        "Midnight Study Session_2.mp3",
-        "Midnight Study Session_1.mp3",
-        "Midnight Study Session.mp3",
-        "Midnight Library_9.mp3",
-        "Midnight Library_8.mp3",
-        "Midnight Library_7.mp3",
-        "Midnight Library_6.mp3",
-        "Midnight Library_5.mp3",
-        "Midnight Library_4.mp3",
-        "Midnight Library_31.mp3",
-        "Midnight Library_30.mp3",
-        "Midnight Library_3.mp3",
-        "Midnight Library_29.mp3",
-        "Midnight Library_28.mp3",
-        "Midnight Library_27.mp3",
-        "Midnight Library_26.mp3",
-        "Midnight Library_25.mp3",
-        "Midnight Library_24.mp3",
-        "Midnight Library_23.mp3",
-        "Midnight Library_22.mp3",
-        "Midnight Library_21.mp3",
-        "Midnight Library_20.mp3",
-        "Midnight Library_2.mp3",
-        "Midnight Library_19.mp3",
-        "Midnight Library_18.mp3",
-        "Midnight Library_17.mp3",
-        "Midnight Library_16.mp3",
-        "Midnight Library_15.mp3",
-        "Midnight Library_14.mp3",
-        "Midnight Library_13.mp3",
         "Midnight Library_12.mp3",
-        "Midnight Library_11.mp3",
-        "Midnight Library_10.mp3",
+        "Midnight Study Session_2.mp3",
+        "Midnight Library_29.mp3",
+        "Midnight Library_19.mp3",
+        "Midnight Library_24.mp3",
+        "Midnight Library_14.mp3",
         "Midnight Library_1.mp3",
-        "Midnight Library.mp3"
+        "Midnight Study Session_4.mp3",
+        "Midnight Library_10.mp3",
+        "Midnight Study Session_3.mp3",
+        "Midnight Library_21.mp3",
+        "Midnight Library_6.mp3",
+        "Midnight Library_11.mp3",
+        "Midnight Library_5.mp3",
+        "Midnight Study Session_1.mp3",
+        "Midnight Study Session_6.mp3",
+        "Midnight Library_27.mp3",
+        "Midnight Library_13.mp3",
+        "Midnight Library_25.mp3",
+        "Midnight Library_31.mp3",
+        "Midnight Library_23.mp3",
+        "Midnight Library_16.mp3",
+        "Midnight Library_22.mp3",
+        "Midnight Library.mp3",
+        "Midnight Study Session_7.mp3",
+        "Midnight Library_20.mp3",
+        "Midnight Library_8.mp3",
+        "Midnight Study Session_5.mp3",
+        "Midnight Library_30.mp3",
+        "Midnight Library_17.mp3",
+        "Midnight Library_18.mp3",
+        "Midnight Study Session.mp3",
+        "Midnight Library_3.mp3",
+        "Midnight Library_2.mp3",
+        "Midnight Library_9.mp3",
+        "Midnight Library_15.mp3",
+        "Midnight Library_7.mp3",
+        "Midnight Library_4.mp3",
+        "Midnight Library_28.mp3",
+        "Midnight Library_26.mp3"
       ]
     },
     "scene": {
@@ -53,11 +53,11 @@
         "cubicle_desk",
         "bed_study",
         "cafe_corner_desk",
-        "night_desk_lamp",
-        "train_window_study"
+        "night_desk_lamp"
       ],
       "history": [
-        "morning_balcony_desk"
+        "morning_balcony_desk",
+        "train_window_study"
       ]
     },
     "hook_phrase": {
@@ -69,11 +69,11 @@
         "초집중 공부 모드",
         "밤샘 공부할 때 듣는",
         "카페인보다 강한 집중력",
-        "도서관 감성 로파이",
-        "혼자 공부할 때 듣기 좋은"
+        "도서관 감성 로파이"
       ],
       "history": [
-        "잠 깨는 로파이 자극"
+        "잠 깨는 로파이 자극",
+        "혼자 공부할 때 듣기 좋은"
       ]
     },
     "tagline": {
@@ -82,11 +82,11 @@
         "ADHD도 공부하게 만드는 음악들",
         "차분한 베이스 로파이 BGM",
         "공부가 잘되는 로파이 모음",
-        "몰입감 최고의 스터디 플레이리스트",
-        "밤새 집중력 유지해주는 로파이 믹스"
+        "몰입감 최고의 스터디 플레이리스트"
       ],
       "history": [
-        "책상 앞을 떠나지 않게 만드는 배경음악"
+        "책상 앞을 떠나지 않게 만드는 배경음악",
+        "밤새 집중력 유지해주는 로파이 믹스"
       ]
     },
     "title_emoji": {
@@ -97,52 +97,47 @@
         "🎧",
         "✍️",
         "📖",
-        "☕",
-        "💡"
+        "☕"
       ],
       "history": [
-        "📝"
+        "📝",
+        "💡"
       ]
     },
     "description_blurb": {
       "remaining": [
         "새벽까지 이어지는 잔잔한 로파이 믹스입니다.",
-        "집중이 필요한 순간을 위한 논스톱 배경음악이에요.",
-        "책상 앞에 오래 앉아있을 때 틀어두기 좋은 믹스입니다."
+        "집중이 필요한 순간을 위한 논스톱 배경음악이에요."
       ],
       "history": [
-        "공부, 작업, 독서 어디에나 어울리는 잔잔한 로파이입니다."
+        "공부, 작업, 독서 어디에나 어울리는 잔잔한 로파이입니다.",
+        "책상 앞에 오래 앉아있을 때 틀어두기 좋은 믹스입니다."
       ]
     },
     "tag": {
       "remaining": [
-        "공부할때듣는음악",
-        "공부음악",
-        "공부플레이리스트",
-        "공부플리",
-        "noamusic"
+        "lofi",
+        "playlist",
+        "studywithme",
+        "집중력",
+        "studymotivation"
       ],
       "history": [
-        "카공",
-        "새벽공부",
-        "합격",
-        "시험기간",
-        "시험",
-        "nightstudy",
-        "focusmusic",
-        "focus",
-        "studymotivation",
-        "studywithme",
         "study",
-        "playlist",
-        "작업할때듣는음악",
-        "집중할때듣는음악",
-        "집중음악",
-        "집중력",
-        "공부할때듣기좋은음악",
+        "focusmusic",
+        "합격",
+        "nightstudy",
         "lofijazz",
+        "시험",
+        "새벽공부",
+        "집중음악",
+        "시험기간",
+        "작업할때듣는음악",
+        "카공",
+        "집중할때듣는음악",
+        "focus",
         "lofimusic",
-        "lofi"
+        "공부할때듣기좋은음악"
       ]
     }
   },
@@ -151,6 +146,11 @@
       "video_id": null,
       "title": "Playlist (가사X) 잠 깨는 로파이 자극 📝 책상 앞을 떠나지 않게 만드는 배경음악",
       "scene_id": "morning_balcony_desk"
+    },
+    {
+      "video_id": null,
+      "title": "Playlist (가사X) 혼자 공부할 때 듣기 좋은 💡 밤새 집중력 유지해주는 로파이 믹스",
+      "scene_id": "train_window_study"
     }
   ],
   "track_names": {
