@@ -19,6 +19,7 @@ import build_video as build_video_mod
 import generate_image
 import generate_metadata
 import state_manager as sm
+import sync_music_library
 import upload_youtube
 
 
@@ -58,6 +59,15 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
     video_path = work_dir / "final_video.mp4"
 
     try:
+        gdrive_json = os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON")
+        gdrive_folder_id = os.environ.get("GDRIVE_MUSIC_FOLDER_ID")
+        if gdrive_json and gdrive_folder_id:
+            print("== 0/4 Google Drive에서 음악 라이브러리 동기화 ==")
+            library_dir = work_dir / "music_library"
+            drive_service = sync_music_library.get_drive_service(gdrive_json)
+            files, downloaded = sync_music_library.sync_library(drive_service, gdrive_folder_id, library_dir)
+            print(f"  Drive 폴더 내 {len(files)}개 중 {len(downloaded)}개 새로 다운로드")
+
         print("== 1/4 음악 조립 ==")
         chapters = assemble_music.assemble(
             library_dir, state,

@@ -45,6 +45,8 @@ jobs:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+          GDRIVE_MUSIC_FOLDER_ID: ${{ secrets.GDRIVE_MUSIC_FOLDER_ID }}
         run: |
           ARGS=""
           if [ "${{ inputs.dry_run }}" = "true" ]; then
@@ -72,6 +74,6 @@ jobs:
               repo: context.repo.repo,
               title: `Publish workflow failed: ${new Date().toISOString().slice(0,10)}`,
               body: `워크플로우 실행이 실패했습니다. 로그를 확인해 주세요: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\n` +
-                    `가장 흔한 원인은 music_library/의 음원 부족입니다. Suno에서 새 배치를 다운로드해 music_library/에 추가해 주세요.`,
+                    `가장 흔한 원인은 Google Drive 음악 라이브러리 폴더의 음원 부족입니다. Suno에서 새 배치를 다운로드해 Drive 폴더에 추가해 주세요.`,
               labels: ["automation-failure"],
             });
