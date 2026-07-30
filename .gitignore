@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+*.mp3
+*.mp4
+*.png
+!music_library/**

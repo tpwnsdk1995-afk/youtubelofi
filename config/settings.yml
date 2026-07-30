@@ -1,0 +1,27 @@
+# 파이프라인 전역 설정
+video:
+  # 목표 영상 길이(초). 기본 2시간. 필요 시 workflow_dispatch 입력이나 이 값을 바꿔서 1시간/4시간 등으로 조절.
+  target_duration_seconds: 7200
+  resolution: "1920x1080"
+  fps: 2 # 정적 이미지 반복이라 낮은 fps로도 충분. 재생 호환성을 위해 최소 1 이상 유지.
+  crf: 20
+  preset: fast
+
+audio:
+  # 라이브러리에서 뽑는 곡 1개당 예상 길이(초). 실제 길이는 ffprobe로 측정하며 이 값은 목표 곡 수 추정에만 사용.
+  approx_track_seconds: 180
+  crossfade_seconds: 3
+  bitrate: "192k"
+
+image:
+  model: stable-image-core
+  aspect_ratio: "16:9"
+  output_format: "png"
+
+youtube:
+  category_id: "10" # Music
+  privacy_status: "private" # 초기 테스트 단계. 검증 후 "public"으로 변경.
+  made_for_kids: false
+
+state_file: "state/state.json"
+music_library_dir: "music_library"

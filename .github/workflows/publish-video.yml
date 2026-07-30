@@ -1,0 +1,74 @@
+name: Publish lofi video
+
+on:
+  schedule:
+    - cron: "0 14 * * *" # 매일 UTC 14:00 (KST 23:00). 필요에 맞게 조정.
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true면 실제 업로드 없이 파이프라인만 검증"
+        type: boolean
+        default: false
+
+concurrency:
+  group: publish-video
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify ffmpeg is available
+        run: ffmpeg -version && ffprobe -version
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pipeline
+        id: pipeline
+        env:
+          STABILITY_IMAGE_API_KEY: ${{ secrets.STABILITY_IMAGE_API_KEY }}
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          ARGS=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="--dry-run"
+          fi
+          python3 scripts/pipeline.py $ARGS
+
+      - name: Commit updated rotation state
+        if: success()
+        run: |
+          git config user.name "lofi-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add state/state.json
+          git commit -m "Update rotation state after publish run" || echo "no state changes to commit"
+          git pull --rebase origin ${{ github.ref_name }}
+          git push origin HEAD:${{ github.ref_name }}
+
+      - name: Open issue on failure (library shortage, API errors, etc.)
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Publish workflow failed: ${new Date().toISOString().slice(0,10)}`,
+              body: `워크플로우 실행이 실패했습니다. 로그를 확인해 주세요: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\n` +
+                    `가장 흔한 원인은 music_library/의 음원 부족입니다. Suno에서 새 배치를 다운로드해 music_library/에 추가해 주세요.`,
+              labels: ["automation-failure"],
+            });

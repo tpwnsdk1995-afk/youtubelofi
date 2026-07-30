@@ -1,0 +1,18 @@
+# 비주얼(정적 이미지) 씬 프롬프트 풀. state_manager가 셔플백 방식으로 순환 사용.
+scenes:
+  - id: rainy_window
+    prompt: "cozy bedroom at night, rain streaking down a large window, warm lamp light, steam rising from a mug, lofi aesthetic, painterly digital illustration, no text, no watermark"
+  - id: night_city_desk
+    prompt: "study desk by a window overlooking a neon-lit night city skyline, warm desk lamp, open books, lofi aesthetic, painterly digital illustration, no text, no watermark"
+  - id: autumn_cafe
+    prompt: "quiet corner cafe table in autumn, falling leaves visible through the window, warm afternoon light, steaming coffee cup, lofi aesthetic, painterly digital illustration, no text, no watermark"
+  - id: campfire_cabin
+    prompt: "wooden cabin interior at dusk, crackling fireplace, snow falling outside the window, cozy blanket on a chair, lofi aesthetic, painterly digital illustration, no text, no watermark"
+  - id: rooftop_sunset
+    prompt: "rooftop garden at golden hour sunset, string lights, distant city skyline, a person's silhouette reading a book, lofi aesthetic, painterly digital illustration, no text, no watermark"
+  - id: library_nook
+    prompt: "quiet library reading nook, tall bookshelves, soft window light, a cat sleeping on a cushion, lofi aesthetic, painterly digital illustration, no text, no watermark"
+  - id: train_window
+    prompt: "view from a train window at night passing through a rain-soaked city, reflection of warm interior lights, lofi aesthetic, painterly digital illustration, no text, no watermark"
+  - id: garden_morning
+    prompt: "small balcony garden in early morning mist, potted plants, a cup of tea on the railing, soft sunrise light, lofi aesthetic, painterly digital illustration, no text, no watermark"

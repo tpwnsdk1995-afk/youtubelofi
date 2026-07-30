@@ -1,0 +1,50 @@
+# 제목/설명/태그 생성용 문구 풀. 각 풀은 state_manager에서 독립적으로 셔플백 순환되어
+# 씬 x 활동문구 x 연결어 조합만으로도 다양한 제목이 나옴 (고정 템플릿에 날짜만 바꾸는 방식 지양).
+
+scene_display_names:
+  rainy_window: "Rainy Night Window"
+  night_city_desk: "Neon City Desk"
+  autumn_cafe: "Autumn Cafe Corner"
+  campfire_cabin: "Snowy Cabin Fireplace"
+  rooftop_sunset: "Rooftop Sunset"
+  library_nook: "Quiet Library Nook"
+  train_window: "Midnight Train"
+  garden_morning: "Morning Balcony Garden"
+
+activity_phrases:
+  - "to study and relax"
+  - "for late night coding"
+  - "to focus and unwind"
+  - "for deep work sessions"
+  - "to read and chill"
+  - "for cozy rainy days"
+  - "to sleep and dream"
+  - "for quiet mornings"
+
+title_connectors:
+  - "lofi beats"
+  - "lofi hip hop mix"
+  - "lofi study mix"
+  - "chill lofi radio"
+  - "lofi & chill"
+
+description_blurbs:
+  - "A long-form ambient mix for background listening while you work or study."
+  - "Sit back, relax, and let this mix carry you through your session."
+  - "Perfect for late nights, early mornings, or anytime you need to focus."
+  - "A cozy, non-stop instrumental mix to keep you company."
+
+description_footer: |
+  This video's music and artwork were created with AI assistance and arranged into a continuous mix.
+
+tag_pool:
+  - "lofi"
+  - "lofi hip hop"
+  - "study music"
+  - "chill beats"
+  - "relaxing music"
+  - "focus music"
+  - "ambient music"
+  - "instrumental"
+  - "no copyright lofi"
+  - "background music"
