@@ -53,15 +53,16 @@ def build_request_body(metadata):
     }
 
 
-def upload_video(video_path, metadata, credentials, youtube_client=None, chunksize=8 * 1024 * 1024):
+def upload_video(video_path, metadata, credentials, youtube_client=None, chunksize=8 * 1024 * 1024, num_retries=5):
     youtube = youtube_client or build("youtube", "v3", credentials=credentials)
     body = build_request_body(metadata)
     media = MediaFileUpload(video_path, chunksize=chunksize, resumable=True, mimetype="video/mp4")
     request = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
 
+    # num_retries는 googleapiclient가 내부적으로 5xx/연결 오류에 지수 백오프 재시도를 적용한다.
     response = None
     while response is None:
-        status, response = request.next_chunk()
+        status, response = request.next_chunk(num_retries=num_retries)
     return response
 
 

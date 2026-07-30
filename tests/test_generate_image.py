@@ -70,6 +70,42 @@ class TestGenerateImage(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             gi.generate_image("prompt", "key", "gemini-2.5-flash-image", "16:9 widescreen", "/tmp/x.png", session=fake_session)
 
+    def test_retries_on_503_then_succeeds(self):
+        fake_session = mock.Mock()
+        fake_session.post.side_effect = [
+            mock.Mock(status_code=503, text="overloaded"),
+            mock.Mock(status_code=503, text="overloaded"),
+            fake_gemini_response(b"fake-png-bytes"),
+        ]
+        sleeps = []
+        with tempfile.TemporaryDirectory() as d:
+            out_path = Path(d) / "scene.png"
+            gi.generate_image(
+                "prompt", "key", "gemini-2.5-flash-image", "16:9 widescreen", out_path,
+                session=fake_session, sleep=sleeps.append,
+            )
+            self.assertEqual(out_path.read_bytes(), b"fake-png-bytes")
+        self.assertEqual(fake_session.post.call_count, 3)
+        self.assertEqual(sleeps, [5, 10])  # 지수 백오프: 5초, 10초
+
+    def test_does_not_retry_on_non_retryable_status(self):
+        fake_session = mock.Mock()
+        fake_session.post.return_value = mock.Mock(status_code=402, text="payment required")
+        with self.assertRaises(RuntimeError):
+            gi.generate_image("prompt", "key", "gemini-2.5-flash-image", "16:9 widescreen", "/tmp/x.png",
+                               session=fake_session, sleep=lambda s: (_ for _ in ()).throw(AssertionError("should not sleep")))
+        fake_session.post.assert_called_once()
+
+    def test_raises_after_exhausting_all_retries(self):
+        fake_session = mock.Mock()
+        fake_session.post.return_value = mock.Mock(status_code=503, text="still overloaded")
+        with self.assertRaises(RuntimeError):
+            gi.generate_image(
+                "prompt", "key", "gemini-2.5-flash-image", "16:9 widescreen", "/tmp/x.png",
+                session=fake_session, max_attempts=3, sleep=lambda s: None,
+            )
+        self.assertEqual(fake_session.post.call_count, 3)
+
 
 if __name__ == "__main__":
     unittest.main()

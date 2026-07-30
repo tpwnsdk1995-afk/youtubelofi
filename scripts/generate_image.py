@@ -8,6 +8,7 @@ import base64
 import json
 import os
 import sys
+import time
 from pathlib import Path
 
 import requests
@@ -16,6 +17,9 @@ import yaml
 import state_manager as sm
 
 GEMINI_ENDPOINT_TEMPLATE = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+
+# 일시적 장애(과부하, 속도 제한 등)로 간주해 재시도할 상태 코드.
+RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 
 # 모든 씬 프롬프트에 공통으로 덧붙이는 실사(candid photo) 스타일 지정 문구.
 # scenes.yml 각 항목에는 장면 내용만 적고, 사진처럼 보이게 하는 스타일 지시는 여기서 통일 관리한다.
@@ -46,37 +50,59 @@ def build_full_prompt(scene_prompt, aspect_ratio_hint):
     return ", ".join(parts)
 
 
-def generate_image(prompt, api_key, model, aspect_ratio_hint, output_path, session=None):
+def generate_image(prompt, api_key, model, aspect_ratio_hint, output_path, session=None,
+                    max_attempts=4, backoff_seconds=5, sleep=time.sleep):
+    """Gemini 이미지 생성 API를 호출한다. 과부하(503)/속도 제한(429) 등 일시적 오류는
+    지수 백오프로 재시도하고(기본 최대 4회 시도: 0, 5, 10, 20초 대기), 그래도 실패하면
+    에러를 그대로 올린다."""
     session = session or requests
     full_prompt = build_full_prompt(prompt, aspect_ratio_hint)
 
-    resp = session.post(
-        GEMINI_ENDPOINT_TEMPLATE.format(model=model),
-        headers={"x-goog-api-key": api_key, "Content-Type": "application/json"},
-        json={
-            "contents": [{"parts": [{"text": full_prompt}]}],
-            "generationConfig": {"responseModalities": ["TEXT", "IMAGE"]},
-        },
-        timeout=60,
-    )
-    if resp.status_code != 200:
-        raise RuntimeError(f"Gemini image API error {resp.status_code}: {resp.text[:500]}")
+    last_error = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            resp = session.post(
+                GEMINI_ENDPOINT_TEMPLATE.format(model=model),
+                headers={"x-goog-api-key": api_key, "Content-Type": "application/json"},
+                json={
+                    "contents": [{"parts": [{"text": full_prompt}]}],
+                    "generationConfig": {"responseModalities": ["TEXT", "IMAGE"]},
+                },
+                timeout=60,
+            )
+        except requests.exceptions.RequestException as e:
+            last_error = RuntimeError(f"Gemini image API 요청 실패: {e}")
+            resp = None
 
-    data = resp.json()
-    image_bytes = None
-    for candidate in data.get("candidates", []):
-        for part in candidate.get("content", {}).get("parts", []):
-            inline_data = part.get("inlineData")
-            if inline_data and inline_data.get("data"):
-                image_bytes = base64.b64decode(inline_data["data"])
-                break
-        if image_bytes:
-            break
+        if resp is not None:
+            if resp.status_code == 200:
+                data = resp.json()
+                image_bytes = None
+                for candidate in data.get("candidates", []):
+                    for part in candidate.get("content", {}).get("parts", []):
+                        inline_data = part.get("inlineData")
+                        if inline_data and inline_data.get("data"):
+                            image_bytes = base64.b64decode(inline_data["data"])
+                            break
+                    if image_bytes:
+                        break
 
-    if image_bytes is None:
-        raise RuntimeError(f"Gemini 응답에 이미지 데이터가 없습니다: {json.dumps(data)[:500]}")
+                if image_bytes is None:
+                    raise RuntimeError(f"Gemini 응답에 이미지 데이터가 없습니다: {json.dumps(data)[:500]}")
 
-    Path(output_path).write_bytes(image_bytes)
+                Path(output_path).write_bytes(image_bytes)
+                return
+
+            last_error = RuntimeError(f"Gemini image API error {resp.status_code}: {resp.text[:500]}")
+            if resp.status_code not in RETRYABLE_STATUS_CODES:
+                raise last_error
+
+        if attempt < max_attempts:
+            wait = backoff_seconds * (2 ** (attempt - 1))
+            print(f"WARNING: {last_error} - {wait}초 후 재시도 ({attempt}/{max_attempts})", file=sys.stderr)
+            sleep(wait)
+
+    raise last_error
 
 
 def main():

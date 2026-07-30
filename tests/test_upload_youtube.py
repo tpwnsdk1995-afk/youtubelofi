@@ -64,6 +64,7 @@ class TestUploadYoutube(unittest.TestCase):
 
         self.assertEqual(response["id"], "vid123")
         self.assertEqual(fake_request.next_chunk.call_count, 2)
+        fake_request.next_chunk.assert_called_with(num_retries=5)
 
 
 if __name__ == "__main__":
