@@ -11,6 +11,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 import state_manager as sm
 
 AUDIO_EXTS = {".mp3", ".wav", ".m4a", ".flac"}
@@ -75,6 +77,24 @@ def pick_tracks(state, library_dir, files, reuse_ratio=0.0, rng=None):
     return picked
 
 
+def build_chapters(state, picked, name_prefixes, name_suffixes, crossfade_seconds, rng=None):
+    """picked(재생 순서대로의 (파일명, 길이) 목록)를 바탕으로, 각 트랙에 영구 고유
+    이름을 배정하고 크로스페이드를 반영한 실제 시작 시각을 계산한다."""
+    chapters = []
+    cum_duration = 0.0
+    for i, (filename, duration) in enumerate(picked):
+        start = max(cum_duration - i * crossfade_seconds, 0.0)
+        name = sm.get_or_assign_track_name(state, filename, name_prefixes, name_suffixes, rng=rng)
+        chapters.append({
+            "filename": filename,
+            "name": name,
+            "start_seconds": start,
+            "duration_seconds": duration,
+        })
+        cum_duration += duration
+    return chapters
+
+
 def build_crossfaded_track(library_dir, picked, crossfade_seconds, bitrate, output_path):
     inputs = []
     for name, _ in picked:
@@ -107,7 +127,8 @@ def build_crossfaded_track(library_dir, picked, crossfade_seconds, bitrate, outp
     subprocess.run(cmd, check=True, capture_output=True)
 
 
-def assemble(library_dir, state, crossfade_seconds, bitrate, output_path, reuse_ratio=0.0, rng=None):
+def assemble(library_dir, state, crossfade_seconds, bitrate, output_path,
+             reuse_ratio=0.0, name_prefixes=None, name_suffixes=None, rng=None):
     files = list_library_files(library_dir)
     if not files:
         raise LibraryTooSmallError(
@@ -119,27 +140,38 @@ def assemble(library_dir, state, crossfade_seconds, bitrate, output_path, reuse_
             "music_library의 모든 파일을 읽을 수 없습니다. 파일이 손상되지 않았는지 확인해 주세요."
         )
     build_crossfaded_track(library_dir, picked, crossfade_seconds, bitrate, output_path)
-    return picked
+    chapters = build_chapters(
+        state, picked,
+        name_prefixes or ["Soft"], name_suffixes or ["mere"],
+        crossfade_seconds, rng=rng,
+    )
+    return chapters
 
 
 def main():
     parser = argparse.ArgumentParser(description="music_library 전체를 한 번씩 이어붙인다")
     parser.add_argument("--library", default="music_library")
     parser.add_argument("--state", default="state/state.json")
+    parser.add_argument("--track-names-config", default="config/track_name_parts.yml")
     parser.add_argument("--crossfade-seconds", type=float, default=3)
     parser.add_argument("--reuse-ratio", type=float, default=0.25, help="일부 곡을 한 번 더 재생하는 비율 (0.25 = 25%%)")
     parser.add_argument("--bitrate", default="192k")
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
 
+    with open(args.track_names_config, encoding="utf-8") as f:
+        name_parts = yaml.safe_load(f)
+
     state = sm.load_state(args.state)
     try:
-        picked = assemble(
+        chapters = assemble(
             args.library,
             state,
             args.crossfade_seconds,
             args.bitrate,
             args.output,
+            name_prefixes=name_parts["prefixes"],
+            name_suffixes=name_parts["suffixes"],
             reuse_ratio=args.reuse_ratio,
         )
     except LibraryTooSmallError as e:
@@ -147,9 +179,11 @@ def main():
         sys.exit(1)
 
     sm.save_state(args.state, state)
-    print(f"assembled {len(picked)} tracks -> {args.output}")
-    for name, dur in picked:
-        print(f"  - {name} ({dur:.1f}s)")
+    print(f"assembled {len(chapters)} tracks -> {args.output}")
+    for ch in chapters:
+        mm, ss = divmod(int(ch["start_seconds"]), 60)
+        hh, mm = divmod(mm, 60)
+        print(f"  - {hh:02d}:{mm:02d}:{ss:02d} {ch['name']} ({ch['filename']}, {ch['duration_seconds']:.1f}s)")
 
 
 if __name__ == "__main__":

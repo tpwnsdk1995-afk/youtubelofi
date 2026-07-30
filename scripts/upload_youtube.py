@@ -34,6 +34,14 @@ def get_credentials(env=None):
 
 
 def build_request_body(metadata):
+    status = {
+        "privacyStatus": metadata["privacyStatus"],
+        "selfDeclaredMadeForKids": metadata["madeForKids"],
+    }
+    # 음악과 이미지 모두 AI 생성/편집이 관여했음을 유튜브에 공개 고지한다.
+    if metadata.get("containsSyntheticMedia", True):
+        status["containsSyntheticMedia"] = True
+
     return {
         "snippet": {
             "title": metadata["title"][:100],
@@ -41,10 +49,7 @@ def build_request_body(metadata):
             "tags": metadata["tags"],
             "categoryId": metadata["categoryId"],
         },
-        "status": {
-            "privacyStatus": metadata["privacyStatus"],
-            "selfDeclaredMadeForKids": metadata["madeForKids"],
-        },
+        "status": status,
     }
 
 

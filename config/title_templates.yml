@@ -1,50 +1,89 @@
-# 제목/설명/태그 생성용 문구 풀. 각 풀은 state_manager에서 독립적으로 셔플백 순환되어
-# 씬 x 활동문구 x 연결어 조합만으로도 다양한 제목이 나옴 (고정 템플릿에 날짜만 바꾸는 방식 지양).
+# 제목/설명/태그 생성용 문구 풀. 레퍼런스 채널(onia music) 스타일을 참고해 구성.
+# 각 풀은 state_manager에서 독립적으로 셔플백 순환되어 매번 다른 조합이 나옴.
 
-scene_display_names:
-  rainy_window: "Rainy Night Window"
-  night_city_desk: "Neon City Desk"
-  autumn_cafe: "Autumn Cafe Corner"
-  campfire_cabin: "Snowy Cabin Fireplace"
-  rooftop_sunset: "Rooftop Sunset"
-  library_nook: "Quiet Library Nook"
-  train_window: "Midnight Train"
-  garden_morning: "Morning Balcony Garden"
+title_prefix: "Playlist (가사X)"
 
-activity_phrases:
-  - "to study and relax"
-  - "for late night coding"
-  - "to focus and unwind"
-  - "for deep work sessions"
-  - "to read and chill"
-  - "for cozy rainy days"
-  - "to sleep and dream"
-  - "for quiet mornings"
+hook_phrases:
+  - "새벽 공부 루틴을 부드럽게 이어주는 로파이"
+  - "미친 집중력 모드 ON"
+  - "시험기간 각성 모드"
+  - "방학에 몰래 공부하기"
+  - "초집중 공부 모드"
+  - "밤샘 공부할 때 듣는"
+  - "카페인보다 강한 집중력"
+  - "도서관 감성 로파이"
+  - "혼자 공부할 때 듣기 좋은"
+  - "잠 깨는 로파이 자극"
 
-title_connectors:
-  - "lofi beats"
-  - "lofi hip hop mix"
-  - "lofi study mix"
-  - "chill lofi radio"
-  - "lofi & chill"
+taglines:
+  - "집중할 때 흐르는 잔잔한 음악 플레이리스트"
+  - "ADHD도 공부하게 만드는 음악들"
+  - "차분한 베이스 로파이 BGM"
+  - "공부가 잘되는 로파이 모음"
+  - "몰입감 최고의 스터디 플레이리스트"
+  - "밤새 집중력 유지해주는 로파이 믹스"
+  - "책상 앞을 떠나지 않게 만드는 배경음악"
+
+title_emojis:
+  - "🌙"
+  - "📚"
+  - "⚡"
+  - "🎧"
+  - "✍️"
+  - "📖"
+  - "☕"
+  - "💡"
+  - "📝"
 
 description_blurbs:
-  - "A long-form ambient mix for background listening while you work or study."
-  - "Sit back, relax, and let this mix carry you through your session."
-  - "Perfect for late nights, early mornings, or anytime you need to focus."
-  - "A cozy, non-stop instrumental mix to keep you company."
+  - "새벽까지 이어지는 잔잔한 로파이 믹스입니다."
+  - "집중이 필요한 순간을 위한 논스톱 배경음악이에요."
+  - "책상 앞에 오래 앉아있을 때 틀어두기 좋은 믹스입니다."
+  - "공부, 작업, 독서 어디에나 어울리는 잔잔한 로파이입니다."
+
+# 채널 정보 (썸네일 워터마크, 설명란 저작권 문구 등에 사용)
+channel_name: "noa music"
 
 description_footer: |
-  This video's music and artwork were created with AI assistance and arranged into a continuous mix.
+  📌 모든 수록곡은 AI 지원으로 작곡되었습니다.
+  💬 마음에 드는 트랙이 있다면 댓글로 알려주세요.
+  반응이 좋으면 정식 음원으로 발매될 수도 있어요 :)
+  👍 좋아요와 구독은 다음 영상을 만드는 큰 힘이 됩니다.
 
+  🎧 noa music presents
+  Music arranged with AI-assisted composition. Cover art generated with AI.
+  © Copyright noa music. All rights reserved.
+
+# 설명란 맨 앞에 붙어 유튜브가 제목 위에 칩(chip)으로 보여주는 대표 해시태그 3개
+top_hashtags:
+  - "#공부플리"
+  - "#lofimusic"
+  - "#lofijazz"
+
+# 설명란 하단 해시태그 블록 (전체 태그 pool에서 일부를 매번 다르게 순환)
 tag_pool:
+  - "공부할때듣는음악"
+  - "공부음악"
+  - "공부플레이리스트"
+  - "공부플리"
+  - "noamusic"
   - "lofi"
-  - "lofi hip hop"
-  - "study music"
-  - "chill beats"
-  - "relaxing music"
-  - "focus music"
-  - "ambient music"
-  - "instrumental"
-  - "no copyright lofi"
-  - "background music"
+  - "lofimusic"
+  - "lofijazz"
+  - "공부할때듣기좋은음악"
+  - "집중력"
+  - "집중음악"
+  - "집중할때듣는음악"
+  - "작업할때듣는음악"
+  - "playlist"
+  - "study"
+  - "studywithme"
+  - "studymotivation"
+  - "focus"
+  - "focusmusic"
+  - "nightstudy"
+  - "시험"
+  - "시험기간"
+  - "합격"
+  - "새벽공부"
+  - "카공"

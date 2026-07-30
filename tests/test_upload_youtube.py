@@ -37,6 +37,15 @@ class TestUploadYoutube(unittest.TestCase):
         self.assertEqual(body["snippet"]["tags"], ["a", "b"])
         self.assertEqual(body["status"]["privacyStatus"], "private")
         self.assertFalse(body["status"]["selfDeclaredMadeForKids"])
+        self.assertTrue(body["status"]["containsSyntheticMedia"])  # 명시 안 해도 기본값 True
+
+    def test_build_request_body_can_opt_out_of_synthetic_media_flag(self):
+        metadata = {
+            "title": "t", "description": "d", "tags": [], "categoryId": "10",
+            "privacyStatus": "private", "madeForKids": False, "containsSyntheticMedia": False,
+        }
+        body = uy.build_request_body(metadata)
+        self.assertNotIn("containsSyntheticMedia", body["status"])
 
     def test_upload_video_drives_resumable_upload_loop(self):
         metadata = {

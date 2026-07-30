@@ -73,3 +73,30 @@ def record_video(state, entry, keep_last=50):
     videos.append(entry)
     if len(videos) > keep_last:
         del videos[: len(videos) - keep_last]
+
+
+def get_or_assign_track_name(state, filename, prefixes, suffixes, rng=None):
+    """음원 파일에 영구적으로 고유한 표시 이름을 배정한다 (한 번 배정되면 절대 바뀌지 않고,
+    다른 파일과 절대 겹치지 않음 - 추후 정식 발매 시 트랙 식별 혼선을 막기 위함)."""
+    rng = rng or random
+    names = state.setdefault("track_names", {})
+    if filename in names:
+        return names[filename]
+
+    used = set(names.values())
+    max_attempts = len(prefixes) * len(suffixes) * 2
+    for _ in range(max_attempts):
+        candidate = rng.choice(prefixes) + rng.choice(suffixes)
+        if candidate not in used:
+            names[filename] = candidate
+            return candidate
+
+    # 조합을 사실상 다 소진한 극단적인 경우에도 고유성은 반드시 보장한다.
+    base = rng.choice(prefixes) + rng.choice(suffixes)
+    i = 2
+    candidate = f"{base} {i}"
+    while candidate in used:
+        i += 1
+        candidate = f"{base} {i}"
+    names[filename] = candidate
+    return candidate

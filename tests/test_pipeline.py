@@ -55,20 +55,27 @@ class TestPipeline(unittest.TestCase):
             }
             scenes_config = {"scenes": [{"id": "test_scene", "prompt": "a test scene"}]}
             templates = {
-                "scene_display_names": {"test_scene": "Test Scene"},
-                "activity_phrases": ["to test"],
-                "title_connectors": ["lofi test"],
+                "title_prefix": "Playlist (가사X)",
+                "hook_phrases": ["test hook"],
+                "taglines": ["test tagline"],
+                "title_emojis": ["🎧"],
                 "description_blurbs": ["A test description."],
+                "channel_name": "noa music",
                 "description_footer": "footer",
+                "top_hashtags": ["#test1", "#test2"],
                 "tag_pool": ["tag1", "tag2", "tag3"],
             }
+
+            track_names_config = {"prefixes": ["Soft", "Dim"], "suffixes": ["mere", "crest"]}
 
             settings_path = root / "settings.yml"
             scenes_path = root / "scenes.yml"
             templates_path = root / "templates.yml"
+            track_names_path = root / "track_name_parts.yml"
             settings_path.write_text(yaml.dump(settings), encoding="utf-8")
             scenes_path.write_text(yaml.dump(scenes_config), encoding="utf-8")
             templates_path.write_text(yaml.dump(templates), encoding="utf-8")
+            track_names_path.write_text(yaml.dump(track_names_config), encoding="utf-8")
 
             fake_image_bytes = subprocess.run(
                 ["ffmpeg", "-f", "lavfi", "-i", "color=c=navy:s=64x64", "-frames:v", "1", "-f", "image2pipe", "-vcodec", "png", "-"],
@@ -81,13 +88,13 @@ class TestPipeline(unittest.TestCase):
             with mock.patch.dict("os.environ", {"GEMINI_API_KEY": "fake-key"}, clear=False), \
                  mock.patch("generate_image.generate_image", side_effect=fake_generate_image):
                 result = pipeline.run_pipeline(
-                    str(settings_path), str(scenes_path), str(templates_path),
+                    str(settings_path), str(scenes_path), str(templates_path), str(track_names_path),
                     work_dir=str(work_dir), dry_run=True,
                 )
 
             self.assertIsNone(result["video_id"])
             self.assertEqual(result["scene_id"], "test_scene")
-            self.assertIn("Test Scene", result["title"])
+            self.assertIn("Playlist (가사X)", result["title"])
 
             state = sm.load_state(str(state_path))
             self.assertEqual(len(state["recent_videos"]), 1)

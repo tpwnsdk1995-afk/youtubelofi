@@ -17,6 +17,15 @@ import state_manager as sm
 
 GEMINI_ENDPOINT_TEMPLATE = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
+# 모든 씬 프롬프트에 공통으로 덧붙이는 실사(candid photo) 스타일 지정 문구.
+# scenes.yml 각 항목에는 장면 내용만 적고, 사진처럼 보이게 하는 스타일 지시는 여기서 통일 관리한다.
+PHOTOREALISM_SUFFIX = (
+    "candid photo taken with a phone camera from a natural angle, everyday snapshot, "
+    "slightly imperfect casual framing, soft natural or warm lamp lighting, "
+    "realistic textures and materials, not illustration, not painting, not anime, "
+    "not 3d render, not digital art, no text, no watermark"
+)
+
 
 def load_yaml(path):
     with open(path, encoding="utf-8") as f:
@@ -30,9 +39,16 @@ def draw_scene(state, scenes_config, rng=None):
     return next(s for s in scenes if s["id"] == scene_id)
 
 
+def build_full_prompt(scene_prompt, aspect_ratio_hint):
+    parts = [scene_prompt, PHOTOREALISM_SUFFIX]
+    if aspect_ratio_hint:
+        parts.append(aspect_ratio_hint)
+    return ", ".join(parts)
+
+
 def generate_image(prompt, api_key, model, aspect_ratio_hint, output_path, session=None):
     session = session or requests
-    full_prompt = f"{prompt}, {aspect_ratio_hint}" if aspect_ratio_hint else prompt
+    full_prompt = build_full_prompt(prompt, aspect_ratio_hint)
 
     resp = session.post(
         GEMINI_ENDPOINT_TEMPLATE.format(model=model),

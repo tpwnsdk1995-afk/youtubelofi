@@ -28,10 +28,12 @@ def load_yaml(path):
 
 
 def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes.yml",
-                  templates_path="config/title_templates.yml", work_dir=None, dry_run=False):
+                  templates_path="config/title_templates.yml", track_names_path="config/track_name_parts.yml",
+                  work_dir=None, dry_run=False):
     settings = load_yaml(settings_path)
     scenes_config = load_yaml(scenes_path)
     templates = load_yaml(templates_path)
+    name_parts = load_yaml(track_names_path)
 
     state_path = settings["state_file"]
     library_dir = settings["music_library_dir"]
@@ -57,13 +59,15 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
 
     try:
         print("== 1/4 음악 조립 ==")
-        picked = assemble_music.assemble(
+        chapters = assemble_music.assemble(
             library_dir, state,
             a["crossfade_seconds"], a["bitrate"],
             audio_path,
             reuse_ratio=a.get("reuse_ratio", 0.0),
+            name_prefixes=name_parts["prefixes"],
+            name_suffixes=name_parts["suffixes"],
         )
-        print(f"  {len(picked)}개 트랙 사용")
+        print(f"  {len(chapters)}개 트랙 사용")
 
         print("== 2/4 이미지 생성 ==")
         scene = generate_image.draw_scene(state, scenes_config)
@@ -79,10 +83,11 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
         build_video_mod.build_video(
             image_path, audio_path, video_path,
             v["resolution"], v["fps"], v["crf"], v["preset"], a["bitrate"],
+            watermark_text=templates.get("channel_name"),
         )
 
         print("== 4/4 메타데이터 생성 + 업로드 ==")
-        metadata = generate_metadata.build_metadata(state, scene["id"], templates, settings)
+        metadata = generate_metadata.build_metadata(state, chapters, templates, settings, scene_id=scene["id"])
         print(f"  제목: {metadata['title']}")
 
         if dry_run:
@@ -108,13 +113,14 @@ def main():
     parser.add_argument("--settings-config", default="config/settings.yml")
     parser.add_argument("--scenes-config", default="config/scenes.yml")
     parser.add_argument("--templates-config", default="config/title_templates.yml")
+    parser.add_argument("--track-names-config", default="config/track_name_parts.yml")
     parser.add_argument("--work-dir")
     parser.add_argument("--dry-run", action="store_true", help="실제 업로드 없이 파이프라인만 검증")
     args = parser.parse_args()
 
     try:
         result = run_pipeline(
-            args.settings_config, args.scenes_config, args.templates_config,
+            args.settings_config, args.scenes_config, args.templates_config, args.track_names_config,
             work_dir=args.work_dir, dry_run=args.dry_run,
         )
     except (assemble_music.LibraryTooSmallError, RuntimeError) as e:

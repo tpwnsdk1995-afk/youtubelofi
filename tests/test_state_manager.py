@@ -64,5 +64,32 @@ class TestShuffleBag(unittest.TestCase):
         self.assertEqual(len(drawn), len(set(drawn)))
 
 
+class TestTrackNames(unittest.TestCase):
+    PREFIXES = ["Soft", "Dim", "Hush"]
+    SUFFIXES = ["mere", "crest", "loom"]
+
+    def test_assigns_and_persists_name(self):
+        state = {}
+        name1 = sm.get_or_assign_track_name(state, "a.mp3", self.PREFIXES, self.SUFFIXES, rng=random.Random(1))
+        name2 = sm.get_or_assign_track_name(state, "a.mp3", self.PREFIXES, self.SUFFIXES, rng=random.Random(99))
+        self.assertEqual(name1, name2)  # 같은 파일은 항상 같은 이름
+
+    def test_names_never_collide_across_files(self):
+        state = {}
+        names = [
+            sm.get_or_assign_track_name(state, f"track_{i}.mp3", self.PREFIXES, self.SUFFIXES, rng=random.Random(i))
+            for i in range(9)  # 3 prefixes x 3 suffixes = 9개 조합, 정확히 소진
+        ]
+        self.assertEqual(len(names), len(set(names)))
+
+    def test_falls_back_to_numbered_suffix_when_pool_exhausted(self):
+        state = {}
+        names = [
+            sm.get_or_assign_track_name(state, f"track_{i}.mp3", self.PREFIXES, self.SUFFIXES, rng=random.Random(i))
+            for i in range(12)  # 9개 조합보다 많은 파일 -> 번호 붙은 이름으로 폴백
+        ]
+        self.assertEqual(len(names), len(set(names)))
+
+
 if __name__ == "__main__":
     unittest.main()

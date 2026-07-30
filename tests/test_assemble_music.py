@@ -67,5 +67,43 @@ class TestPickTracks(unittest.TestCase):
                 am.assemble(d, {}, crossfade_seconds=1, bitrate="96k", output_path=Path(d) / "out.mp3")
 
 
+class TestBuildChapters(unittest.TestCase):
+    PREFIXES = ["Soft", "Dim", "Hush"]
+    SUFFIXES = ["mere", "crest", "loom"]
+
+    def test_first_chapter_starts_at_zero_and_names_are_unique(self):
+        state = {}
+        picked = [("a.mp3", 100.0), ("b.mp3", 120.0), ("c.mp3", 90.0)]
+        chapters = am.build_chapters(state, picked, self.PREFIXES, self.SUFFIXES, crossfade_seconds=3, rng=random.Random(1))
+        self.assertEqual(chapters[0]["start_seconds"], 0.0)
+        names = [c["name"] for c in chapters]
+        self.assertEqual(len(names), len(set(names)))
+
+    def test_start_seconds_accounts_for_crossfade_overlap(self):
+        state = {}
+        picked = [("a.mp3", 100.0), ("b.mp3", 120.0)]
+        chapters = am.build_chapters(state, picked, self.PREFIXES, self.SUFFIXES, crossfade_seconds=3, rng=random.Random(1))
+        self.assertEqual(chapters[1]["start_seconds"], 100.0 - 3)
+
+    def test_reused_track_keeps_same_name_each_occurrence(self):
+        state = {}
+        picked = [("a.mp3", 100.0), ("b.mp3", 50.0), ("a.mp3", 100.0)]
+        chapters = am.build_chapters(state, picked, self.PREFIXES, self.SUFFIXES, crossfade_seconds=2, rng=random.Random(1))
+        self.assertEqual(chapters[0]["name"], chapters[2]["name"])
+
+    def test_assemble_returns_chapters_with_persistent_names(self):
+        with tempfile.TemporaryDirectory() as d:
+            library_dir = make_dummy_library(d, n=4, seconds=3)
+            state = {}
+            out_path = Path(d) / "out.mp3"
+            chapters = am.assemble(
+                library_dir, state, crossfade_seconds=1, bitrate="96k", output_path=out_path,
+                reuse_ratio=0.0, name_prefixes=self.PREFIXES, name_suffixes=self.SUFFIXES, rng=random.Random(2),
+            )
+            self.assertEqual(len(chapters), 4)
+            self.assertEqual(chapters[0]["start_seconds"], 0.0)
+            self.assertIn("track_names", state)
+
+
 if __name__ == "__main__":
     unittest.main()

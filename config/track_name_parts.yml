@@ -1,0 +1,68 @@
+# 트랙 표시 이름 자동 생성용 단어 조각. prefix + suffix를 조합해 감성적인 조어를 만든다
+# (레퍼런스 채널 스타일 참고: Softmere, Dimcrest, Hushloom 등).
+# 각 조합은 assemble_music.py가 만난 실제 음원 파일에 영구적으로 1:1 배정되며,
+# 한 번 배정된 이름은 state.json에 저장되어 절대 바뀌지 않고 서로 겹치지도 않는다.
+
+prefixes:
+  - Soft
+  - Dim
+  - Hush
+  - Sub
+  - Warm
+  - Quiet
+  - Low
+  - Mell
+  - Bass
+  - Faint
+  - Calm
+  - Vel
+  - Still
+  - Murmur
+  - Pale
+  - Cotton
+  - Dusk
+  - Amber
+  - Slow
+  - Deep
+  - Night
+  - Moon
+  - Rain
+  - Ash
+  - Ember
+  - Misty
+  - Gentle
+  - Fading
+  - Muted
+  - Tender
+
+suffixes:
+  - mere
+  - crest
+  - loom
+  - gleam
+  - thos
+  - ell
+  - floe
+  - une
+  - vale
+  - ure
+  - rest
+  - thrum
+  - fold
+  - tone
+  - drift
+  - sway
+  - haze
+  - form
+  - let
+  - field
+  - glow
+  - wave
+  - light
+  - hollow
+  - bloom
+  - veil
+  - shade
+  - current
+  - murmur
+  - echo
