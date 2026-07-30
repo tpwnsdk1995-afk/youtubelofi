@@ -54,19 +54,25 @@ def pick_tracks(state, library_dir, files, target_seconds, crossfade_seconds, ap
 
     picked = []
     total = 0.0
+    draws = 0
     max_draws = estimated_needed * 3 + 5  # 무한루프 방지 안전장치
     while True:
         n = len(picked)
         needed_raw = target_seconds + crossfade_seconds * max(n - 1, 0)
         if total >= needed_raw:
             break
-        if n >= max_draws:
+        if draws >= max_draws:
             raise LibraryTooSmallError(
-                "실제 곡 길이가 예상보다 짧아 목표 길이를 채우지 못했습니다. "
+                "실제 곡 길이가 예상보다 짧거나 읽을 수 없는 파일이 많아 목표 길이를 채우지 못했습니다. "
                 "music_library에 곡을 더 추가해 주세요."
             )
+        draws += 1
         name = sm.draw(state, "music_track", files, count=1, rng=rng)[0]
-        dur = probe_duration(Path(library_dir) / name)
+        try:
+            dur = probe_duration(Path(library_dir) / name)
+        except subprocess.CalledProcessError:
+            print(f"WARNING: '{name}' 파일을 읽을 수 없어 건너뜁니다 (손상되었거나 지원하지 않는 형식일 수 있습니다).", file=sys.stderr)
+            continue
         picked.append((name, dur))
         total += dur
     return picked
