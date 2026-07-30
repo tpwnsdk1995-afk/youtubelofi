@@ -5,7 +5,7 @@
 ## 동작 방식
 
 1. **음악 조립** (`scripts/assemble_music.py`) — `music_library/`에 사용자가 미리 채워 넣은 Suno 음원(무편집 mp3)을 셔플백 방식으로 골라 목표 길이(기본 2시간)만큼 크로스페이드로 이어붙입니다. API 호출 없음, 비용 $0.
-2. **이미지 생성** (`scripts/generate_image.py`) — Stability AI Stable Image Core API로 씬 이미지를 1장 생성합니다 (영상당 약 $0.03).
+2. **이미지 생성** (`scripts/generate_image.py`) — Gemini API(gemini-2.5-flash-image)로 씬 이미지를 1장 생성합니다 (무료 등급 하루 500장, 비용 $0).
 3. **영상 조립** (`scripts/build_video.py`) — 정적 이미지를 애니메이션 없이 오디오 길이만큼 반복하는 mp4를 ffmpeg로 만듭니다.
 4. **메타데이터 생성** (`scripts/generate_metadata.py`) — 제목/설명/태그를 여러 문구 풀의 조합으로 생성합니다.
 5. **업로드** (`scripts/upload_youtube.py`) — YouTube Data API v3로 무인 업로드합니다.
@@ -21,8 +21,8 @@
 ```bash
 pip install -r requirements.txt
 
-# 업로드 없이 파이프라인 전체를 검증 (STABILITY_IMAGE_API_KEY는 여전히 필요)
-STABILITY_IMAGE_API_KEY=... python3 scripts/pipeline.py --dry-run
+# 업로드 없이 파이프라인 전체를 검증 (GEMINI_API_KEY는 여전히 필요)
+GEMINI_API_KEY=... python3 scripts/pipeline.py --dry-run
 
 # 유닛 테스트
 python3 -m unittest discover -s tests

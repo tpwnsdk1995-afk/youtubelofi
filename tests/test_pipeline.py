@@ -49,7 +49,7 @@ class TestPipeline(unittest.TestCase):
                     "crossfade_seconds": 1,
                     "bitrate": "96k",
                 },
-                "image": {"aspect_ratio": "16:9", "output_format": "png"},
+                "image": {"model": "gemini-2.5-flash-image", "aspect_ratio_hint": "16:9 widescreen"},
                 "youtube": {"category_id": "10", "privacy_status": "private", "made_for_kids": False},
                 "state_file": str(state_path),
                 "music_library_dir": str(library_dir),
@@ -76,10 +76,10 @@ class TestPipeline(unittest.TestCase):
                 check=True, capture_output=True,
             ).stdout
 
-            def fake_generate_image(prompt, api_key, aspect_ratio, output_format, output_path, session=None):
+            def fake_generate_image(prompt, api_key, model, aspect_ratio_hint, output_path, session=None):
                 Path(output_path).write_bytes(fake_image_bytes)
 
-            with mock.patch.dict("os.environ", {"STABILITY_IMAGE_API_KEY": "fake-key"}, clear=False), \
+            with mock.patch.dict("os.environ", {"GEMINI_API_KEY": "fake-key"}, clear=False), \
                  mock.patch("generate_image.generate_image", side_effect=fake_generate_image):
                 result = pipeline.run_pipeline(
                     str(settings_path), str(scenes_path), str(templates_path),

@@ -39,9 +39,9 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
     a = settings["audio"]
 
     # 무거운 작업을 시작하기 전에 필요한 자격 증명을 먼저 확인해 빠르게 실패한다.
-    image_api_key = os.environ.get("STABILITY_IMAGE_API_KEY")
+    image_api_key = os.environ.get("GEMINI_API_KEY")
     if not image_api_key:
-        raise RuntimeError("STABILITY_IMAGE_API_KEY 환경변수가 설정되어 있지 않습니다.")
+        raise RuntimeError("GEMINI_API_KEY 환경변수가 설정되어 있지 않습니다.")
     youtube_credentials = None
     if not dry_run:
         youtube_credentials = upload_youtube.get_credentials()
@@ -68,7 +68,8 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
         scene = generate_image.draw_scene(state, scenes_config)
         generate_image.generate_image(
             scene["prompt"], image_api_key,
-            settings["image"].get("aspect_ratio", "16:9"), settings["image"].get("output_format", "png"),
+            settings["image"].get("model", "gemini-2.5-flash-image"),
+            settings["image"].get("aspect_ratio_hint", "16:9 widescreen"),
             image_path,
         )
         print(f"  씬: {scene['id']}")

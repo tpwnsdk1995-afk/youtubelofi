@@ -35,11 +35,13 @@
 
 6. Cloud Console → "API 및 서비스 → 할당량"에서 `youtube.googleapis.com` 의 `videos.insert` 쿼터 비용을 확인하세요. (최근 정책 변경 가능성이 있으므로, 하루에 몇 개까지 업로드해도 안전한지 이 값으로 직접 확인한 뒤 워크플로우의 cron 주기를 정하는 것을 권장합니다.)
 
-## 2. Stability AI API 키 (이미지 생성용)
+## 2. Gemini API 키 (이미지 생성용)
 
-1. [platform.stability.ai](https://platform.stability.ai/)에서 계정을 만들고 결제 수단을 등록합니다.
-2. 대시보드에서 API 키를 발급받습니다.
-3. 영상당 이미지 생성 비용은 약 $0.03로 매우 소액입니다. 진행 전 [pricing 페이지](https://platform.stability.ai/pricing)에서 현재 가격을 한 번 확인하는 것을 권장합니다.
+이미지 생성은 Gemini의 이미지 생성 모델(gemini-2.5-flash-image, 일명 "나노바나나")을 사용합니다. **무료 등급으로 하루 500장까지 가능하고 카드 등록도 필요 없습니다** (기존에 결제해둔 Gemini 앱 구독과는 별개의, 개발자용 API입니다).
+
+1. [aistudio.google.com](https://aistudio.google.com/)에 본인 구글 계정으로 로그인합니다.
+2. "Get API key" (API 키 받기) 메뉴로 이동해 새 API 키를 발급받습니다.
+3. 발급된 키를 복사해 둡니다.
 
 ## 3. GitHub 저장소 Secrets 등록
 
@@ -47,7 +49,7 @@
 
 | Secret 이름 | 값 |
 |---|---|
-| `STABILITY_IMAGE_API_KEY` | 위에서 발급받은 Stability AI API 키 |
+| `GEMINI_API_KEY` | 위에서 발급받은 Gemini API 키 |
 | `YOUTUBE_CLIENT_ID` | OAuth 클라이언트 ID |
 | `YOUTUBE_CLIENT_SECRET` | OAuth 클라이언트 시크릿 |
 | `YOUTUBE_REFRESH_TOKEN` | 위에서 발급받은 refresh token |

@@ -1,8 +1,10 @@
-"""Stability AI Stable Image Core API로 씬 이미지를 1장 생성한다.
-씬은 config/scenes.yml 풀에서 state_manager 셔플백으로 로테이션.
+"""Gemini API(gemini-2.5-flash-image, 일명 나노바나나)로 씬 이미지를 1장 생성한다.
+무료 등급으로 하루 500장까지 가능해 비용 $0. 씬은 config/scenes.yml 풀에서
+state_manager 셔플백으로 로테이션.
 """
 
 import argparse
+import base64
 import json
 import os
 import sys
@@ -13,7 +15,7 @@ import yaml
 
 import state_manager as sm
 
-STABLE_IMAGE_ENDPOINT = "https://api.stability.ai/v2beta/stable-image/generate/core"
+GEMINI_ENDPOINT_TEMPLATE = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
 
 def load_yaml(path):
@@ -28,18 +30,37 @@ def draw_scene(state, scenes_config, rng=None):
     return next(s for s in scenes if s["id"] == scene_id)
 
 
-def generate_image(prompt, api_key, aspect_ratio, output_format, output_path, session=None):
+def generate_image(prompt, api_key, model, aspect_ratio_hint, output_path, session=None):
     session = session or requests
+    full_prompt = f"{prompt}, {aspect_ratio_hint}" if aspect_ratio_hint else prompt
+
     resp = session.post(
-        STABLE_IMAGE_ENDPOINT,
-        headers={"Authorization": f"Bearer {api_key}", "Accept": "image/*"},
-        files={"none": (None, "")},
-        data={"prompt": prompt, "aspect_ratio": aspect_ratio, "output_format": output_format},
+        GEMINI_ENDPOINT_TEMPLATE.format(model=model),
+        headers={"x-goog-api-key": api_key, "Content-Type": "application/json"},
+        json={
+            "contents": [{"parts": [{"text": full_prompt}]}],
+            "generationConfig": {"responseModalities": ["TEXT", "IMAGE"]},
+        },
         timeout=60,
     )
     if resp.status_code != 200:
-        raise RuntimeError(f"Stability AI image API error {resp.status_code}: {resp.text[:500]}")
-    Path(output_path).write_bytes(resp.content)
+        raise RuntimeError(f"Gemini image API error {resp.status_code}: {resp.text[:500]}")
+
+    data = resp.json()
+    image_bytes = None
+    for candidate in data.get("candidates", []):
+        for part in candidate.get("content", {}).get("parts", []):
+            inline_data = part.get("inlineData")
+            if inline_data and inline_data.get("data"):
+                image_bytes = base64.b64decode(inline_data["data"])
+                break
+        if image_bytes:
+            break
+
+    if image_bytes is None:
+        raise RuntimeError(f"Gemini 응답에 이미지 데이터가 없습니다: {json.dumps(data)[:500]}")
+
+    Path(output_path).write_bytes(image_bytes)
 
 
 def main():
@@ -50,9 +71,9 @@ def main():
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
 
-    api_key = os.environ.get("STABILITY_IMAGE_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        print("ERROR: STABILITY_IMAGE_API_KEY 환경변수가 설정되어 있지 않습니다.", file=sys.stderr)
+        print("ERROR: GEMINI_API_KEY 환경변수가 설정되어 있지 않습니다.", file=sys.stderr)
         sys.exit(1)
 
     scenes_config = load_yaml(args.scenes_config)
@@ -65,8 +86,8 @@ def main():
     generate_image(
         scene["prompt"],
         api_key,
-        image_cfg.get("aspect_ratio", "16:9"),
-        image_cfg.get("output_format", "png"),
+        image_cfg.get("model", "gemini-2.5-flash-image"),
+        image_cfg.get("aspect_ratio_hint", "16:9 widescreen"),
         args.output,
     )
 

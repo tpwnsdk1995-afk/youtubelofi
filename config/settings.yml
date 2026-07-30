@@ -14,9 +14,9 @@ audio:
   bitrate: "192k"
 
 image:
-  model: stable-image-core
-  aspect_ratio: "16:9"
-  output_format: "png"
+  provider: gemini
+  model: gemini-2.5-flash-image # 일명 "나노바나나". 무료 등급 하루 500장까지.
+  aspect_ratio_hint: "16:9 widescreen" # 프롬프트에 덧붙이는 문구. 실제 크롭/스케일은 build_video.py가 처리.
 
 youtube:
   category_id: "10" # Music
