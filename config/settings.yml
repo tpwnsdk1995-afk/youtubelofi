@@ -20,7 +20,7 @@ image:
 
 youtube:
   category_id: "10" # Music
-  privacy_status: "private" # 초기 테스트 단계. 검증 후 "public"으로 변경.
+  privacy_status: "public"
   made_for_kids: false
   contains_synthetic_media: true # 음악/이미지에 AI가 관여했음을 유튜브에 공개 고지
 
