@@ -102,11 +102,20 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
 
         if dry_run:
             print("dry-run 모드: 실제 업로드는 건너뜁니다.")
-            result = {"video_id": None, "title": metadata["title"], "scene_id": scene["id"]}
+            result = {"video_id": None, "title": metadata["title"], "scene_id": scene["id"], "description": metadata["description"]}
         else:
             response = upload_youtube.upload_video(video_path, metadata, youtube_credentials)
-            result = {"video_id": response["id"], "title": metadata["title"], "scene_id": scene["id"]}
-            print(f"  업로드 완료: {result['video_id']}")
+            result = {"video_id": response["id"], "title": metadata["title"], "scene_id": scene["id"], "description": metadata["description"]}
+            print(f"  업로드 완료 (비공개, 확인 대기): {result['video_id']}")
+
+            try:
+                playlist_title = f"{templates.get('channel_name', 'noa music')} 로파이 플레이리스트"
+                playlist_id = upload_youtube.get_or_create_playlist(state, youtube_credentials, playlist_title)
+                upload_youtube.add_video_to_playlist(playlist_id, result["video_id"], youtube_credentials)
+                print(f"  재생목록에 추가: {playlist_id}")
+            except Exception as e:
+                # 재생목록 추가는 부가 기능이라 실패해도 업로드 자체는 성공으로 취급한다.
+                print(f"WARNING: 재생목록 추가 실패 (업로드 자체는 성공): {e}", file=sys.stderr)
 
         # 여기까지 도달했다면 전체가 성공한 것이므로 로테이션 상태를 저장한다.
         sm.record_video(state, result)
@@ -126,6 +135,7 @@ def main():
     parser.add_argument("--track-names-config", default="config/track_name_parts.yml")
     parser.add_argument("--work-dir")
     parser.add_argument("--dry-run", action="store_true", help="실제 업로드 없이 파이프라인만 검증")
+    parser.add_argument("--result-output", help="결과 JSON을 저장할 파일 경로 (워크플로우에서 확인 이슈 생성에 사용)")
     args = parser.parse_args()
 
     try:
@@ -138,6 +148,10 @@ def main():
         sys.exit(1)
 
     print(json.dumps(result, ensure_ascii=False))
+
+    if args.result_output:
+        with open(args.result_output, "w", encoding="utf-8") as f:
+            json.dump(result, f, ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":

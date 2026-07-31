@@ -12,7 +12,9 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
 TOKEN_URI = "https://oauth2.googleapis.com/token"
-SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
+# youtube.upload 만으로는 업로드 후 수정(videos.update)이나 썸네일 교체가 403으로 막힌다.
+# 전체 관리 스코프로 업로드/수정/썸네일/재생목록을 모두 커버한다.
+SCOPES = ["https://www.googleapis.com/auth/youtube"]
 
 REQUIRED_ENV_VARS = ["YOUTUBE_CLIENT_ID", "YOUTUBE_CLIENT_SECRET", "YOUTUBE_REFRESH_TOKEN"]
 
@@ -64,6 +66,77 @@ def upload_video(video_path, metadata, credentials, youtube_client=None, chunksi
     while response is None:
         status, response = request.next_chunk(num_retries=num_retries)
     return response
+
+
+def get_video(video_id, credentials, youtube_client=None):
+    youtube = youtube_client or build("youtube", "v3", credentials=credentials)
+    response = youtube.videos().list(part="snippet,status", id=video_id).execute()
+    items = response.get("items", [])
+    if not items:
+        raise RuntimeError(f"영상을 찾을 수 없습니다: {video_id}")
+    return items[0]
+
+
+def update_video(video_id, credentials, title=None, description=None, tags=None,
+                  privacy_status=None, youtube_client=None):
+    """이미 업로드된 영상의 제목/설명/태그/공개상태를 수정한다. videos.update는 전체
+    snippet/status 객체를 요구하므로, 현재 값을 먼저 읽어와 바뀐 필드만 덮어쓴다."""
+    youtube = youtube_client or build("youtube", "v3", credentials=credentials)
+    current = get_video(video_id, credentials, youtube_client=youtube)
+
+    snippet = current["snippet"]
+    if title is not None:
+        snippet["title"] = title[:100]
+    if description is not None:
+        snippet["description"] = description
+    if tags is not None:
+        snippet["tags"] = tags
+
+    status = current["status"]
+    if privacy_status is not None:
+        status["privacyStatus"] = privacy_status
+
+    body = {"id": video_id, "snippet": snippet, "status": status}
+    return youtube.videos().update(part="snippet,status", body=body).execute()
+
+
+def set_thumbnail(video_id, image_path, credentials, youtube_client=None):
+    youtube = youtube_client or build("youtube", "v3", credentials=credentials)
+    media = MediaFileUpload(image_path, mimetype="image/png")
+    return youtube.thumbnails().set(videoId=video_id, media_body=media).execute()
+
+
+def get_or_create_playlist(state, credentials, title, description="", youtube_client=None):
+    """state에 저장된 재생목록 ID를 재사용하고, 없으면 새로 만들어 저장한다.
+    한 재생목록에 계속 영상을 모아두면 추천/자동재생을 통한 시청 지속 시간 확보에 도움이 된다."""
+    youtube = youtube_client or build("youtube", "v3", credentials=credentials)
+    playlist_id = state.get("main_playlist_id")
+    if playlist_id:
+        return playlist_id
+
+    response = youtube.playlists().insert(
+        part="snippet,status",
+        body={
+            "snippet": {"title": title, "description": description},
+            "status": {"privacyStatus": "public"},
+        },
+    ).execute()
+    playlist_id = response["id"]
+    state["main_playlist_id"] = playlist_id
+    return playlist_id
+
+
+def add_video_to_playlist(playlist_id, video_id, credentials, youtube_client=None):
+    youtube = youtube_client or build("youtube", "v3", credentials=credentials)
+    return youtube.playlistItems().insert(
+        part="snippet",
+        body={
+            "snippet": {
+                "playlistId": playlist_id,
+                "resourceId": {"kind": "youtube#video", "videoId": video_id},
+            }
+        },
+    ).execute()
 
 
 def main():

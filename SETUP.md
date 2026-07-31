@@ -17,8 +17,9 @@
    ```bash
    curl -s -X POST https://oauth2.googleapis.com/device/code \
      -d client_id=YOUR_CLIENT_ID \
-     -d scope="https://www.googleapis.com/auth/youtube.upload"
+     -d scope="https://www.googleapis.com/auth/youtube"
    ```
+   > `youtube.upload`가 아니라 전체 관리 스코프(`youtube`)를 요청합니다. 업로드 후 제목/설명 수정, 썸네일 교체, 재생목록 추가까지 하려면 업로드 전용 스코프로는 403이 나기 때문입니다.
    응답에 `verification_url`(또는 `verification_uri`)과 `user_code`, `device_code`가 들어 있습니다.
 
    2) 폰 브라우저로 `verification_url`을 열어 `user_code`를 입력하고, 본인 유튜브 채널 계정으로 로그인/동의합니다.
@@ -102,3 +103,7 @@ Google 계정의 무료 저장 공간(Gmail/Photos/Drive 합산 15GB)을 초과�
 1. 저장소의 **Actions** 탭 → "Publish lofi video" 워크플로우 → **Run workflow**를 클릭해 수동으로 1회 실행합니다. 처음에는 `dry_run: true`로 실행해 업로드 없이 파이프라인이 끝까지 도는지 확인하는 것을 권장합니다.
 2. 문제가 없으면 `dry_run: false`로 실제 업로드까지 테스트합니다.
 3. 필요하면 `.github/workflows/publish-video.yml`의 cron 주기를 조정합니다.
+
+## 7. 공개 전 확인 플로우
+
+`config/settings.yml`의 `youtube.privacy_status`는 `private`입니다 — 즉 매번 자동으로 영상을 만들어 **비공개로만** 업로드하고, 바로 공개하지 않습니다. 업로드가 끝나면 저장소에 `pending-confirmation` 라벨의 Issue가 자동 생성되고(제목/설명/비공개 링크 포함), 채팅 세션이 이를 감지해 알림을 보냅니다. 사진과 제목/설명을 확인한 뒤 채팅에서 확인해주면, 그때 `.github/workflows/finalize-publish.yml` 워크플로우가 트리거되어 실제로 공개 전환됩니다 (필요하면 이때 제목/설명도 함께 수정). 별도로 사용자가 직접 할 일은 없고, 채팅으로 "확인" 또는 수정 요청을 답하기만 하면 됩니다.

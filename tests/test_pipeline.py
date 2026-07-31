@@ -103,6 +103,98 @@ class TestPipeline(unittest.TestCase):
             # dry-run에서도 work_dir은 정리되어야 한다
             self.assertFalse(work_dir.exists())
 
+    def _write_real_run_configs(self, root):
+        library_dir = make_dummy_library(root / "music_library")
+        state_path = root / "state" / "state.json"
+        settings = {
+            "video": {"resolution": "320x240", "fps": 1, "crf": 30, "preset": "ultrafast"},
+            "audio": {"crossfade_seconds": 1, "reuse_ratio": 0.25, "bitrate": "96k"},
+            "image": {"model": "gemini-2.5-flash-image", "aspect_ratio_hint": "16:9 widescreen"},
+            "youtube": {"category_id": "10", "privacy_status": "private", "made_for_kids": False},
+            "state_file": str(state_path),
+            "music_library_dir": str(library_dir),
+        }
+        scenes_config = {"scenes": [{"id": "test_scene", "prompt": "a test scene"}]}
+        templates = {
+            "title_prefix": "Playlist (가사X)",
+            "hook_phrases": ["test hook"],
+            "taglines": ["test tagline"],
+            "title_emojis": ["🎧"],
+            "description_blurbs": ["A test description."],
+            "channel_name": "noa music",
+            "description_footer": "footer",
+            "top_hashtags": ["#test1", "#test2"],
+            "tag_pool": ["tag1", "tag2", "tag3"],
+        }
+        track_names_config = {"prefixes": ["Soft", "Dim"], "suffixes": ["mere", "crest"]}
+
+        settings_path = root / "settings.yml"
+        scenes_path = root / "scenes.yml"
+        templates_path = root / "templates.yml"
+        track_names_path = root / "track_name_parts.yml"
+        settings_path.write_text(yaml.dump(settings), encoding="utf-8")
+        scenes_path.write_text(yaml.dump(scenes_config), encoding="utf-8")
+        templates_path.write_text(yaml.dump(templates), encoding="utf-8")
+        track_names_path.write_text(yaml.dump(track_names_config), encoding="utf-8")
+        return settings_path, scenes_path, templates_path, track_names_path
+
+    def _fake_generate_image(self):
+        fake_image_bytes = subprocess.run(
+            ["ffmpeg", "-f", "lavfi", "-i", "color=c=navy:s=64x64", "-frames:v", "1", "-f", "image2pipe", "-vcodec", "png", "-"],
+            check=True, capture_output=True,
+        ).stdout
+
+        def fake_generate_image(prompt, api_key, model, aspect_ratio_hint, output_path, session=None):
+            Path(output_path).write_bytes(fake_image_bytes)
+        return fake_generate_image
+
+    def test_real_upload_adds_video_to_playlist(self):
+        with tempfile.TemporaryDirectory() as root:
+            root = Path(root)
+            settings_path, scenes_path, templates_path, track_names_path = self._write_real_run_configs(root)
+            work_dir = root / "work"
+
+            env = {
+                "GEMINI_API_KEY": "fake-key",
+                "YOUTUBE_CLIENT_ID": "id", "YOUTUBE_CLIENT_SECRET": "secret", "YOUTUBE_REFRESH_TOKEN": "token",
+            }
+            with mock.patch.dict("os.environ", env, clear=False), \
+                 mock.patch("generate_image.generate_image", side_effect=self._fake_generate_image()), \
+                 mock.patch("upload_youtube.upload_video", return_value={"id": "vid123"}) as fake_upload, \
+                 mock.patch("upload_youtube.get_or_create_playlist", return_value="pl1") as fake_get_playlist, \
+                 mock.patch("upload_youtube.add_video_to_playlist") as fake_add_to_playlist:
+                result = pipeline.run_pipeline(
+                    str(settings_path), str(scenes_path), str(templates_path), str(track_names_path),
+                    work_dir=str(work_dir), dry_run=False,
+                )
+
+            self.assertEqual(result["video_id"], "vid123")
+            fake_upload.assert_called_once()
+            fake_get_playlist.assert_called_once()
+            fake_add_to_playlist.assert_called_once_with("pl1", "vid123", mock.ANY)
+
+    def test_playlist_failure_does_not_fail_pipeline(self):
+        with tempfile.TemporaryDirectory() as root:
+            root = Path(root)
+            settings_path, scenes_path, templates_path, track_names_path = self._write_real_run_configs(root)
+            work_dir = root / "work"
+
+            env = {
+                "GEMINI_API_KEY": "fake-key",
+                "YOUTUBE_CLIENT_ID": "id", "YOUTUBE_CLIENT_SECRET": "secret", "YOUTUBE_REFRESH_TOKEN": "token",
+            }
+            with mock.patch.dict("os.environ", env, clear=False), \
+                 mock.patch("generate_image.generate_image", side_effect=self._fake_generate_image()), \
+                 mock.patch("upload_youtube.upload_video", return_value={"id": "vid123"}), \
+                 mock.patch("upload_youtube.get_or_create_playlist", side_effect=RuntimeError("boom")):
+                result = pipeline.run_pipeline(
+                    str(settings_path), str(scenes_path), str(templates_path), str(track_names_path),
+                    work_dir=str(work_dir), dry_run=False,
+                )
+
+            # 재생목록 추가가 실패해도 업로드 자체는 성공으로 취급되어야 한다
+            self.assertEqual(result["video_id"], "vid123")
+
     def test_missing_image_api_key_raises_before_heavy_work(self):
         with tempfile.TemporaryDirectory() as root, \
              mock.patch.dict("os.environ", {}, clear=True):

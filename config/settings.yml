@@ -20,7 +20,8 @@ image:
 
 youtube:
   category_id: "10" # Music
-  privacy_status: "public"
+  # 항상 비공개로 먼저 올리고, 사용자가 채팅에서 확인해준 뒤 finalize-publish.yml로 공개 전환한다.
+  privacy_status: "private"
   made_for_kids: false
   contains_synthetic_media: true # 음악/이미지에 AI가 관여했음을 유튜브에 공개 고지
 
