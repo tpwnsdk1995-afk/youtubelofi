@@ -31,6 +31,36 @@ def fake_gemini_response(image_bytes):
 
 
 class TestGenerateImage(unittest.TestCase):
+    def test_draw_modifiers_picks_one_of_each_pool(self):
+        scenes_config = {
+            "modifiers": {
+                "lighting": ["light a", "light b"],
+                "details": ["detail a", "detail b"],
+            }
+        }
+        state = {}
+        lighting, detail = gi.draw_modifiers(state, scenes_config)
+        self.assertIn(lighting, ("light a", "light b"))
+        self.assertIn(detail, ("detail a", "detail b"))
+
+    def test_draw_modifiers_handles_missing_modifiers_key(self):
+        state = {}
+        lighting, detail = gi.draw_modifiers(state, {"scenes": []})
+        self.assertIsNone(lighting)
+        self.assertIsNone(detail)
+
+    def test_build_full_prompt_includes_extra_details(self):
+        prompt = gi.build_full_prompt("base scene", "16:9", extra_details=["warm light", "a mug"])
+        self.assertIn("base scene", prompt)
+        self.assertIn("warm light", prompt)
+        self.assertIn("a mug", prompt)
+        self.assertIn(gi.PHOTOREALISM_SUFFIX, prompt)
+
+    def test_build_full_prompt_skips_none_extra_details(self):
+        prompt = gi.build_full_prompt("base scene", "16:9", extra_details=[None, "a mug"])
+        self.assertIn("a mug", prompt)
+        self.assertNotIn("None", prompt)
+
     def test_draw_scene_and_generate_writes_file_and_sidecar(self):
         scenes_config = {
             "scenes": [

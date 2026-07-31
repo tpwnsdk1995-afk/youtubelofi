@@ -1,44 +1,81 @@
 # 비주얼(정적 이미지) 씬 프롬프트 풀. state_manager가 셔플백 방식으로 순환 사용.
 # 실사 폰카 사진처럼 보이도록 하는 공통 스타일 문구는 generate_image.py가 자동으로 덧붙인다.
+#
+# category는 재생목록 분류용 (upload_youtube.get_or_create_playlist가 category별로
+# 별도 재생목록을 만들어 관리 -> title_templates.yml의 playlist_titles와 매칭).
+#
+# modifiers(lighting/details)는 매번 독립적으로 셔플백에서 하나씩 뽑혀 scene 프롬프트에
+# 덧붙는다. 같은 장소(scene) 컨셉이 다시 뽑히더라도 조명/소품 조합이 달라져 실제 생성되는
+# 이미지가 매번 눈에 띄게 달라진다 (9곳 x 7가지 조명 x 10가지 소품 = 630가지 조합).
 
 scenes:
   - id: desk_anatomy_notes
+    category: study
     prompt: >-
       a study desk from above with an open laptop showing anatomy diagrams, a tablet
       propped up with handwritten notes, a pencil case, a pink coffee mug, a desk lamp,
       textbooks and a notebook with handwriting, cozy evening atmosphere
   - id: whiteboard_study
+    category: study
     prompt: >-
       a person seen from behind writing on a whiteboard covered in dense handwritten
       study notes and diagrams, ponytail hair, casual hoodie, classroom lighting
   - id: library_reading_room
+    category: study
     prompt: >-
       a quiet university library open study area, tall arched windows with daylight,
       a wooden desk with an open laptop and notebook, other students blurred in the
       background, warm academic atmosphere
   - id: cubicle_desk
+    category: study
     prompt: >-
       an office cubicle desk with an open laptop showing photos, a travel tumbler,
       wireless earbuds, a calculator, a tablet with a stylus, a canvas tote bag,
       window light in the background
   - id: bed_study
+    category: night
     prompt: >-
       an open laptop on a bed with scattered notebooks, printed photos, and a mug,
       soft blanket texture, warm late-afternoon window light, cozy relaxed
       study-from-bed atmosphere
   - id: cafe_corner_desk
+    category: cafe
     prompt: >-
       a small cafe table with an open laptop, a cup of coffee, a notebook and pen,
       autumn leaves visible through the window, warm afternoon light
   - id: night_desk_lamp
+    category: night
     prompt: >-
       a study desk at night lit mainly by a warm desk lamp, an open laptop, stacked
       books, a steaming mug, rain visible on the window behind
   - id: train_window_study
+    category: cafe
     prompt: >-
       a view from a train seat tray table with an open laptop and notebook, rainy
       night city lights blurred through the window, reflection of warm interior light
   - id: morning_balcony_desk
+    category: morning
     prompt: >-
       a small desk by a balcony window in early morning light, an open laptop, a cup
       of tea, potted plants nearby, soft misty daylight
+
+modifiers:
+  lighting:
+    - "soft golden hour light"
+    - "cool blue evening light"
+    - "warm lamp-only lighting, rest of the room dim"
+    - "overcast diffused daylight through the window"
+    - "flickering candlelight glow"
+    - "pale moonlight coming through the window"
+    - "soft string lights glowing in the background"
+  details:
+    - "a half-finished cup of tea with steam rising"
+    - "a small potted succulent on the desk"
+    - "scattered colorful sticky notes"
+    - "a pair of glasses resting on an open notebook"
+    - "a phone lying face-down next to the keyboard"
+    - "a few highlighters and pens in a cup"
+    - "a stack of index cards tied with a rubber band"
+    - "a small desk fan turned off"
+    - "a half-eaten snack on a small plate"
+    - "a pair of wired earphones coiled on the desk"

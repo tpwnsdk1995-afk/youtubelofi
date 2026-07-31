@@ -43,20 +43,33 @@ def draw_scene(state, scenes_config, rng=None):
     return next(s for s in scenes if s["id"] == scene_id)
 
 
-def build_full_prompt(scene_prompt, aspect_ratio_hint):
-    parts = [scene_prompt, PHOTOREALISM_SUFFIX]
+def draw_modifiers(state, scenes_config, rng=None):
+    """조명/소품 문구를 각각 독립적으로 셔플백에서 하나씩 뽑는다. 같은 장소(scene)가
+    다시 뽑히더라도 조합이 달라져 실제 생성 이미지가 매번 눈에 띄게 달라지게 한다."""
+    modifiers = scenes_config.get("modifiers", {})
+    lighting_pool = modifiers.get("lighting", [])
+    detail_pool = modifiers.get("details", [])
+    lighting = sm.draw(state, "image_lighting", lighting_pool, count=1, rng=rng)[0] if lighting_pool else None
+    detail = sm.draw(state, "image_detail", detail_pool, count=1, rng=rng)[0] if detail_pool else None
+    return lighting, detail
+
+
+def build_full_prompt(scene_prompt, aspect_ratio_hint, extra_details=None):
+    parts = [scene_prompt]
+    parts.extend(d for d in (extra_details or []) if d)
+    parts.append(PHOTOREALISM_SUFFIX)
     if aspect_ratio_hint:
         parts.append(aspect_ratio_hint)
     return ", ".join(parts)
 
 
 def generate_image(prompt, api_key, model, aspect_ratio_hint, output_path, session=None,
-                    max_attempts=4, backoff_seconds=5, sleep=time.sleep):
+                    max_attempts=4, backoff_seconds=5, sleep=time.sleep, extra_details=None):
     """Gemini 이미지 생성 API를 호출한다. 과부하(503)/속도 제한(429) 등 일시적 오류는
     지수 백오프로 재시도하고(기본 최대 4회 시도: 0, 5, 10, 20초 대기), 그래도 실패하면
     에러를 그대로 올린다."""
     session = session or requests
-    full_prompt = build_full_prompt(prompt, aspect_ratio_hint)
+    full_prompt = build_full_prompt(prompt, aspect_ratio_hint, extra_details=extra_details)
 
     last_error = None
     for attempt in range(1, max_attempts + 1):
@@ -123,6 +136,7 @@ def main():
     state = sm.load_state(args.state)
 
     scene = draw_scene(state, scenes_config)
+    lighting, detail = draw_modifiers(state, scenes_config)
     image_cfg = settings["image"]
 
     generate_image(
@@ -131,6 +145,7 @@ def main():
         image_cfg.get("model", "gemini-2.5-flash-image"),
         image_cfg.get("aspect_ratio_hint", "16:9 widescreen"),
         args.output,
+        extra_details=[lighting, detail],
     )
 
     sm.save_state(args.state, state)

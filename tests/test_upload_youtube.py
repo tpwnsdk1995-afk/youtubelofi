@@ -113,9 +113,9 @@ class TestUploadYoutube(unittest.TestCase):
         self.assertEqual(kwargs["videoId"], "vid1")
 
     def test_get_or_create_playlist_reuses_saved_id(self):
-        state = {"main_playlist_id": "existing_pl"}
+        state = {"playlist_ids": {"study": "existing_pl"}}
         fake_youtube = mock.Mock()
-        playlist_id = uy.get_or_create_playlist(state, credentials=None, title="t", youtube_client=fake_youtube)
+        playlist_id = uy.get_or_create_playlist(state, credentials=None, category="study", title="t", youtube_client=fake_youtube)
         self.assertEqual(playlist_id, "existing_pl")
         fake_youtube.playlists.return_value.insert.assert_not_called()
 
@@ -123,9 +123,21 @@ class TestUploadYoutube(unittest.TestCase):
         state = {}
         fake_youtube = mock.Mock()
         fake_youtube.playlists.return_value.insert.return_value.execute.return_value = {"id": "new_pl"}
-        playlist_id = uy.get_or_create_playlist(state, credentials=None, title="t", youtube_client=fake_youtube)
+        playlist_id = uy.get_or_create_playlist(state, credentials=None, category="night", title="t", youtube_client=fake_youtube)
         self.assertEqual(playlist_id, "new_pl")
-        self.assertEqual(state["main_playlist_id"], "new_pl")
+        self.assertEqual(state["playlist_ids"]["night"], "new_pl")
+
+    def test_get_or_create_playlist_keeps_categories_independent(self):
+        state = {}
+        fake_youtube = mock.Mock()
+        fake_youtube.playlists.return_value.insert.return_value.execute.side_effect = [
+            {"id": "study_pl"}, {"id": "night_pl"},
+        ]
+        study_id = uy.get_or_create_playlist(state, credentials=None, category="study", title="study", youtube_client=fake_youtube)
+        night_id = uy.get_or_create_playlist(state, credentials=None, category="night", title="night", youtube_client=fake_youtube)
+        self.assertEqual(study_id, "study_pl")
+        self.assertEqual(night_id, "night_pl")
+        self.assertEqual(fake_youtube.playlists.return_value.insert.call_count, 2)
 
     def test_add_video_to_playlist_calls_playlist_items_insert(self):
         fake_youtube = mock.Mock()

@@ -83,13 +83,15 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
 
         print("== 2/4 이미지 생성 ==")
         scene = generate_image.draw_scene(state, scenes_config)
+        lighting, detail = generate_image.draw_modifiers(state, scenes_config)
         generate_image.generate_image(
             scene["prompt"], image_api_key,
             settings["image"].get("model", "gemini-2.5-flash-image"),
             settings["image"].get("aspect_ratio_hint", "16:9 widescreen"),
             image_path,
+            extra_details=[lighting, detail],
         )
-        print(f"  씬: {scene['id']}")
+        print(f"  씬: {scene['id']} ({lighting}, {detail})")
 
         print("== 3/4 영상 조립 ==")
         build_video_mod.build_video(
@@ -111,10 +113,12 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
             print(f"  업로드 완료 (비공개, 확인 대기): {result['video_id']}")
 
             try:
-                playlist_title = f"{templates.get('channel_name', 'noa music')} 로파이 플레이리스트"
-                playlist_id = upload_youtube.get_or_create_playlist(state, youtube_credentials, playlist_title)
+                category = scene.get("category", "default")
+                playlist_titles = templates.get("playlist_titles", {})
+                playlist_title = playlist_titles.get(category, f"{templates.get('channel_name', 'noa music')} 로파이 플레이리스트")
+                playlist_id = upload_youtube.get_or_create_playlist(state, youtube_credentials, category, playlist_title)
                 upload_youtube.add_video_to_playlist(playlist_id, result["video_id"], youtube_credentials)
-                print(f"  재생목록에 추가: {playlist_id}")
+                print(f"  재생목록에 추가 ({category}): {playlist_id}")
             except Exception as e:
                 # 재생목록 추가는 부가 기능이라 실패해도 업로드 자체는 성공으로 취급한다.
                 print(f"WARNING: 재생목록 추가 실패 (업로드 자체는 성공): {e}", file=sys.stderr)

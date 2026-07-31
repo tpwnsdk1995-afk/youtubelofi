@@ -106,11 +106,13 @@ def set_thumbnail(video_id, image_path, credentials, youtube_client=None):
     return youtube.thumbnails().set(videoId=video_id, media_body=media).execute()
 
 
-def get_or_create_playlist(state, credentials, title, description="", youtube_client=None):
-    """state에 저장된 재생목록 ID를 재사용하고, 없으면 새로 만들어 저장한다.
-    한 재생목록에 계속 영상을 모아두면 추천/자동재생을 통한 시청 지속 시간 확보에 도움이 된다."""
+def get_or_create_playlist(state, credentials, category, title, description="", youtube_client=None):
+    """무드/씬 category별로 재생목록을 하나씩 만들어 state에 저장해두고 재사용한다.
+    (하나로 다 몰아넣는 대신) 무드별로 나누면 자동재생 체인이 더 일관되게 이어져
+    세션 시청시간 확보에 유리하다."""
     youtube = youtube_client or build("youtube", "v3", credentials=credentials)
-    playlist_id = state.get("main_playlist_id")
+    playlist_ids = state.setdefault("playlist_ids", {})
+    playlist_id = playlist_ids.get(category)
     if playlist_id:
         return playlist_id
 
@@ -122,7 +124,7 @@ def get_or_create_playlist(state, credentials, title, description="", youtube_cl
         },
     ).execute()
     playlist_id = response["id"]
-    state["main_playlist_id"] = playlist_id
+    playlist_ids[category] = playlist_id
     return playlist_id
 
 
