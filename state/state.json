@@ -213,5 +213,9 @@
     "Midnight Study Session_5.mp3": "Deepecho",
     "Midnight Study Session.mp3": "Mutedshade",
     "Midnight Library_15.mp3": "Moonhaze"
+  },
+  "playlist_ids": {
+    "night": "PLY0I9sQhFIXA",
+    "cafe": "PLdtyREe5lF9c"
   }
 }
