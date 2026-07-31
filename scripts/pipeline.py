@@ -74,6 +74,8 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
             a["crossfade_seconds"], a["bitrate"],
             audio_path,
             reuse_ratio=a.get("reuse_ratio", 0.0),
+            track_count_min=a.get("track_count_min"),
+            track_count_max=a.get("track_count_max"),
             name_prefixes=name_parts["prefixes"],
             name_suffixes=name_parts["suffixes"],
         )

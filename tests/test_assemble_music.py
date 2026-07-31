@@ -66,6 +66,28 @@ class TestPickTracks(unittest.TestCase):
             with self.assertRaises(am.LibraryTooSmallError):
                 am.assemble(d, {}, crossfade_seconds=1, bitrate="96k", output_path=Path(d) / "out.mp3")
 
+    def test_count_limits_number_of_tracks_drawn_without_duplicates(self):
+        with tempfile.TemporaryDirectory() as d:
+            library_dir = make_dummy_library(d, n=20)
+            files = am.list_library_files(library_dir)
+            state = {}
+            picked = am.pick_tracks(state, library_dir, files, count=5, reuse_ratio=0.0, rng=random.Random(1))
+            self.assertEqual(len(picked), 5)
+            names = [name for name, _ in picked]
+            self.assertEqual(len(names), len(set(names)))  # 중복 없음
+
+    def test_assemble_picks_random_count_within_configured_range(self):
+        with tempfile.TemporaryDirectory() as d:
+            library_dir = make_dummy_library(d, n=20, seconds=1)
+            state = {}
+            out_path = Path(d) / "out.mp3"
+            chapters = am.assemble(
+                library_dir, state, crossfade_seconds=0.2, bitrate="96k", output_path=out_path,
+                reuse_ratio=0.0, track_count_min=5, track_count_max=8, rng=random.Random(5),
+            )
+            self.assertGreaterEqual(len(chapters), 5)
+            self.assertLessEqual(len(chapters), 8)
+
 
 class TestBuildChapters(unittest.TestCase):
     PREFIXES = ["Soft", "Dim", "Hush"]

@@ -48,17 +48,18 @@ def probe_duration(path):
     return float(data["format"]["duration"])
 
 
-def pick_tracks(state, library_dir, files, reuse_ratio=0.0, rng=None):
-    """라이브러리의 모든 곡을 한 번씩 뽑고(로테이션 상태에 반영), 그중 일부를
-    reuse_ratio 비율만큼 무작위로 골라 한 번 더 섞어 넣는다. 예: 40곡에
-    reuse_ratio=0.25면 10곡이 추가로 한 번 더 재생되어, 어떤 곡이 뽑히느냐에
-    따라 매번 총 길이가 자연스럽게 달라진다.
+def pick_tracks(state, library_dir, files, count=None, reuse_ratio=0.0, rng=None):
+    """라이브러리에서 count곡을 셔플백으로 뽑는다(로테이션 상태에 반영되어 라이브러리
+    전체를 순환하며 소진될 때까지 반복되지 않음). count가 None이면 라이브러리 전체를
+    한 번씩 뽑는다. reuse_ratio > 0이면 뽑힌 곡 중 일부를 무작위로 한 번 더 섞어
+    넣어 총 길이를 살짝 늘린다 (라이브러리가 작을 때 길이 변주를 주기 위한 용도).
     """
     rng = rng or random
-    order = sm.draw(state, "music_track", files, count=len(files), rng=rng)
+    draw_count = min(count, len(files)) if count is not None else len(files)
+    order = sm.draw(state, "music_track", files, count=draw_count, rng=rng)
 
-    reuse_count = round(len(files) * reuse_ratio)
-    reuse_sample = rng.sample(files, min(reuse_count, len(files))) if reuse_count > 0 else []
+    reuse_count = round(len(order) * reuse_ratio)
+    reuse_sample = rng.sample(order, min(reuse_count, len(order))) if reuse_count > 0 else []
 
     combined = order + reuse_sample
     rng.shuffle(combined)
@@ -128,13 +129,22 @@ def build_crossfaded_track(library_dir, picked, crossfade_seconds, bitrate, outp
 
 
 def assemble(library_dir, state, crossfade_seconds, bitrate, output_path,
-             reuse_ratio=0.0, name_prefixes=None, name_suffixes=None, rng=None):
+             reuse_ratio=0.0, track_count_min=None, track_count_max=None,
+             name_prefixes=None, name_suffixes=None, rng=None):
+    rng = rng or random
     files = list_library_files(library_dir)
     if not files:
         raise LibraryTooSmallError(
             "music_library가 비어 있습니다. Suno에서 다운로드한 mp3를 music_library/에 추가해 주세요."
         )
-    picked = pick_tracks(state, library_dir, files, reuse_ratio=reuse_ratio, rng=rng)
+
+    count = None
+    if track_count_min is not None and track_count_max is not None:
+        lo = min(track_count_min, len(files))
+        hi = min(track_count_max, len(files))
+        count = rng.randint(min(lo, hi), max(lo, hi))
+
+    picked = pick_tracks(state, library_dir, files, count=count, reuse_ratio=reuse_ratio, rng=rng)
     if not picked:
         raise LibraryTooSmallError(
             "music_library의 모든 파일을 읽을 수 없습니다. 파일이 손상되지 않았는지 확인해 주세요."
@@ -154,7 +164,9 @@ def main():
     parser.add_argument("--state", default="state/state.json")
     parser.add_argument("--track-names-config", default="config/track_name_parts.yml")
     parser.add_argument("--crossfade-seconds", type=float, default=3)
-    parser.add_argument("--reuse-ratio", type=float, default=0.25, help="일부 곡을 한 번 더 재생하는 비율 (0.25 = 25%%)")
+    parser.add_argument("--reuse-ratio", type=float, default=0.0, help="일부 곡을 한 번 더 재생하는 비율 (0.25 = 25%%)")
+    parser.add_argument("--track-count-min", type=int, default=None, help="라이브러리에서 뽑을 최소 곡 수 (미지정 시 전체 사용)")
+    parser.add_argument("--track-count-max", type=int, default=None, help="라이브러리에서 뽑을 최대 곡 수 (미지정 시 전체 사용)")
     parser.add_argument("--bitrate", default="192k")
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
@@ -173,6 +185,8 @@ def main():
             name_prefixes=name_parts["prefixes"],
             name_suffixes=name_parts["suffixes"],
             reuse_ratio=args.reuse_ratio,
+            track_count_min=args.track_count_min,
+            track_count_max=args.track_count_max,
         )
     except LibraryTooSmallError as e:
         print(f"ERROR: {e}", file=sys.stderr)
