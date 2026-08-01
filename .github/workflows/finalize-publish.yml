@@ -44,11 +44,11 @@ jobs:
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
         run: |
-          ARGS=("--video-id" "${{ inputs.video_id }}" "--privacy-status" "${{ inputs.privacy_status }}")
+          ARGS=("--video-id=${{ inputs.video_id }}" "--privacy-status=${{ inputs.privacy_status }}")
           if [ -n "${{ inputs.title }}" ]; then
-            ARGS+=("--title" "${{ inputs.title }}")
+            ARGS+=("--title=${{ inputs.title }}")
           fi
           if [ -n "${{ inputs.description }}" ]; then
-            ARGS+=("--description" "${{ inputs.description }}")
+            ARGS+=("--description=${{ inputs.description }}")
           fi
           python3 scripts/finalize_publish.py "${ARGS[@]}"
