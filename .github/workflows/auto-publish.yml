@@ -5,10 +5,11 @@ name: Auto-publish (daily deadline)
 # 일관성이 알고리즘에 도움이 되므로 "컨펌 안 하면 무기한 비공개" 대신 "특별한 요청이 없으면
 # 예정대로 공개"를 기본값으로 한다. 사용자가 이미 채팅에서 확인/수정해 이슈가 닫혀 있으면
 # 조용히 아무 것도 하지 않는다.
+#
+# 트리거는 GitHub 자체 schedule이 아니라 매일 19:03 KST에 발동하는 Claude Code Remote
+# Routine이 workflow_dispatch로 담당한다. 이 워크플로우의 schedule 트리거는 cron 설정이
+# 맞는데도 한 번도 스스로 발동한 적이 없어 제거했다.
 on:
-  schedule:
-    # 정각을 피해 GitHub의 매시 정각 혼잡 지연을 줄인다 (publish-video.yml과 같은 이유).
-    - cron: "3 10 * * *" # 매일 UTC 10:03 (KST 19:03)
   workflow_dispatch: {}
 
 permissions:
