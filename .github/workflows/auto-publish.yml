@@ -61,7 +61,7 @@ jobs:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-        run: python3 scripts/finalize_publish.py --video-id "${{ steps.find.outputs.video_id }}" --privacy-status public
+        run: python3 scripts/finalize_publish.py "--video-id=${{ steps.find.outputs.video_id }}" --privacy-status=public
 
       - name: Close confirmation issue
         if: steps.find.outputs.found == 'true'
