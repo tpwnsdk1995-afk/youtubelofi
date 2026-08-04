@@ -61,11 +61,11 @@ def main():
     if matched_query:
         call_best_effort(bot_token, "answerCallbackQuery", {
             "callback_query_id": matched_query["id"],
-            "text": "승인 처리됨" if decision == "approve" else "거부 처리됨",
+            "text": "승인 처리됨" if decision == "approve" else "거부 처리됨 (영상 삭제)",
         })
         message = matched_query.get("message", {})
         if message.get("message_id") is not None and message.get("chat", {}).get("id") is not None:
-            label = "✅ 승인됨 (공개 전환)" if decision == "approve" else "❌ 거부됨 (비공개 유지)"
+            label = "✅ 승인됨 (공개 전환)" if decision == "approve" else "❌ 거부됨 (영상 삭제됨)"
             call_best_effort(bot_token, "editMessageText", {
                 "chat_id": message["chat"]["id"],
                 "message_id": message["message_id"],
