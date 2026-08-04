@@ -1,10 +1,11 @@
 name: Auto-publish (daily deadline)
 
-# 확인 요청(publish-video.yml이 여는 pending-confirmation 이슈) 이후 사용자가 채팅에서
-# 수정/보류를 요청하지 않으면, 매일 정해진 시각에 자동으로 공개 전환한다. 업로드 시각의
+# 확인 요청(publish-video.yml이 여는 pending-confirmation 이슈) 이후 사용자가 텔레그램
+# 버튼으로 승인/거부하지 않으면, 매일 정해진 시각에 자동으로 공개 전환한다. 업로드 시각의
 # 일관성이 알고리즘에 도움이 되므로 "컨펌 안 하면 무기한 비공개" 대신 "특별한 요청이 없으면
-# 예정대로 공개"를 기본값으로 한다. 사용자가 이미 채팅에서 확인/수정해 이슈가 닫혀 있으면
-# 조용히 아무 것도 하지 않는다.
+# 예정대로 공개"를 기본값으로 한다. 텔레그램에서 이미 승인/거부돼 이슈가 닫혀 있으면
+# 조용히 아무 것도 하지 않는다. (이 워크플로우가 실제로 이슈를 찾아 발행하는 시점엔 승인/거부
+# 버튼이 눌리지 않았다는 게 보장되므로, 무응답 자동 공개 케이스도 텔레그램으로 알려준다.)
 #
 # 트리거는 GitHub 자체 schedule이 아니라 매일 19:03 KST에 발동하는 Claude Code Remote
 # Routine이 workflow_dispatch로 담당한다. 이 워크플로우의 schedule 트리거는 cron 설정이
@@ -39,10 +40,12 @@ jobs:
               return;
             }
             const issue = issues.data[0];
-            const match = issue.title.match(/영상 공개 확인 필요: (\S+)/);
+            const idMatch = issue.title.match(/영상 공개 확인 필요: (\S+)/);
+            const titleMatch = issue.body.match(/^제목: (.+)$/m);
             core.setOutput("found", "true");
             core.setOutput("issue_number", issue.number);
-            core.setOutput("video_id", match ? match[1] : "");
+            core.setOutput("video_id", idMatch ? idMatch[1] : "");
+            core.setOutput("title", titleMatch ? titleMatch[1] : "");
 
       - uses: actions/checkout@v4
         if: steps.find.outputs.found == 'true'
@@ -82,3 +85,12 @@ jobs:
               issue_number,
               state: "closed",
             });
+
+      - name: Notify Telegram (deadline auto-publish)
+        if: steps.find.outputs.found == 'true'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python3 scripts/send_telegram_message.py "--text=⏰ 응답이 없어 예정대로 자동 공개됨: ${{ steps.find.outputs.title }}
+          https://youtu.be/${{ steps.find.outputs.video_id }}"
