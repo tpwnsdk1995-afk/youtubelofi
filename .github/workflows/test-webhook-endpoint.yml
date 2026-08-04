@@ -7,81 +7,38 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Bisect the real script by uploading progressively larger stages
+      - name: Test whether Korean/emoji string literals survive FTP transfer
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
-          DISPATCH_PAT: ${{ secrets.DISPATCH_PAT }}
         run: |
-          # stage1: just the 6 variable assignments with real secret values, then echo ok.
-          cat > /tmp/stage1.php <<EOF
+          cat > /tmp/stage4.php <<'PHP'
           <?php
-          \$TELEGRAM_BOT_TOKEN = '${TELEGRAM_BOT_TOKEN}';
-          \$WEBHOOK_SECRET = '${TELEGRAM_WEBHOOK_SECRET}';
-          \$DISPATCH_PAT = '${DISPATCH_PAT}';
-          \$GH_OWNER = 'tpwnsdk1995-afk';
-          \$GH_REPO = 'youtubelofi';
-          \$GH_REF = 'claude/youtube-lofi-playlist-automation-959lx5';
-          echo "stage1 ok";
-          EOF
-
-          # stage2: stage1 + hash_equals security check + exit paths.
-          cat > /tmp/stage2.php <<EOF
-          <?php
-          \$TELEGRAM_BOT_TOKEN = '${TELEGRAM_BOT_TOKEN}';
-          \$WEBHOOK_SECRET = '${TELEGRAM_WEBHOOK_SECRET}';
-          \$DISPATCH_PAT = '${DISPATCH_PAT}';
-          \$GH_OWNER = 'tpwnsdk1995-afk';
-          \$GH_REPO = 'youtubelofi';
-          \$GH_REF = 'claude/youtube-lofi-playlist-automation-959lx5';
-          \$incoming_secret = \$_SERVER['HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN'] ?? '';
-          if (!hash_equals(\$WEBHOOK_SECRET, \$incoming_secret)) {
-              http_response_code(403);
-              exit('forbidden');
-          }
-          echo "stage2 ok, should not reach here on bare GET";
-          EOF
-
-          # stage3: stage2 + php://input + json_decode + curl_init availability check.
-          cat > /tmp/stage3.php <<EOF
-          <?php
-          \$TELEGRAM_BOT_TOKEN = '${TELEGRAM_BOT_TOKEN}';
-          \$WEBHOOK_SECRET = '${TELEGRAM_WEBHOOK_SECRET}';
-          \$DISPATCH_PAT = '${DISPATCH_PAT}';
-          echo "curl_init exists: " . (function_exists('curl_init') ? 'yes' : 'no') . "\n";
-          echo "hash_equals exists: " . (function_exists('hash_equals') ? 'yes' : 'no') . "\n";
-          echo "stage3 ok";
-          EOF
-
-          for f in stage1 stage2 stage3; do
-            wc -c /tmp/$f.php
-            php -l /tmp/$f.php || echo "LOCAL LINT FAILED for $f"
-          done
-
+          $label = true ? '✅ 승인됨 (공개 전환)' : '❌ 거부됨 (영상 삭제됨)';
+          echo "stage4 ok: " . $label;
+          echo " | bytes: " . strlen($label);
+          PHP
+          wc -c /tmp/stage4.php
+          php -l /tmp/stage4.php
+          php /tmp/stage4.php
+          echo
           python3 - <<'PYEOF'
           import ftplib, os
           ftp = ftplib.FTP()
           ftp.connect(os.environ["FTP_HOST"], 21, timeout=15)
           ftp.login(os.environ["FTP_USER"], os.environ["FTP_PASSWORD"])
-          for stage in ["stage1", "stage2", "stage3"]:
-              with open(f"/tmp/{stage}.php", "rb") as f:
-                  ftp.storbinary(f"STOR {stage}.php", f)
-              print(f"uploaded {stage}.php")
+          with open("/tmp/stage4.php", "rb") as f:
+              ftp.storbinary("STOR stage4.php", f)
+          print("uploaded stage4.php via storbinary (binary mode)")
           ftp.quit()
           PYEOF
 
-      - name: Request each stage over plain HTTP (bare GET, no headers)
+      - name: Request stage4.php
         run: |
-          for f in stage1 stage2 stage3; do
-            echo "--- $f.php ---"
-            curl -sS -m 10 -o - -w "\n[status=%{http_code}]\n" "http://issuejupjup.com/$f.php"
-            echo
-          done
+          curl -sS -m 10 -o - -w "\n[status=%{http_code}]\n" "http://issuejupjup.com/stage4.php"
 
-      - name: Clean up stage files from server (always)
+      - name: Clean up
         if: always()
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
@@ -93,11 +50,10 @@ jobs:
           ftp = ftplib.FTP()
           ftp.connect(os.environ["FTP_HOST"], 21, timeout=15)
           ftp.login(os.environ["FTP_USER"], os.environ["FTP_PASSWORD"])
-          for name in ["stage1.php", "stage2.php", "stage3.php"]:
-              try:
-                  ftp.delete(name)
-                  print(f"deleted {name}")
-              except Exception as e:
-                  print(f"could not delete {name}: {e}")
+          try:
+              ftp.delete("stage4.php")
+              print("deleted stage4.php")
+          except Exception as e:
+              print(f"could not delete: {e}")
           ftp.quit()
           PYEOF
