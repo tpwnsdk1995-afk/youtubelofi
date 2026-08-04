@@ -11,6 +11,20 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: DNS + TLS diagnostics
+        run: |
+          echo "--- DNS ---"
+          getent hosts issuejupjup.com || true
+          getent hosts www.issuejupjup.com || true
+          echo "--- HTTPS apex verbose ---"
+          curl -v -sS -m 10 -o /dev/null "https://issuejupjup.com/telegram-webhook.php" 2>&1 | tail -40 || true
+          echo "--- HTTPS www verbose ---"
+          curl -v -sS -m 10 -o /dev/null "https://www.issuejupjup.com/telegram-webhook.php" 2>&1 | tail -40 || true
+          echo "--- HTTP apex (plain, no TLS) ---"
+          curl -v -sS -m 10 -o /dev/null "http://issuejupjup.com/telegram-webhook.php" 2>&1 | tail -40 || true
+          echo "--- openssl s_client apex:443 ---"
+          echo | timeout 10 openssl s_client -connect issuejupjup.com:443 -servername issuejupjup.com 2>&1 | head -30 || true
+
       - name: Send fake callback_query to webhook
         env:
           TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
