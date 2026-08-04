@@ -1,0 +1,34 @@
+name: Check video status
+
+# 여러 영상의 실제 YouTube 상태(공개 여부 등)를 온디맨드로 확인하기 위한 진단용
+# 워크플로우. GitHub Actions 로그상 성공이어도 실제 채널 상태와 어긋날 수 있어
+# 필요할 때마다 수동으로 대조한다.
+on:
+  workflow_dispatch:
+    inputs:
+      video_ids:
+        description: "쉼표로 구분된 영상 ID 목록"
+        required: true
+        type: string
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install google-api-python-client google-auth
+
+      - name: Check video status
+        working-directory: scripts
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: python3 check_video_status.py "--video-ids=${{ inputs.video_ids }}"
