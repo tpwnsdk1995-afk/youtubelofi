@@ -83,6 +83,16 @@ jobs:
               labels: ["pending-confirmation"],
             });
 
+      - name: Send Telegram confirmation (non-dry-run success)
+        if: success() && inputs.dry_run != true
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          video_id=$(python3 -c "import json; print(json.load(open('result.json'))['video_id'])")
+          title=$(python3 -c "import json; print(json.load(open('result.json'))['title'])")
+          python3 scripts/send_telegram_confirmation.py "--video-id=$video_id" "--title=$title"
+
       - name: Open issue on failure (library shortage, API errors, etc.)
         if: failure()
         uses: actions/github-script@v7
