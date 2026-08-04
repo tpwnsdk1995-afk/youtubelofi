@@ -6,23 +6,28 @@
  * deploy-telegram-webhook.yml이 배포할 때 envsubst로 채워넣은 뒤 카페24 서버에 업로드한다.
  * 즉, 실제 비밀값이 들어간 버전은 절대 git 이력에 남지 않는다.
  *
+ * 주의: envsubst는 ${VAR}뿐 아니라 $VAR(중괄호 없는 형태)도 치환 대상으로 삼는다. 그래서
+ * 아래 PHP 변수 이름은 치환 화이트리스트 이름(TELEGRAM_BOT_TOKEN 등)과 절대 겹치지 않도록
+ * cfgXxx 형태로 지었다 — 겹치면 "$TELEGRAM_BOT_TOKEN = '...'"의 좌변 변수명 자체가 시크릿
+ * 값으로 치환되어버려 문법 오류가 난다 (실제로 겪은 버그).
+ *
  * 실제 승인 처리(공개 전환)/거부 처리(영상 삭제)는 여기서 직접 하지 않고
  * handle-telegram-decision.yml 워크플로우에 위임한다 — 유튜브 API 자격증명 등 민감한
  * 값을 이 카페24 서버에는 전혀 두지 않기 위함이다.
  */
 
-$TELEGRAM_BOT_TOKEN = '${TELEGRAM_BOT_TOKEN}';
-$WEBHOOK_SECRET = '${TELEGRAM_WEBHOOK_SECRET}';
-$DISPATCH_PAT = '${DISPATCH_PAT}';
-$GH_OWNER = '${GH_OWNER}';
-$GH_REPO = '${GH_REPO}';
-$GH_REF = '${GH_REF}';
-$WORKFLOW_FILE = 'handle-telegram-decision.yml';
+$cfgBotToken = '${TELEGRAM_BOT_TOKEN}';
+$cfgWebhookSecret = '${TELEGRAM_WEBHOOK_SECRET}';
+$cfgDispatchPat = '${DISPATCH_PAT}';
+$cfgGhOwner = '${GH_OWNER}';
+$cfgGhRepo = '${GH_REPO}';
+$cfgGhRef = '${GH_REF}';
+$cfgWorkflowFile = 'handle-telegram-decision.yml';
 
 // 1. 텔레그램이 보낸 요청이 맞는지 확인 (setWebhook 등록 시 지정한 secret_token 헤더 검증).
 //    이게 없으면 누구든 이 URL로 POST를 쏴서 임의 영상을 승인/삭제시킬 수 있으므로 필수.
-$incoming_secret = $_SERVER['HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN'] ?? '';
-if (!hash_equals($WEBHOOK_SECRET, $incoming_secret)) {
+$incomingSecret = $_SERVER['HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN'] ?? '';
+if (!hash_equals($cfgWebhookSecret, $incomingSecret)) {
     http_response_code(403);
     exit('forbidden');
 }
@@ -44,9 +49,9 @@ if (!preg_match('/^(approve|reject):(.+)$/', $data, $m)) {
     exit('unrecognized');
 }
 $decision = $m[1];
-$video_id = $m[2];
+$videoId = $m[2];
 
-function tg_call($token, $method, $body) {
+function tgCall($token, $method, $body) {
     $ch = curl_init("https://api.telegram.org/bot{$token}/{$method}");
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
@@ -61,13 +66,13 @@ function tg_call($token, $method, $body) {
 // 2. 콜백 확인 처리(버튼 로딩 스피너 제거) + 메시지에 결과 라벨 붙이기.
 //    실패해도(콜백 만료 등) 아래 3번 GitHub 트리거는 반드시 진행되어야 하므로 결과를 검사하지 않는다.
 $label = $decision === 'approve' ? '✅ 승인됨 (공개 전환)' : '❌ 거부됨 (영상 삭제됨)';
-tg_call($TELEGRAM_BOT_TOKEN, 'answerCallbackQuery', [
+tgCall($cfgBotToken, 'answerCallbackQuery', [
     'callback_query_id' => $cq['id'],
     'text' => $decision === 'approve' ? '승인 처리됨' : '거부 처리됨 (영상 삭제)',
 ]);
 $message = $cq['message'] ?? null;
 if ($message && isset($message['message_id'], $message['chat']['id'])) {
-    tg_call($TELEGRAM_BOT_TOKEN, 'editMessageText', [
+    tgCall($cfgBotToken, 'editMessageText', [
         'chat_id' => $message['chat']['id'],
         'message_id' => $message['message_id'],
         'text' => ($message['text'] ?? '') . "\n\n— {$label}",
@@ -75,19 +80,19 @@ if ($message && isset($message['message_id'], $message['chat']['id'])) {
 }
 
 // 3. GitHub workflow_dispatch 호출 — 실제 승인/거부 반영은 handle-telegram-decision.yml이 담당.
-$ch = curl_init("https://api.github.com/repos/{$GH_OWNER}/{$GH_REPO}/actions/workflows/{$WORKFLOW_FILE}/dispatches");
+$ch = curl_init("https://api.github.com/repos/{$cfgGhOwner}/{$cfgGhRepo}/actions/workflows/{$cfgWorkflowFile}/dispatches");
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Content-Type: application/json',
     'Accept: application/vnd.github+json',
-    "Authorization: Bearer {$DISPATCH_PAT}",
+    "Authorization: Bearer {$cfgDispatchPat}",
     'X-GitHub-Api-Version: 2022-11-28',
     'User-Agent: noamusic-telegram-webhook',
 ]);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
-    'ref' => $GH_REF,
+    'ref' => $cfgGhRef,
     'inputs' => [
-        'video_id' => $video_id,
+        'video_id' => $videoId,
         'decision' => $decision,
     ],
 ]));
