@@ -1,0 +1,28 @@
+name: List channel videos
+
+# 채널에 실제로 올라가 있는 전체 영상과 공개 상태를 온디맨드로 조회하기 위한
+# 진단용 워크플로우.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install google-api-python-client google-auth
+
+      - name: List channel videos
+        working-directory: scripts
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: python3 list_channel_videos.py
