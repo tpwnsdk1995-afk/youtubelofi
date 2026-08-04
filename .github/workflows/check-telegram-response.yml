@@ -2,9 +2,10 @@ name: Check Telegram response
 
 # 텔레그램 승인/거부 버튼 응답을 확인해서 반영하는 워크플로우.
 # 열려있는 pending-confirmation 이슈 중 가장 최근 것의 영상 ID로 폴링하고,
-# 승인이면 공개 전환 + 이슈 닫기, 거부면 이슈만 닫기(비공개 유지 -> 이후
-# auto-publish.yml이 열린 이슈를 못 찾으므로 19:03 자동 공개도 더 이상 덮어쓰지
-# 않는다), 응답이 아직 없으면 아무 것도 하지 않는다.
+# 승인이면 공개 전환 + 이슈 닫기, 거부면 영상을 유튜브에서 삭제하고 이슈를
+# 닫는다(비공개 유지 -> 이후 auto-publish.yml이 열린 이슈를 못 찾으므로
+# 19:03 자동 공개도 더 이상 덮어쓰지 않는다), 응답이 아직 없으면 아무 것도
+# 하지 않는다.
 on:
   workflow_dispatch: {}
 
@@ -88,6 +89,14 @@ jobs:
               state: "closed",
             });
 
+      - name: Delete video (rejected)
+        if: steps.find.outputs.found == 'true' && steps.poll.outputs.decision == 'reject'
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: python3 scripts/delete_video.py "--video-id=${{ steps.find.outputs.video_id }}"
+
       - name: Close issue (rejected)
         if: steps.find.outputs.found == 'true' && steps.poll.outputs.decision == 'reject'
         uses: actions/github-script@v7
@@ -98,7 +107,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number,
-              body: "텔레그램에서 거부되어 비공개로 유지됩니다. (자동 공개 대상에서 제외됨)",
+              body: "텔레그램에서 거부되어 영상이 유튜브에서 삭제되었습니다.",
             });
             await github.rest.issues.update({
               owner: context.repo.owner,
