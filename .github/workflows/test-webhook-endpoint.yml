@@ -7,13 +7,91 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Compare our PHP vs a known WordPress PHP file (plain HTTP)
+      - uses: actions/checkout@v4
+
+      - name: Upload a minimal canary PHP file via FTP
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          echo "--- our telegram-webhook.php (GET, no headers) ---"
-          curl -sS -m 10 -o - -w "\n[status=%{http_code}]\n" "http://issuejupjup.com/telegram-webhook.php"
-          echo
-          echo "--- wp-login.php (should be a normal WP page if PHP execution generally works) ---"
-          curl -sS -m 10 -o - -w "\n[status=%{http_code}]\n" "http://issuejupjup.com/wp-login.php" | head -c 500
-          echo
-          echo "--- a nonexistent .php file (expect a clean 404, to see what 'not found' looks like here) ---"
-          curl -sS -m 10 -o - -w "\n[status=%{http_code}]\n" "http://issuejupjup.com/this-file-does-not-exist-xyz.php"
+          cat > /tmp/canary.php <<'PHP'
+          <?php
+          echo "canary ok, php version: " . phpversion();
+          PHP
+          python3 - <<'PYEOF'
+          import ftplib, os
+          ftp = ftplib.FTP()
+          ftp.connect(os.environ["FTP_HOST"], 21, timeout=15)
+          ftp.login(os.environ["FTP_USER"], os.environ["FTP_PASSWORD"])
+          with open("/tmp/canary.php", "rb") as f:
+              ftp.storbinary("STOR canary.php", f)
+          print("uploaded canary.php")
+          ftp.quit()
+          PYEOF
+
+      - name: Request canary.php
+        run: |
+          curl -sS -m 10 -o - -w "\n[status=%{http_code}]\n" "http://issuejupjup.com/canary.php"
+
+      - name: Upload our real script WITH error display forced on (debug copy)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+          DISPATCH_PAT: ${{ secrets.DISPATCH_PAT }}
+          GH_OWNER: tpwnsdk1995-afk
+          GH_REPO: youtubelofi
+          GH_REF: claude/youtube-lofi-playlist-automation-959lx5
+        run: |
+          {
+            echo "<?php"
+            echo "error_reporting(E_ALL); ini_set('display_errors', '1');"
+            tail -n +2 webhook/telegram-webhook.php
+          } > /tmp/debug-webhook-raw.php
+          envsubst '${TELEGRAM_BOT_TOKEN} ${TELEGRAM_WEBHOOK_SECRET} ${DISPATCH_PAT} ${GH_OWNER} ${GH_REPO} ${GH_REF}' \
+            < /tmp/debug-webhook-raw.php > /tmp/debug-webhook.php
+          wc -c /tmp/debug-webhook.php
+          python3 - <<'PYEOF'
+          import ftplib, os
+          ftp = ftplib.FTP()
+          ftp.connect(os.environ["FTP_HOST"], 21, timeout=15)
+          ftp.login(os.environ["FTP_USER"], os.environ["FTP_PASSWORD"])
+          with open("/tmp/debug-webhook.php", "rb") as f:
+              ftp.storbinary("STOR debug-webhook.php", f)
+          print("uploaded debug-webhook.php")
+          ftp.quit()
+          PYEOF
+
+      - name: Request debug-webhook.php (with secret header, valid fake payload)
+        env:
+          TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+        run: |
+          curl -sS -m 10 -o - -w "\n[status=%{http_code}]\n" -X POST \
+            "http://issuejupjup.com/debug-webhook.php" \
+            -H "Content-Type: application/json" \
+            -H "X-Telegram-Bot-Api-Secret-Token: ${TELEGRAM_WEBHOOK_SECRET}" \
+            -d '{"update_id":1,"callback_query":{"id":"x","data":"reject:TESTID","message":{"message_id":1,"chat":{"id":0},"text":"t"}}}'
+
+      - name: Clean up debug files from server (always, even on failure)
+        if: always()
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          python3 - <<'PYEOF'
+          import ftplib, os
+          ftp = ftplib.FTP()
+          ftp.connect(os.environ["FTP_HOST"], 21, timeout=15)
+          ftp.login(os.environ["FTP_USER"], os.environ["FTP_PASSWORD"])
+          for name in ["canary.php", "debug-webhook.php"]:
+              try:
+                  ftp.delete(name)
+                  print(f"deleted {name}")
+              except Exception as e:
+                  print(f"could not delete {name}: {e}")
+          ftp.quit()
+          PYEOF
