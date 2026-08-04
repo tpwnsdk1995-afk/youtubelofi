@@ -1,0 +1,43 @@
+name: Test Telegram
+
+# TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID 시크릿이 제대로 설정됐는지 가볍게 확인하는
+# 일회성 테스트 워크플로우. 실제 파이프라인이나 pending-confirmation 이슈를
+# 건드리지 않고 send/poll 스크립트만 검증한다.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "send: 테스트 메시지 전송 / poll: 응답 확인"
+        required: true
+        type: choice
+        options: [send, poll]
+        default: send
+      video_id:
+        description: "테스트용 가짜 영상 ID"
+        required: false
+        type: string
+        default: "TESTVIDEOID"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Send test message
+        if: inputs.action == 'send'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 scripts/send_telegram_confirmation.py "--video-id=${{ inputs.video_id }}" "--title=[테스트] 텔레그램 연동 확인용 메시지"
+
+      - name: Poll for response
+        if: inputs.action == 'poll'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: python3 scripts/poll_telegram_response.py "--video-id=${{ inputs.video_id }}"
