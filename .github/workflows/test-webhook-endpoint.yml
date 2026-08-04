@@ -1,9 +1,5 @@
 name: Test Telegram webhook endpoint (diagnostic)
 
-# 실제 텔레그램 버튼 클릭 없이, 카페24에 배포된 telegram-webhook.php가 정상 동작하는지
-# 안전하게 검증한다. 존재하지 않는 가짜 video_id로 callback_query를 흉내내어 POST하므로
-# handle-telegram-decision.yml이 실행되더라도 "일치하는 이슈 없음"으로 끝나고 실제 영상에는
-# 아무 영향을 주지 않는다.
 on:
   workflow_dispatch: {}
 
@@ -11,55 +7,44 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: DNS + TLS diagnostics
-        run: |
-          echo "--- DNS ---"
-          getent hosts issuejupjup.com || true
-          getent hosts www.issuejupjup.com || true
-          echo "--- HTTPS apex verbose ---"
-          curl -v -sS -m 10 -o /dev/null "https://issuejupjup.com/telegram-webhook.php" 2>&1 | tail -40 || true
-          echo "--- HTTPS www verbose ---"
-          curl -v -sS -m 10 -o /dev/null "https://www.issuejupjup.com/telegram-webhook.php" 2>&1 | tail -40 || true
-          echo "--- HTTP apex (plain, no TLS) ---"
-          curl -v -sS -m 10 -o /dev/null "http://issuejupjup.com/telegram-webhook.php" 2>&1 | tail -40 || true
-          echo "--- openssl s_client apex:443 ---"
-          echo | timeout 10 openssl s_client -connect issuejupjup.com:443 -servername issuejupjup.com 2>&1 | head -30 || true
-
-      - name: Send fake callback_query to webhook
+      - name: List FTP directory tree to find the real webroot
         env:
-          TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          http_code=$(curl -sS -o /tmp/resp.txt -w "%{http_code}" -X POST \
-            "https://issuejupjup.com/telegram-webhook.php" \
-            -H "Content-Type: application/json" \
-            -H "X-Telegram-Bot-Api-Secret-Token: ${TELEGRAM_WEBHOOK_SECRET}" \
-            -d '{
-              "update_id": 1,
-              "callback_query": {
-                "id": "diagnostic-test-callback",
-                "data": "reject:DIAGNOSTIC_TEST_VIDEO_ID",
-                "message": {"message_id": 1, "chat": {"id": 0}, "text": "diagnostic test"}
-              }
-            }')
-          echo "HTTP status: $http_code"
-          echo "Response body:"
-          cat /tmp/resp.txt
-          echo
-          if [ "$http_code" != "200" ]; then
-            echo "웹훅이 200을 반환하지 않음"
-            exit 1
-          fi
+          pip install --quiet requests 2>/dev/null || true
+          python3 - <<'PYEOF'
+          import ftplib, os
 
-      - name: Also confirm request WITHOUT secret header is rejected (403)
-        run: |
-          http_code=$(curl -sS -o /tmp/resp2.txt -w "%{http_code}" -X POST \
-            "https://issuejupjup.com/telegram-webhook.php" \
-            -H "Content-Type: application/json" \
-            -d '{"update_id": 2, "callback_query": {"id": "x", "data": "reject:X", "message": {"message_id": 1, "chat": {"id": 0}}}}')
-          echo "HTTP status (no secret header, expect 403): $http_code"
-          cat /tmp/resp2.txt
-          echo
-          if [ "$http_code" != "403" ]; then
-            echo "시크릿 검증이 제대로 안 되고 있음 (보안 문제)"
-            exit 1
-          fi
+          host = os.environ["FTP_HOST"]
+          user = os.environ["FTP_USER"]
+          pw = os.environ["FTP_PASSWORD"]
+
+          ftp = ftplib.FTP()
+          ftp.connect(host, 21, timeout=15)
+          ftp.login(user, pw)
+          print("Logged in. PWD:", ftp.pwd())
+
+          def walk(path, depth=0, max_depth=3):
+              if depth > max_depth:
+                  return
+              try:
+                  items = []
+                  ftp.retrlines(f"LIST {path}", items.append)
+              except Exception as e:
+                  print("  " * depth + f"[error listing {path}: {e}]")
+                  return
+              for line in items:
+                  print("  " * depth + line)
+                  parts = line.split(maxsplit=8)
+                  if len(parts) < 9:
+                      continue
+                  name = parts[8]
+                  is_dir = line.startswith("d")
+                  if is_dir and name not in (".", ".."):
+                      walk(f"{path}/{name}".replace("//", "/"), depth + 1, max_depth)
+
+          walk(".", 0, 2)
+          ftp.quit()
+          PYEOF
