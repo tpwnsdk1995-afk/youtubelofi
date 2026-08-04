@@ -7,44 +7,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: List FTP directory tree to find the real webroot
-        env:
-          FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USER: ${{ secrets.FTP_USER }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      - name: Compare our PHP vs a known WordPress PHP file (plain HTTP)
         run: |
-          pip install --quiet requests 2>/dev/null || true
-          python3 - <<'PYEOF'
-          import ftplib, os
-
-          host = os.environ["FTP_HOST"]
-          user = os.environ["FTP_USER"]
-          pw = os.environ["FTP_PASSWORD"]
-
-          ftp = ftplib.FTP()
-          ftp.connect(host, 21, timeout=15)
-          ftp.login(user, pw)
-          print("Logged in. PWD:", ftp.pwd())
-
-          def walk(path, depth=0, max_depth=3):
-              if depth > max_depth:
-                  return
-              try:
-                  items = []
-                  ftp.retrlines(f"LIST {path}", items.append)
-              except Exception as e:
-                  print("  " * depth + f"[error listing {path}: {e}]")
-                  return
-              for line in items:
-                  print("  " * depth + line)
-                  parts = line.split(maxsplit=8)
-                  if len(parts) < 9:
-                      continue
-                  name = parts[8]
-                  is_dir = line.startswith("d")
-                  if is_dir and name not in (".", ".."):
-                      walk(f"{path}/{name}".replace("//", "/"), depth + 1, max_depth)
-
-          walk(".", 0, 2)
-          ftp.quit()
-          PYEOF
+          echo "--- our telegram-webhook.php (GET, no headers) ---"
+          curl -sS -m 10 -o - -w "\n[status=%{http_code}]\n" "http://issuejupjup.com/telegram-webhook.php"
+          echo
+          echo "--- wp-login.php (should be a normal WP page if PHP execution generally works) ---"
+          curl -sS -m 10 -o - -w "\n[status=%{http_code}]\n" "http://issuejupjup.com/wp-login.php" | head -c 500
+          echo
+          echo "--- a nonexistent .php file (expect a clean 404, to see what 'not found' looks like here) ---"
+          curl -sS -m 10 -o - -w "\n[status=%{http_code}]\n" "http://issuejupjup.com/this-file-does-not-exist-xyz.php"
