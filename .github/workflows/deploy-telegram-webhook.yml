@@ -1,0 +1,43 @@
+name: Deploy Telegram webhook to Cafe24
+
+# webhook/telegram-webhook.php의 ${PLACEHOLDER}를 실제 시크릿 값으로 채워넣은 뒤 카페24
+# 호스팅에 FTP로 업로드한다. 렌더링된 실제 파일(비밀값 포함)은 이 워크플로우 실행 중에만
+# 임시로 존재하고 절대 git에 커밋되지 않는다. webhook/telegram-webhook.php가 바뀔 때마다
+# (또는 수동으로) 다시 실행해서 재배포한다.
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - claude/youtube-lofi-playlist-automation-959lx5
+    paths:
+      - webhook/telegram-webhook.php
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Render webhook PHP with secrets
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+          DISPATCH_PAT: ${{ secrets.DISPATCH_PAT }}
+          GH_OWNER: tpwnsdk1995-afk
+          GH_REPO: youtubelofi
+          GH_REF: claude/youtube-lofi-playlist-automation-959lx5
+        run: |
+          mkdir -p deploy
+          envsubst '${TELEGRAM_BOT_TOKEN} ${TELEGRAM_WEBHOOK_SECRET} ${DISPATCH_PAT} ${GH_OWNER} ${GH_REPO} ${GH_REF}' \
+            < webhook/telegram-webhook.php > deploy/telegram-webhook.php
+
+      - name: Upload to Cafe24 via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          local-dir: ./deploy/
+          server-dir: ./
+          dangerous-clean-slate: false
