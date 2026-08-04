@@ -18,6 +18,15 @@ def call(bot_token, method, body=None):
         return json.loads(resp.read())
 
 
+def call_best_effort(bot_token, method, body=None):
+    """토스트 표시/버튼 제거 등 부수적인 호출. 콜백 쿼리 만료 등으로 실패해도
+    이미 확정된 승인/거부 판정 자체는 절대 막지 않아야 하므로 예외를 삼킨다."""
+    try:
+        call(bot_token, method, body)
+    except Exception as e:
+        print(f"WARNING: {method} 실패 (무시하고 계속 진행): {e}", file=sys.stderr)
+
+
 def main():
     parser = argparse.ArgumentParser(description="텔레그램 승인/거부 응답을 확인한다")
     parser.add_argument("--video-id", required=True)
@@ -50,23 +59,25 @@ def main():
             matched_query = cq
 
     if matched_query:
-        call(bot_token, "answerCallbackQuery", {
+        call_best_effort(bot_token, "answerCallbackQuery", {
             "callback_query_id": matched_query["id"],
             "text": "승인 처리됨" if decision == "approve" else "거부 처리됨",
         })
         message = matched_query.get("message", {})
         if message.get("message_id") is not None and message.get("chat", {}).get("id") is not None:
             label = "✅ 승인됨 (공개 전환)" if decision == "approve" else "❌ 거부됨 (비공개 유지)"
-            call(bot_token, "editMessageText", {
+            call_best_effort(bot_token, "editMessageText", {
                 "chat_id": message["chat"]["id"],
                 "message_id": message["message_id"],
                 "text": f"{message.get('text', '')}\n\n— {label}",
             })
 
-    # 가져온 업데이트는 전부 offset을 넘겨 소비 처리(다음 폴링에서 중복 조회 방지)
+    # 가져온 업데이트는 전부 offset을 넘겨 소비 처리(다음 폴링에서 중복 조회 방지).
+    # 이것도 실패하면 다음 폴링 때 같은 업데이트를 다시 보게 될 뿐 치명적이지 않으므로
+    # best-effort로 처리해 이미 확정된 decision 출력을 막지 않는다.
     if results:
         max_update_id = max(u["update_id"] for u in results)
-        call(bot_token, "getUpdates", {"offset": max_update_id + 1, "timeout": 0})
+        call_best_effort(bot_token, "getUpdates", {"offset": max_update_id + 1, "timeout": 0})
 
     print(decision)
 
