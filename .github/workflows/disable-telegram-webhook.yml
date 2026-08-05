@@ -1,0 +1,30 @@
+name: Disable Telegram webhook (revert to polling)
+
+# 카페24(issuejupjup.com)의 SSL이 깨져있어(TLS handshake 실패) 텔레그램이
+# 실시간 웹훅(webhook/telegram-webhook.php)으로 업데이트를 전달하지 못한다 —
+# getWebhookInfo의 last_error_message: "SSL error {error:0A000438:SSL
+# routines::tlsv1 alert internal error}"로 확인됨. 웹훅이 등록되어 있는 한
+# getUpdates 폴링은 영구히 빈 결과만 반환하므로(웹훅/폴링은 상호 배타적),
+# deleteWebhook으로 등록을 해제해서 check-telegram-response.yml 폴링이 다시
+# 동작하게 만든다. 카페24 SSL이 고쳐지면 set-telegram-webhook.yml을 다시
+# 실행해서 웹훅 방식으로 되돌릴 수 있다.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  disable:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Telegram deleteWebhook
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          response=$(curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/deleteWebhook")
+          echo "$response"
+          echo "$response" | grep -q '"ok":true' || (echo "deleteWebhook 실패" && exit 1)
+
+      - name: Verify webhook info (should show empty url)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          curl -sS "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo"
