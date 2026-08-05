@@ -2,100 +2,97 @@
   "pools": {
     "music_track": {
       "remaining": [
-        "Midnight Library_7.mp3",
-        "Afternoon Rain_1.mp3",
-        "Midnight Library_6.mp3"
+        "Late Night Rain.mp3",
+        "Midnight Study_4.mp3",
+        "Midnight Library_23.mp3",
+        "Midnight Library_22.mp3",
+        "Quiet Study Ambience_1.mp3",
+        "Late Night Study_2.mp3",
+        "Rain on the Window_1.mp3",
+        "Midnight Study_5.mp3",
+        "Late Night Rain_5.mp3",
+        "Quiet Morning Light_10.mp3",
+        "Midnight Library_9.mp3",
+        "Midnight Library_1.mp3",
+        "Midnight Study Session_6.mp3",
+        "Late Night Study_6.mp3",
+        "Midnight Library_14.mp3",
+        "Midnight Library_11.mp3",
+        "Midnight Library_31.mp3",
+        "Midnight Library_2.mp3",
+        "Midnight Study.mp3",
+        "Midnight Study Session_3.mp3",
+        "Late Night Rain_6.mp3",
+        "Late Night Study_9.mp3",
+        "Midnight Library_17.mp3",
+        "Late Night Study_5.mp3",
+        "Midnight Library_3.mp3",
+        "Late Night Study_4.mp3",
+        "Midnight Library_18.mp3",
+        "Quiet Morning Light_2.mp3",
+        "Quiet Morning Light_4.mp3",
+        "Midnight Study_2.mp3",
+        "Quiet Study Ambience.mp3",
+        "Quiet Morning Light_8.mp3",
+        "Midnight Study_6.mp3",
+        "Midnight Library_15.mp3",
+        "Quiet Morning Light_11.mp3",
+        "Midnight Study_9.mp3",
+        "Midnight Library_16.mp3",
+        "Midnight Library_21.mp3",
+        "Midnight Library_10.mp3",
+        "Rainy Night Jazz_1.mp3",
+        "Quiet Morning Light_9.mp3",
+        "Midnight Study Session_4.mp3"
       ],
       "history": [
-        "Afternoon Rain.mp3",
-        "Quiet Morning Light_1.mp3",
-        "Midnight Library_18.mp3",
-        "Rain on the Window_1.mp3",
-        "Midnight Library_4.mp3",
-        "Midnight Library_12.mp3",
-        "Late Night Rain_2.mp3",
-        "Midnight Library_24.mp3",
-        "Midnight Study_11.mp3",
-        "Midnight Study Loop_1.mp3",
-        "Midnight Library_9.mp3",
-        "Quiet Morning Light_7.mp3",
-        "Midnight Study Session_1.mp3",
-        "Midnight Study_3.mp3",
-        "Midnight Library_28.mp3",
-        "Midnight Study_1.mp3",
-        "Late Night Study_6.mp3",
-        "Quiet Study Ambience.mp3",
-        "Midnight Library_10.mp3",
-        "Late Night Rain_6.mp3",
-        "Midnight Library_23.mp3",
-        "Midnight Library_19.mp3",
-        "Midnight Library_11.mp3",
-        "Late Night Rain_1.mp3",
-        "Late Night Study_5.mp3",
-        "Midnight Library_16.mp3",
-        "Midnight Study_8.mp3",
-        "Midnight Library_29.mp3",
-        "Midnight Study Session.mp3",
-        "Quiet Morning Light_4.mp3",
-        "Midnight Library_20.mp3",
-        "Midnight Library_2.mp3",
-        "Rainy Night Jazz_1.mp3",
-        "Midnight Study Session_2.mp3",
-        "Midnight Study_6.mp3",
-        "Midnight Library_27.mp3",
-        "Midnight Study Session_5.mp3",
-        "Midnight Library_15.mp3",
-        "Midnight Library_31.mp3",
-        "Midnight Library_5.mp3",
         "Quiet Morning Light_3.mp3",
-        "Quiet Morning Light_11.mp3",
-        "Quiet Morning Light.mp3",
-        "Midnight Study_2.mp3",
-        "Midnight Library_30.mp3",
-        "Midnight Library_3.mp3",
-        "Midnight Library_26.mp3",
-        "Late Night Rain.mp3",
-        "Quiet Morning Light_6.mp3",
-        "Quiet Morning Light_5.mp3",
-        "Late Night Study_1.mp3",
-        "Late Night Study_7.mp3",
-        "Midnight Library_17.mp3",
-        "Quiet Morning Light_8.mp3",
-        "Quiet Morning Light_10.mp3",
-        "Midnight Study_7.mp3",
-        "Midnight Study Session_7.mp3",
-        "Late Night Rain_7.mp3",
-        "Rainy Night Jazz.mp3",
-        "Late Night Rain_3.mp3",
-        "Midnight Study Session_6.mp3",
-        "Late Night Study.mp3",
-        "Midnight Library_25.mp3",
-        "Midnight Study_9.mp3",
-        "Late Night Study_9.mp3",
-        "Quiet Study Ambience_1.mp3",
-        "Late Night Study_4.mp3",
-        "Midnight Library_14.mp3",
-        "Midnight Library_1.mp3",
-        "Midnight Study_4.mp3",
-        "Midnight Library.mp3",
-        "Midnight Study.mp3",
-        "Midnight Library_8.mp3",
-        "Midnight Library_21.mp3",
-        "Late Night Rain_5.mp3",
-        "Midnight Library_13.mp3",
-        "Late Night Study_8.mp3",
-        "Midnight Library_22.mp3",
-        "Midnight Study Session_4.mp3",
         "Late Night Rain_4.mp3",
-        "Quiet Morning Light_9.mp3",
-        "Quiet Morning Light_2.mp3",
+        "Midnight Study Session.mp3",
+        "Midnight Library_29.mp3",
+        "Quiet Morning Light_7.mp3",
+        "Midnight Library_25.mp3",
         "Midnight Study_10.mp3",
-        "Midnight Study_5.mp3",
-        "Rain on the Window.mp3",
-        "Midnight Study Session_3.mp3",
+        "Midnight Library_24.mp3",
+        "Late Night Rain_2.mp3",
+        "Midnight Library_20.mp3",
+        "Midnight Study Session_1.mp3",
+        "Late Night Rain_3.mp3",
+        "Midnight Library_28.mp3",
+        "Midnight Library.mp3",
+        "Midnight Library_19.mp3",
+        "Midnight Study_8.mp3",
+        "Midnight Study Session_5.mp3",
+        "Midnight Study Session_7.mp3",
+        "Midnight Library_12.mp3",
+        "Late Night Study_7.mp3",
+        "Midnight Study_7.mp3",
+        "Late Night Rain_7.mp3",
+        "Midnight Study Loop_1.mp3",
+        "Late Night Study_8.mp3",
+        "Midnight Library_27.mp3",
+        "Quiet Morning Light.mp3",
+        "Quiet Morning Light_5.mp3",
+        "Midnight Library_26.mp3",
+        "Late Night Rain_1.mp3",
+        "Midnight Study Loop.mp3",
+        "Midnight Library_13.mp3",
+        "Afternoon Rain.mp3",
+        "Midnight Study_11.mp3",
+        "Midnight Library_4.mp3",
+        "Midnight Library_5.mp3",
+        "Quiet Morning Light_1.mp3",
+        "Midnight Study_3.mp3",
+        "Quiet Morning Light_6.mp3",
         "Late Night Study_3.mp3",
-        "Late Night Study_2.mp3",
-        "Midnight Study Loop.mp3"
+        "Midnight Library_8.mp3",
+        "Late Night Study_1.mp3",
+        "Rainy Night Jazz.mp3",
+        "Midnight Study_1.mp3",
+        "Late Night Study.mp3",
+        "Midnight Library_30.mp3",
+        "Rain on the Window.mp3",
+        "Midnight Study Session_2.mp3"
       ]
     },
     "scene": {
@@ -104,13 +101,13 @@
         "morning_balcony_desk",
         "desk_anatomy_notes",
         "train_window_study",
-        "whiteboard_study",
-        "cubicle_desk"
+        "whiteboard_study"
       ],
       "history": [
         "library_reading_room",
         "cafe_corner_desk",
-        "night_desk_lamp"
+        "night_desk_lamp",
+        "cubicle_desk"
       ]
     },
     "hook_phrase": {
@@ -121,8 +118,7 @@
         "방학에 몰래 공부하기",
         "초집중 공부 모드",
         "이거 틀면 진짜 집중됨",
-        "국룰 공부 로파이",
-        "2시간 몰입 챌린지"
+        "국룰 공부 로파이"
       ],
       "history": [
         "잠 깨는 로파이 자극",
@@ -136,13 +132,13 @@
         "졸릴 때 듣는 각성 로파이",
         "노트북 앞에서 듣는",
         "딴짓 방지 로파이",
-        "무한 반복 스터디 브금"
+        "무한 반복 스터디 브금",
+        "2시간 몰입 챌린지"
       ]
     },
     "tagline": {
       "remaining": [
-        "집중할 때 흐르는 잔잔한 음악 플레이리스트",
-        "ADHD도 공부하게 만드는 음악들"
+        "집중할 때 흐르는 잔잔한 음악 플레이리스트"
       ],
       "history": [
         "책상 앞을 떠나지 않게 만드는 배경음악",
@@ -156,7 +152,8 @@
         "노곤한 오후를 깨워주는 로파이",
         "2시간 동안 끊기지 않는 몰입 사운드",
         "딴생각 사라지는 로파이 플레이리스트",
-        "귀에 착 붙는 잔잔한 무드"
+        "귀에 착 붙는 잔잔한 무드",
+        "ADHD도 공부하게 만드는 음악들"
       ]
     },
     "title_emoji": {
@@ -165,67 +162,63 @@
         "🎧",
         "🌙",
         "⚡",
-        "📝",
-        "📚"
+        "📝"
       ],
       "history": [
         "💡",
         "☕",
-        "✍️"
+        "✍️",
+        "📚"
       ]
     },
     "description_blurb": {
-      "remaining": [],
-      "history": [
-        "새벽까지 이어지는 잔잔한 로파이 믹스입니다.",
-        "집중이 필요한 순간을 위한 논스톱 배경음악이에요.",
+      "remaining": [
+        "공부, 작업, 독서 어디에나 어울리는 잔잔한 로파이입니다.",
         "책상 앞에 오래 앉아있을 때 틀어두기 좋은 믹스입니다.",
-        "공부, 작업, 독서 어디에나 어울리는 잔잔한 로파이입니다."
+        "새벽까지 이어지는 잔잔한 로파이 믹스입니다."
+      ],
+      "history": [
+        "집중이 필요한 순간을 위한 논스톱 배경음악이에요."
       ]
     },
     "tag": {
       "remaining": [
-        "lofimusic",
-        "공부할때듣기좋은음악",
-        "합격",
-        "noamusic",
-        "카공"
+        "공부플레이리스트",
+        "집중음악",
+        "studymotivation",
+        "focusmusic",
+        "공부플리"
       ],
       "history": [
-        "study",
-        "studymotivation",
-        "lofi",
-        "focus",
-        "집중음악",
-        "공부플레이리스트",
-        "lofijazz",
         "시험",
-        "studywithme",
-        "공부플리",
+        "lofijazz",
+        "study",
+        "lofi",
         "공부음악",
         "playlist",
+        "focus",
+        "studywithme",
         "공부할때듣는음악",
-        "집중력",
-        "focusmusic"
+        "집중력"
       ]
     },
     "image_lighting": {
-      "remaining": [],
-      "history": [
-        "soft string lights glowing in the background",
-        "pale moonlight coming through the window",
-        "flickering candlelight glow",
+      "remaining": [
+        "soft golden hour light",
         "overcast diffused daylight through the window",
-        "warm lamp-only lighting, rest of the room dim",
+        "soft string lights glowing in the background",
         "cool blue evening light",
-        "soft golden hour light"
+        "warm lamp-only lighting, rest of the room dim",
+        "flickering candlelight glow"
+      ],
+      "history": [
+        "pale moonlight coming through the window"
       ]
     },
     "image_detail": {
       "remaining": [
         "a half-finished cup of tea with steam rising",
-        "a small potted succulent on the desk",
-        "scattered colorful sticky notes"
+        "a small potted succulent on the desk"
       ],
       "history": [
         "a pair of wired earphones coiled on the desk",
@@ -234,7 +227,8 @@
         "a stack of index cards tied with a rubber band",
         "a few highlighters and pens in a cup",
         "a phone lying face-down next to the keyboard",
-        "a pair of glasses resting on an open notebook"
+        "a pair of glasses resting on an open notebook",
+        "scattered colorful sticky notes"
       ]
     }
   },
@@ -305,6 +299,12 @@
       "title": "Playlist (가사X) 무한 반복 스터디 브금 ✍️ 귀에 착 붙는 잔잔한 무드",
       "scene_id": "night_desk_lamp",
       "description": "#공부플리 #lofimusic #lofijazz\n\n공부, 작업, 독서 어디에나 어울리는 잔잔한 로파이입니다.\n\nTracklist🎧\n0:00 Slowhaze\n2:59 Slowvale\n6:04 Mistybloom\n8:48 Quiethaze\n11:07 Subfloe\n14:07 Mistyecho\n17:33 Deepwave\n21:44 Emberthos\n24:39 Mistyfield\n27:18 Mellglow\n30:25 Velbloom\n34:11 Subthrum\n38:26 Cottonmere\n41:40 Rainlight\n44:06 Velmere\n47:22 Lowrest\n50:12 Rainthos\n53:45 Moonfield\n58:53 Nightlight\n1:02:02 Ashure\n1:05:38 Deepshade\n1:08:22 Mutedcurrent\n1:10:59 Emberfloe\n1:14:15 Ashthrum\n1:17:10 Deepfloe\n1:19:31 Rainfloe\n1:22:10 Softvale\n1:24:31 Ashgleam\n1:27:46 Faintveil\n1:30:58 Amberrest\n1:34:10 Embergleam\n1:36:11 Murmurglow\n1:40:02 Hushtone\n1:42:09 Veldrift\n1:45:42 Warmecho\n1:50:07 Ashbloom\n1:53:58 Melldrift\n1:55:38 Fadingecho\n1:59:33 Subveil\n2:02:25 Rainveil\n2:05:57 Duskshade\n2:08:46 Mistygleam\n2:10:40 Faintform\n2:15:53 Gentlehaze\n2:18:31 Moonrest\n2:21:02 Nighthaze\n2:23:07 Tenderlight\n2:25:50 Fadingwave\n2:27:51 Basslight\n\n📌 모든 수록곡은 AI 지원으로 작곡되었습니다.\n💬 마음에 드는 트랙이 있다면 댓글로 알려주세요.\n반응이 좋으면 정식 음원으로 발매될 수도 있어요 :)\n👍 좋아요와 구독은 다음 영상을 만드는 큰 힘이 됩니다.\n\n🎧 noa music presents\nMusic arranged with AI-assisted composition. Cover art generated with AI.\n© Copyright noa music. All rights reserved.\n\n#새벽공부 #집중할때듣는음악 #작업할때듣는음악 #시험기간 #nightstudy #study #studymotivation #lofi #focus #집중음악 #공부플레이리스트 #lofijazz #시험 #studywithme #공부플리 #공부음악 #playlist #공부할때듣는음악 #집중력 #focusmusic"
+    },
+    {
+      "video_id": "nnBZgOyi-Zk",
+      "title": "Playlist (가사X) 2시간 몰입 챌린지 📚 ADHD도 공부하게 만드는 음악들",
+      "scene_id": "cubicle_desk",
+      "description": "#공부플리 #lofimusic #lofijazz\n\n집중이 필요한 순간을 위한 논스톱 배경음악이에요.\n\nTracklist🎧\n0:00 Deepwave\n4:11 Rainglow\n7:32 Softsway\n10:36 Mutedloom\n13:50 Emberthos\n16:45 Rainlet\n19:39 Hushtone\n21:46 Veldrift\n25:19 Ashure\n28:55 Velbloom\n32:41 Faintform\n37:54 Mistyecho\n41:20 Nighthaze\n43:25 Softell\n45:51 Rainlight\n48:16 Deeptone\n51:03 Mutedshade\n53:19 Dimshade\n55:55 Tendermurmur\n59:12 Fadingthos\n1:02:25 Slowshade\n1:06:46 Ashgleam\n1:10:01 Gentlelight\n1:13:23 Rainthos\n1:16:55 Mutedcurrent\n1:19:33 Sublet\n1:23:53 Mistythos\n1:27:23 Embergleam\n1:29:25 Subfloe\n1:32:24 Subloom\n1:35:55 Basslight\n1:37:49 Deepfloe\n1:40:10 Mellglow\n1:43:17 Tenderthrum\n1:45:39 Deepecho\n1:48:48 Tenderlight\n1:51:31 Palefold\n1:55:17 Rainveil\n1:58:48 Dusklight\n2:00:44 Tendercurrent\n2:04:13 Duskshade\n2:07:02 Dimgleam\n2:10:33 Quietell\n2:13:04 Slowvale\n2:16:09 Calmvale\n2:18:28 Mistygleam\n2:20:22 Mistybloom\n2:23:06 Amberhollow\n2:25:59 Velune\n2:29:08 Faintfloe\n\n📌 모든 수록곡은 AI 지원으로 작곡되었습니다.\n💬 마음에 드는 트랙이 있다면 댓글로 알려주세요.\n반응이 좋으면 정식 음원으로 발매될 수도 있어요 :)\n👍 좋아요와 구독은 다음 영상을 만드는 큰 힘이 됩니다.\n\n🎧 noa music presents\nMusic arranged with AI-assisted composition. Cover art generated with AI.\n© Copyright noa music. All rights reserved.\n\n#새벽공부 #시험기간 #nightstudy #작업할때듣는음악 #집중할때듣는음악 #카공 #noamusic #합격 #공부할때듣기좋은음악 #lofimusic #시험 #lofijazz #study #lofi #공부음악 #playlist #focus #studywithme #공부할때듣는음악 #집중력"
     }
   ],
   "track_names": {
