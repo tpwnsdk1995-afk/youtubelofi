@@ -1,0 +1,234 @@
+name: Setup n8n Telegram webhook
+
+# 카페24 SSL 문제를 우회하기 위해, 텔레그램 웹훅을 카페24 PHP 대신 사용자가 이미
+# 운영 중인 n8n 인스턴스(n8n.issuejupjup.com, 다른 프로젝트에서 이미 유효한 HTTPS로
+# 검증됨)에 새 워크플로우로 등록한다. 기존 n8n 워크플로우는 절대 건드리지 않고
+# 완전히 새 워크플로우 하나만 생성한다.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: List existing n8n workflows (read-only safety check)
+        env:
+          N8N_API_KEY: ${{ secrets.N8N_API_KEY }}
+          N8N_BASE_URL: ${{ secrets.N8N_BASE_URL }}
+        run: |
+          curl -sS -H "X-N8N-API-KEY: $N8N_API_KEY" "$N8N_BASE_URL/api/v1/workflows?limit=50" -o existing_workflows.json
+          echo "--- existing workflows (read-only, none will be modified) ---"
+          python3 -c "import json; data = json.load(open('existing_workflows.json')); [print(wf.get('id'), '-', wf.get('name'), '- active:', wf.get('active')) for wf in data.get('data', [])]"
+
+      - name: Create + activate new n8n workflow
+        id: create
+        env:
+          N8N_API_KEY: ${{ secrets.N8N_API_KEY }}
+          N8N_BASE_URL: ${{ secrets.N8N_BASE_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+          DISPATCH_PAT: ${{ secrets.DISPATCH_PAT }}
+        run: |
+          sed -E 's/^ {10}//' << 'PYEOF' > setup_n8n.py
+          import json, os, urllib.request, urllib.error, uuid
+
+          n8n_base = os.environ['N8N_BASE_URL'].rstrip('/')
+          n8n_key = os.environ['N8N_API_KEY']
+          bot_token = os.environ['TELEGRAM_BOT_TOKEN']
+          webhook_secret = os.environ['TELEGRAM_WEBHOOK_SECRET']
+          dispatch_pat = os.environ['DISPATCH_PAT']
+
+          js_code = """
+          const secretHeader = (($input.first().json.headers) || {})['x-telegram-bot-api-secret-token'];
+          const EXPECTED_SECRET = __WEBHOOK_SECRET__;
+          if (secretHeader !== EXPECTED_SECRET) {
+            return [{ json: { status: 'forbidden' } }];
+          }
+
+          const body = $input.first().json.body || {};
+          const cq = body.callback_query;
+          if (!cq) {
+            return [{ json: { status: 'ignored' } }];
+          }
+
+          const m = /^(approve|reject):(.+)$/.exec(cq.data || '');
+          if (!m) {
+            return [{ json: { status: 'unrecognized' } }];
+          }
+          const decision = m[1];
+          const videoId = m[2];
+
+          const BOT_TOKEN = __BOT_TOKEN__;
+          const label = decision === 'approve' ? '\\u2705 \\uc2b9\\uc778\\ub428 (\\uacf5\\uac1c \\uc804\\ud658)' : '\\u274c \\uac70\\ubd80\\ub428 (\\uc601\\uc0c1 \\uc0ad\\uc81c\\ub428)';
+
+          try {
+            await this.helpers.httpRequest({
+              method: 'POST',
+              url: `https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`,
+              body: { callback_query_id: cq.id, text: decision === 'approve' ? '\\uc2b9\\uc778 \\ucc98\\ub9ac\\ub428' : '\\uac70\\ubd80 \\ucc98\\ub9ac\\ub428 (\\uc601\\uc0c1 \\uc0ad\\uc81c)' },
+              json: true,
+            });
+          } catch (e) {}
+
+          try {
+            const msg = cq.message;
+            if (msg && msg.message_id && msg.chat && msg.chat.id) {
+              await this.helpers.httpRequest({
+                method: 'POST',
+                url: `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`,
+                body: {
+                  chat_id: msg.chat.id,
+                  message_id: msg.message_id,
+                  text: (msg.text || '') + `\\n\\n\\u2014 ${label}`,
+                },
+                json: true,
+              });
+            }
+          } catch (e) {}
+
+          const DISPATCH_PAT = __DISPATCH_PAT__;
+          const ghResp = await this.helpers.httpRequest({
+            method: 'POST',
+            url: 'https://api.github.com/repos/tpwnsdk1995-afk/youtubelofi/actions/workflows/handle-telegram-decision.yml/dispatches',
+            headers: {
+              'Authorization': `Bearer ${DISPATCH_PAT}`,
+              'Accept': 'application/vnd.github+json',
+              'X-GitHub-Api-Version': '2022-11-28',
+              'User-Agent': 'n8n-noamusic-telegram-webhook',
+            },
+            body: {
+              ref: 'claude/youtube-lofi-playlist-automation-959lx5',
+              inputs: { video_id: videoId, decision: decision },
+            },
+            json: true,
+          });
+
+          return [{ json: { status: 'ok', decision, videoId } }];
+          """
+          js_code = js_code.replace('__WEBHOOK_SECRET__', json.dumps(webhook_secret))
+          js_code = js_code.replace('__BOT_TOKEN__', json.dumps(bot_token))
+          js_code = js_code.replace('__DISPATCH_PAT__', json.dumps(dispatch_pat))
+
+          webhook_node_id = str(uuid.uuid4())
+          code_node_id = str(uuid.uuid4())
+
+          workflow_def = {
+              "name": "noamusic-telegram-webhook",
+              "nodes": [
+                  {
+                      "parameters": {
+                          "httpMethod": "POST",
+                          "path": "noamusic-telegram",
+                          "responseMode": "lastNode",
+                          "options": {}
+                      },
+                      "id": webhook_node_id,
+                      "name": "Telegram Webhook",
+                      "type": "n8n-nodes-base.webhook",
+                      "typeVersion": 2,
+                      "position": [250, 300],
+                      "webhookId": webhook_node_id
+                  },
+                  {
+                      "parameters": {
+                          "mode": "runOnceForAllItems",
+                          "jsCode": js_code
+                      },
+                      "id": code_node_id,
+                      "name": "Handle decision",
+                      "type": "n8n-nodes-base.code",
+                      "typeVersion": 2,
+                      "position": [500, 300]
+                  }
+              ],
+              "connections": {
+                  "Telegram Webhook": {
+                      "main": [
+                          [
+                              {"node": "Handle decision", "type": "main", "index": 0}
+                          ]
+                      ]
+                  }
+              },
+              "settings": {}
+          }
+
+          def call(url, data=None, method='GET'):
+              req = urllib.request.Request(
+                  url,
+                  data=json.dumps(data).encode() if data is not None else None,
+                  headers={"X-N8N-API-KEY": n8n_key, "Content-Type": "application/json"},
+                  method=method,
+              )
+              try:
+                  with urllib.request.urlopen(req, timeout=20) as resp:
+                      return json.loads(resp.read())
+              except urllib.error.HTTPError as e:
+                  print(f"{method} {url} FAILED: {e.code} {e.read().decode()}")
+                  raise
+
+          result = call(f"{n8n_base}/api/v1/workflows", data=workflow_def, method='POST')
+          wf_id = result["id"]
+          print("CREATED_WORKFLOW_ID=" + str(wf_id))
+          with open("wf_id.txt", "w") as f:
+              f.write(str(wf_id))
+
+          try:
+              call(f"{n8n_base}/api/v1/workflows/{wf_id}/activate", method='POST')
+              print("ACTIVATED via /activate endpoint")
+          except Exception as e:
+              print("activate endpoint failed, trying PATCH active:true ->", e)
+              call(f"{n8n_base}/api/v1/workflows/{wf_id}", data={"active": True}, method='PATCH')
+              print("ACTIVATED via PATCH")
+          PYEOF
+          python3 setup_n8n.py
+          echo "wf_id=$(cat wf_id.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Register Telegram webhook to new n8n URL
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+          N8N_BASE_URL: ${{ secrets.N8N_BASE_URL }}
+        run: |
+          WEBHOOK_URL="${N8N_BASE_URL}/webhook/noamusic-telegram"
+          echo "Registering webhook: $WEBHOOK_URL"
+          response=$(curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook" \
+            -H "Content-Type: application/json" \
+            -d "{\"url\": \"${WEBHOOK_URL}\", \"secret_token\": \"${TELEGRAM_WEBHOOK_SECRET}\"}")
+          echo "$response"
+          echo "$response" | grep -q '"ok":true' || (echo "setWebhook 실패" && exit 1)
+
+      - name: Verify webhook info
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          curl -sS "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo"
+
+      - name: Send signed test callback_query to n8n webhook
+        run: |
+          WEBHOOK_URL="${{ secrets.N8N_BASE_URL }}/webhook/noamusic-telegram"
+          http_code=$(curl -sS -o /tmp/resp.txt -w "%{http_code}" --max-time 30 -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -H "X-Telegram-Bot-Api-Secret-Token: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}" \
+            -d '{
+              "update_id": 1,
+              "callback_query": {
+                "id": "diagnostic-test-callback",
+                "data": "reject:DIAGNOSTIC_TEST_VIDEO_ID",
+                "message": {"message_id": 1, "chat": {"id": 0}, "text": "diagnostic test"}
+              }
+            }')
+          echo "HTTP status: $http_code"
+          echo "Response body:"
+          cat /tmp/resp.txt
+          echo
+
+      - name: Check n8n execution log for the test run
+        env:
+          N8N_API_KEY: ${{ secrets.N8N_API_KEY }}
+          N8N_BASE_URL: ${{ secrets.N8N_BASE_URL }}
+        run: |
+          sleep 3
+          curl -sS -H "X-N8N-API-KEY: $N8N_API_KEY" \
+            "${N8N_BASE_URL}/api/v1/executions?workflowId=${{ steps.create.outputs.wf_id }}&limit=3&includeData=true" | python3 -m json.tool | head -150
