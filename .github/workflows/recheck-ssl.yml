@@ -1,0 +1,20 @@
+name: Recheck issuejupjup.com SSL
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  recheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: curl -v https://issuejupjup.com/
+        run: |
+          curl -v --max-time 15 https://issuejupjup.com/ 2>&1 | tail -60 || true
+
+      - name: curl -v https://issuejupjup.com/telegram-webhook.php
+        run: |
+          curl -v --max-time 15 https://issuejupjup.com/telegram-webhook.php 2>&1 | tail -60 || true
+
+      - name: openssl s_client handshake test
+        run: |
+          echo | timeout 15 openssl s_client -connect issuejupjup.com:443 -servername issuejupjup.com 2>&1 | head -40 || true
