@@ -51,7 +51,7 @@ def main():
         f"오늘 영상 확인해주세요\n\n"
         f"제목: {args.title}\n"
         f"비공개 링크: https://youtu.be/{args.video_id}\n\n"
-        f"응답 없으면 19:03 KST에 자동으로 공개됩니다."
+        f"응답 없으면 19:14 KST에 자동으로 공개됩니다."
     )
     send_message(bot_token, chat_id, text, args.video_id)
     print(f"텔레그램 확인 요청 전송 완료: {args.video_id}")
