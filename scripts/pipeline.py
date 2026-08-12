@@ -31,12 +31,13 @@ def load_yaml(path):
 
 def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes.yml",
                   templates_path="config/title_templates.yml", track_names_path="config/track_name_parts.yml",
-                  work_dir=None, dry_run=False):
+                  work_dir=None, dry_run=False, concept_override=None):
     settings = load_yaml(settings_path)
 
     # 조선 리브랜딩 전환 스위치: settings.yml의 concept가 joseon이면 조선 컨셉 설정으로
     # 교체된다 (씬/문구/썸네일/무드 로테이션). legacy면 기존 동작 그대로.
-    concept = settings.get("concept", "legacy")
+    # concept_override는 스위치를 켜기 전 리허설(dry-run)용 일회성 오버라이드.
+    concept = concept_override or settings.get("concept", "legacy")
     if concept == "joseon":
         scenes_path = "config/scenes_joseon.yml"
         templates_path = "config/title_templates_joseon.yml"
@@ -81,6 +82,11 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
         # 음원 폴더, 씬 후보, 문구 풀이 전부 무드를 따라간다.
         genre = None
         if concept == "joseon":
+            # 무드별 라이브러리 현황을 항상 로그에 남긴다 (곡 부족을 빨리 알아차리도록)
+            for g in templates["genres"]:
+                gdir = Path(library_dir) / g
+                count = len(list(gdir.glob("*.mp3"))) if gdir.is_dir() else 0
+                print(f"  라이브러리 [{g}]: {count}곡")
             genre = generate_metadata.draw_genre(state, templates)
             print(f"오늘의 무드: {genre}")
             music_dir = Path(library_dir) / genre
@@ -152,6 +158,10 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
         if dry_run:
             print("dry-run 모드: 실제 업로드는 건너뜁니다.")
             result = {"video_id": None, "title": metadata["title"], "scene_id": scene["id"], "description": metadata["description"]}
+            if thumbnail_path is not None:
+                # 리허설에서 사용자가 결과물을 눈으로 확인할 수 있게 워킹 디렉토리 밖에 복사
+                shutil.copy(thumbnail_path, "thumbnail_preview.jpg")
+                print("  썸네일 미리보기 저장: thumbnail_preview.jpg")
         else:
             response = upload_youtube.upload_video(video_path, metadata, youtube_credentials)
             result = {"video_id": response["id"], "title": metadata["title"], "scene_id": scene["id"], "description": metadata["description"]}
@@ -198,13 +208,15 @@ def main():
     parser.add_argument("--track-names-config", default="config/track_name_parts.yml")
     parser.add_argument("--work-dir")
     parser.add_argument("--dry-run", action="store_true", help="실제 업로드 없이 파이프라인만 검증")
+    parser.add_argument("--concept", choices=["legacy", "joseon"], default=None,
+                        help="settings.yml의 concept를 일회성으로 오버라이드 (리허설용)")
     parser.add_argument("--result-output", help="결과 JSON을 저장할 파일 경로 (워크플로우에서 확인 이슈 생성에 사용)")
     args = parser.parse_args()
 
     try:
         result = run_pipeline(
             args.settings_config, args.scenes_config, args.templates_config, args.track_names_config,
-            work_dir=args.work_dir, dry_run=args.dry_run,
+            work_dir=args.work_dir, dry_run=args.dry_run, concept_override=args.concept,
         )
     except (assemble_music.LibraryTooSmallError, RuntimeError) as e:
         print(f"ERROR: {e}", file=sys.stderr)

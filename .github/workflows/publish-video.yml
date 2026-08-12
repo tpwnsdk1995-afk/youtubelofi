@@ -11,6 +11,10 @@ on:
         description: "true면 실제 업로드 없이 파이프라인만 검증"
         type: boolean
         default: false
+      concept:
+        description: "settings.yml의 concept 일회성 오버라이드 (리허설용, 비우면 설정값 사용)"
+        type: string
+        default: ""
 
 concurrency:
   group: publish-video
@@ -54,6 +58,9 @@ jobs:
           if [ "${{ inputs.dry_run }}" = "true" ]; then
             ARGS="--dry-run"
           fi
+          if [ -n "${{ inputs.concept }}" ]; then
+            ARGS="$ARGS --concept ${{ inputs.concept }}"
+          fi
           python3 scripts/pipeline.py $ARGS --result-output result.json
 
       - name: Commit updated rotation state
@@ -65,6 +72,19 @@ jobs:
           git commit -m "Update rotation state after publish run" || echo "no state changes to commit"
           git pull --rebase origin ${{ github.ref_name }}
           git push origin HEAD:${{ github.ref_name }}
+
+      - name: Send dry-run thumbnail preview to Telegram (리허설 확인용)
+        if: success() && inputs.dry_run == true
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -f thumbnail_preview.jpg ]; then
+            title=$(python3 -c "import json; print(json.load(open('result.json'))['title'])")
+            curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto"               -F "chat_id=${TELEGRAM_CHAT_ID}"               -F "photo=@thumbnail_preview.jpg"               -F "caption=[리허설 dry-run] 실제 파이프라인이 만든 썸네일입니다. 제목: $title"
+          else
+            echo "썸네일 미리보기 없음 (legacy 컨셉이거나 생성 실패)"
+          fi
 
       - name: Open confirmation issue (non-dry-run success)
         if: success() && inputs.dry_run != true
