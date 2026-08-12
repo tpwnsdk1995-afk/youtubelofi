@@ -102,7 +102,8 @@ def update_video(video_id, credentials, title=None, description=None, tags=None,
 
 def set_thumbnail(video_id, image_path, credentials, youtube_client=None):
     youtube = youtube_client or build("youtube", "v3", credentials=credentials)
-    media = MediaFileUpload(image_path, mimetype="image/png")
+    mimetype = "image/jpeg" if str(image_path).lower().endswith((".jpg", ".jpeg")) else "image/png"
+    media = MediaFileUpload(str(image_path), mimetype=mimetype)
     return youtube.thumbnails().set(videoId=video_id, media_body=media).execute()
 
 

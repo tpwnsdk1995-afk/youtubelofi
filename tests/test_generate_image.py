@@ -54,7 +54,7 @@ class TestGenerateImage(unittest.TestCase):
         self.assertIn("base scene", prompt)
         self.assertIn("warm light", prompt)
         self.assertIn("a mug", prompt)
-        self.assertIn(gi.PHOTOREALISM_SUFFIX, prompt)
+        self.assertIn(gi.PHOTOREALISM_SUFFIX, prompt)  # 그림체 공통 문구가 항상 덧붙는다
 
     def test_build_full_prompt_skips_none_extra_details(self):
         prompt = gi.build_full_prompt("base scene", "16:9", extra_details=[None, "a mug"])

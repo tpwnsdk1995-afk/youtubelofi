@@ -56,11 +56,12 @@ class TestPipeline(unittest.TestCase):
             scenes_config = {"scenes": [{"id": "test_scene", "prompt": "a test scene"}]}
             templates = {
                 "title_prefix": "Playlist (가사X)",
-                "hook_phrases": ["test hook"],
+                "situations": [{"id": "s1", "title": "test hook", "thumb": "테스트"}],
                 "taglines": ["test tagline"],
                 "title_emojis": ["🎧"],
                 "description_blurbs": ["A test description."],
                 "channel_name": "noa music",
+                "stamp_text": "노아",
                 "description_footer": "footer",
                 "top_hashtags": ["#test1", "#test2"],
                 "tag_pool": ["tag1", "tag2", "tag3"],
@@ -117,11 +118,12 @@ class TestPipeline(unittest.TestCase):
         scenes_config = {"scenes": [{"id": "test_scene", "prompt": "a test scene"}]}
         templates = {
             "title_prefix": "Playlist (가사X)",
-            "hook_phrases": ["test hook"],
+            "situations": [{"id": "s1", "title": "test hook", "thumb": "테스트"}],
             "taglines": ["test tagline"],
             "title_emojis": ["🎧"],
             "description_blurbs": ["A test description."],
             "channel_name": "noa music",
+            "stamp_text": "노아",
             "description_footer": "footer",
             "top_hashtags": ["#test1", "#test2"],
             "tag_pool": ["tag1", "tag2", "tag3"],
@@ -161,6 +163,7 @@ class TestPipeline(unittest.TestCase):
             with mock.patch.dict("os.environ", env, clear=False), \
                  mock.patch("generate_image.generate_image", side_effect=self._fake_generate_image()), \
                  mock.patch("upload_youtube.upload_video", return_value={"id": "vid123"}) as fake_upload, \
+                 mock.patch("upload_youtube.set_thumbnail") as fake_set_thumbnail, \
                  mock.patch("upload_youtube.get_or_create_playlist", return_value="pl1") as fake_get_playlist, \
                  mock.patch("upload_youtube.add_video_to_playlist") as fake_add_to_playlist:
                 result = pipeline.run_pipeline(
@@ -170,6 +173,8 @@ class TestPipeline(unittest.TestCase):
 
             self.assertEqual(result["video_id"], "vid123")
             fake_upload.assert_called_once()
+            fake_set_thumbnail.assert_called_once()
+            self.assertEqual(fake_set_thumbnail.call_args[0][0], "vid123")
             fake_get_playlist.assert_called_once()
             fake_add_to_playlist.assert_called_once_with("pl1", "vid123", mock.ANY)
 
@@ -186,6 +191,7 @@ class TestPipeline(unittest.TestCase):
             with mock.patch.dict("os.environ", env, clear=False), \
                  mock.patch("generate_image.generate_image", side_effect=self._fake_generate_image()), \
                  mock.patch("upload_youtube.upload_video", return_value={"id": "vid123"}), \
+                 mock.patch("upload_youtube.set_thumbnail"), \
                  mock.patch("upload_youtube.get_or_create_playlist", side_effect=RuntimeError("boom")):
                 result = pipeline.run_pipeline(
                     str(settings_path), str(scenes_path), str(templates_path), str(track_names_path),
