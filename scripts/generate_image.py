@@ -30,17 +30,45 @@ PHOTOREALISM_SUFFIX = (
     "not 3d render, not digital art, no text, no watermark"
 )
 
+# [조선 컨셉] 씬별 styles 값(painterly/photoreal)에 따라 로테이션되는 그림체 문구.
+# 레퍼런스 채널들(조선재즈 등)이 실사와 유화 컨셉아트를 섞어 쓰는 것을 따른다.
+JOSEON_STYLE_SUFFIXES = {
+    "painterly": (
+        "lavish animated film concept art, rich oil painting texture, dramatic "
+        "chiaroscuro lighting, glowing warm light sources, deep atmospheric shadows, "
+        "vivid saturated colors, volumetric light rays, intricate environment details, "
+        "masterpiece, cinematic composition, no text, no watermark"
+    ),
+    "photoreal": (
+        "cinematic film still, shot on 35mm, shallow depth of field, dramatic key "
+        "lighting, hyper detailed fabric textures, professional color grading, moody "
+        "atmosphere, photorealistic, no text, no watermark"
+    ),
+}
+
 
 def load_yaml(path):
     with open(path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
-def draw_scene(state, scenes_config, rng=None):
+def draw_scene(state, scenes_config, rng=None, genre=None, pool_name="scene"):
+    """씬을 셔플백으로 뽑는다. genre가 주어지면 그 무드에 어울리는 씬만 후보로 쓰고,
+    무드별로 풀 이름을 분리해(pool_name) 셔플백 순환이 서로 섞이지 않게 한다."""
     scenes = scenes_config["scenes"]
+    if genre is not None:
+        scenes = [s for s in scenes if genre in s.get("genres", [])]
+        if not scenes:
+            raise ValueError(f"'{genre}' 무드에 해당하는 씬이 없습니다")
     scene_ids = [s["id"] for s in scenes]
-    scene_id = sm.draw(state, "scene", scene_ids, count=1, rng=rng)[0]
+    scene_id = sm.draw(state, pool_name, scene_ids, count=1, rng=rng)[0]
     return next(s for s in scenes if s["id"] == scene_id)
+
+
+def draw_style(state, scene, rng=None):
+    """씬이 허용하는 그림체(styles) 중 하나를 셔플백으로 뽑는다."""
+    styles = scene.get("styles") or ["painterly"]
+    return sm.draw(state, "image_style", styles, count=1, rng=rng)[0]
 
 
 def draw_modifiers(state, scenes_config, rng=None):
@@ -54,22 +82,24 @@ def draw_modifiers(state, scenes_config, rng=None):
     return lighting, detail
 
 
-def build_full_prompt(scene_prompt, aspect_ratio_hint, extra_details=None):
+def build_full_prompt(scene_prompt, aspect_ratio_hint, extra_details=None, style_suffix=None):
     parts = [scene_prompt]
     parts.extend(d for d in (extra_details or []) if d)
-    parts.append(PHOTOREALISM_SUFFIX)
+    parts.append(style_suffix or PHOTOREALISM_SUFFIX)
     if aspect_ratio_hint:
         parts.append(aspect_ratio_hint)
     return ", ".join(parts)
 
 
 def generate_image(prompt, api_key, model, aspect_ratio_hint, output_path, session=None,
-                    max_attempts=4, backoff_seconds=5, sleep=time.sleep, extra_details=None):
+                    max_attempts=4, backoff_seconds=5, sleep=time.sleep, extra_details=None,
+                    style_suffix=None):
     """Gemini 이미지 생성 API를 호출한다. 과부하(503)/속도 제한(429) 등 일시적 오류는
     지수 백오프로 재시도하고(기본 최대 4회 시도: 0, 5, 10, 20초 대기), 그래도 실패하면
     에러를 그대로 올린다."""
     session = session or requests
-    full_prompt = build_full_prompt(prompt, aspect_ratio_hint, extra_details=extra_details)
+    full_prompt = build_full_prompt(prompt, aspect_ratio_hint, extra_details=extra_details,
+                                     style_suffix=style_suffix)
 
     last_error = None
     for attempt in range(1, max_attempts + 1):

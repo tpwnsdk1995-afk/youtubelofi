@@ -18,6 +18,7 @@ import assemble_music
 import build_video as build_video_mod
 import generate_image
 import generate_metadata
+import make_thumbnail
 import state_manager as sm
 import sync_music_library
 import upload_youtube
@@ -32,6 +33,14 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
                   templates_path="config/title_templates.yml", track_names_path="config/track_name_parts.yml",
                   work_dir=None, dry_run=False):
     settings = load_yaml(settings_path)
+
+    # 조선 리브랜딩 전환 스위치: settings.yml의 concept가 joseon이면 조선 컨셉 설정으로
+    # 교체된다 (씬/문구/썸네일/무드 로테이션). legacy면 기존 동작 그대로.
+    concept = settings.get("concept", "legacy")
+    if concept == "joseon":
+        scenes_path = "config/scenes_joseon.yml"
+        templates_path = "config/title_templates_joseon.yml"
+
     scenes_config = load_yaml(scenes_path)
     templates = load_yaml(templates_path)
     name_parts = load_yaml(track_names_path)
@@ -68,9 +77,24 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
             files, downloaded = sync_music_library.sync_library(drive_service, gdrive_folder_id, library_dir)
             print(f"  Drive 폴더 내 {len(files)}개 중 {len(downloaded)}개 새로 다운로드")
 
+        # 조선 컨셉이면 오늘의 무드(calm=집중/groove=산책·드라이브)를 먼저 뽑는다 —
+        # 음원 폴더, 씬 후보, 문구 풀이 전부 무드를 따라간다.
+        genre = None
+        if concept == "joseon":
+            genre = generate_metadata.draw_genre(state, templates)
+            print(f"오늘의 무드: {genre}")
+            music_dir = Path(library_dir) / genre
+            if not music_dir.is_dir() or not any(music_dir.glob("*.mp3")):
+                raise RuntimeError(
+                    f"음원 폴더가 비어 있습니다: Drive 음악 폴더 안에 '{genre}' 하위 폴더를 만들고 "
+                    f"해당 무드의 mp3를 채워주세요 (calm=집중용 잔잔, groove=산책/드라이브용 신남)."
+                )
+        else:
+            music_dir = library_dir
+
         print("== 1/4 음악 조립 ==")
         chapters = assemble_music.assemble(
-            library_dir, state,
+            music_dir, state,
             a["crossfade_seconds"], a["bitrate"],
             audio_path,
             reuse_ratio=a.get("reuse_ratio", 0.0),
@@ -82,7 +106,14 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
         print(f"  {len(chapters)}개 트랙 사용")
 
         print("== 2/4 이미지 생성 ==")
-        scene = generate_image.draw_scene(state, scenes_config)
+        style_suffix = None
+        if concept == "joseon":
+            scene = generate_image.draw_scene(state, scenes_config, genre=genre, pool_name=f"scene_{genre}")
+            style = generate_image.draw_style(state, scene)
+            style_suffix = generate_image.JOSEON_STYLE_SUFFIXES[style]
+            print(f"  그림체: {style}")
+        else:
+            scene = generate_image.draw_scene(state, scenes_config)
         lighting, detail = generate_image.draw_modifiers(state, scenes_config)
         generate_image.generate_image(
             scene["prompt"], image_api_key,
@@ -90,6 +121,7 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
             settings["image"].get("aspect_ratio_hint", "16:9 widescreen"),
             image_path,
             extra_details=[lighting, detail],
+            style_suffix=style_suffix,
         )
         print(f"  씬: {scene['id']} ({lighting}, {detail})")
 
@@ -101,8 +133,21 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
         )
 
         print("== 4/4 메타데이터 생성 + 업로드 ==")
-        metadata = generate_metadata.build_metadata(state, chapters, templates, settings, scene_id=scene["id"])
+        metadata = generate_metadata.build_metadata(state, chapters, templates, settings, scene_id=scene["id"], genre=genre)
         print(f"  제목: {metadata['title']}")
+
+        # 썸네일 (조선 컨셉 전용): 씬 이미지 + 팝 텍스트. 실패해도 업로드는 진행한다.
+        thumbnail_path = None
+        if metadata.get("thumb_main"):
+            thumbnail_path = work_dir / "thumbnail.jpg"
+            try:
+                make_thumbnail.create_thumbnail(
+                    image_path, metadata["thumb_main"], metadata.get("thumb_sub", ""), thumbnail_path,
+                )
+                print(f"  썸네일 생성: {metadata['thumb_main']} / {metadata.get('thumb_sub', '')}")
+            except Exception as e:
+                print(f"WARNING: 썸네일 생성 실패 (업로드는 계속 진행): {e}", file=sys.stderr)
+                thumbnail_path = None
 
         if dry_run:
             print("dry-run 모드: 실제 업로드는 건너뜁니다.")
@@ -112,10 +157,22 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
             result = {"video_id": response["id"], "title": metadata["title"], "scene_id": scene["id"], "description": metadata["description"]}
             print(f"  업로드 완료 (비공개, 확인 대기): {result['video_id']}")
 
+            if thumbnail_path is not None:
+                try:
+                    upload_youtube.set_thumbnail(result["video_id"], thumbnail_path, youtube_credentials)
+                    print("  썸네일 설정 완료")
+                except Exception as e:
+                    print(f"WARNING: 썸네일 설정 실패 (업로드 자체는 성공): {e}", file=sys.stderr)
+
             try:
-                category = scene.get("category", "default")
-                playlist_titles = templates.get("playlist_titles", {})
-                playlist_title = playlist_titles.get(category, f"{templates.get('channel_name', 'noa music')} 로파이 플레이리스트")
+                if concept == "joseon":
+                    # 조선 컨셉은 무드별 재생목록 (calm/groove)
+                    category = genre
+                    playlist_title = templates["genres"][genre]["playlist_title"]
+                else:
+                    category = scene.get("category", "default")
+                    playlist_titles = templates.get("playlist_titles", {})
+                    playlist_title = playlist_titles.get(category, f"{templates.get('channel_name', 'noa music')} 로파이 플레이리스트")
                 playlist_id = upload_youtube.get_or_create_playlist(state, youtube_credentials, category, playlist_title)
                 upload_youtube.add_video_to_playlist(playlist_id, result["video_id"], youtube_credentials)
                 print(f"  재생목록에 추가 ({category}): {playlist_id}")

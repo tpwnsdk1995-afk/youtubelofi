@@ -1,0 +1,186 @@
+# [조선 리브랜딩] 제목/설명/태그/썸네일 문구 풀. settings.yml의 concept: joseon일 때만 사용.
+#
+# 채널 컨셉 = "조선 로파이" 단일 장르, 무드 2종 로테이션:
+#   calm   = 집중용 잔잔한 로파이 (공부/작업) — 채널의 기둥
+#   groove = 산책/드라이브용 신나는 로파이 (가야금 힙합 계열)
+#
+# situations의 title은 영상 제목에, thumb_main/thumb_sub는 썸네일 텍스트(노란 메인 +
+# 흰 서브)에 들어간다. 제목과 썸네일이 항상 같은 상황을 말하도록 세트 로테이션(id 기준).
+# 모든 항목에 장르명(조선 로파이)이 main 또는 sub 어딘가에 반드시 들어가야 한다 —
+# 썸네일만 보고도 무슨 음악인지 알 수 있게 (사용자 요청).
+
+title_prefix: "Playlist"
+
+# 무드 로테이션 (셔플백). calm 2 : groove 1 비율.
+genre_rotation: [calm, calm, groove]
+
+genres:
+  calm:
+    label: "조선 로파이"
+    playlist_title: "조선 로파이 | 공부·집중"
+    situations:
+      - id: gwageo_d1
+        title: "과거시험 D-1, 전국 1등 유생이 듣던 소리"
+        thumb_main: "과거시험 D-1"
+        thumb_sub: "전국 1등 유생의 조선 로파이"
+      - id: jangwon_secret
+        title: "장원급제한 선비의 비밀 플레이리스트"
+        thumb_main: "장원급제 플리"
+        thumb_sub: "조선 로파이"
+      - id: amhaeng_chuldu
+        title: "암행어사 출두 직전에 마음 다스리는 소리"
+        thumb_main: "암행어사 출두"
+        thumb_sub: "직전에 듣는 조선 로파이"
+      - id: king_allnight
+        title: "왕이 침전에서 몰래 야근하며 듣던 소리"
+        thumb_main: "왕의 야근 브금"
+        thumb_sub: "조선 로파이"
+      - id: sungkyunkwan_4am
+        title: "새벽 4시 성균관 자습실에서 흐르던 소리"
+        thumb_main: "성균관 새벽 4시"
+        thumb_sub: "조선 로파이"
+      - id: hunjang_secret
+        title: "서당에서 훈장님 몰래 듣던 소리"
+        thumb_main: "훈장님 몰래"
+        thumb_sub: "듣는 조선 로파이"
+      - id: yubae_writing
+        title: "유배지에서 책 500권 쓴 선비의 작업 브금"
+        thumb_main: "유배지 작업 브금"
+        thumb_sub: "책 500권 쓴 선비의 조선 로파이"
+      - id: gwageo_samsu
+        title: "과거 삼수생이 정신 붙잡으려고 듣던 소리"
+        thumb_main: "과거 삼수생"
+        thumb_sub: "정신 붙잡는 조선 로파이"
+      - id: jiphyeonjeon_overtime
+        title: "집현전 학사들의 야근 브금"
+        thumb_main: "집현전 야근"
+        thumb_sub: "조선 로파이"
+      - id: donguibogam
+        title: "동의보감 집필하던 밤의 초집중 브금"
+        thumb_main: "동의보감 집필"
+        thumb_sub: "초집중 조선 로파이"
+      - id: snow_ondol
+        title: "눈 오는 밤 온돌방에서 듣는 겨울 로파이"
+        thumb_main: "눈 오는 온돌방"
+        thumb_sub: "겨울 조선 로파이"
+      - id: chaekgeori_done
+        title: "책거리 끝낸 선비의 홀가분한 오후"
+        thumb_main: "책거리 끝!"
+        thumb_sub: "조선 로파이"
+    taglines:
+      - "집중력 풀충전 조선 로파이"
+      - "딴생각 사라지는 국악 로파이"
+      - "시험기간 국룰 조선 브금"
+      - "2시간 논스톱 몰입 사운드"
+      - "먹 갈리는 소리까지 어울리는 공부 브금"
+      - "귀에 착 붙는 한옥 감성 로파이"
+      - "밤샘 공부용 국악 로파이"
+      - "공부가 잘되는 조선 감성 믹스"
+    description_blurbs:
+      - "조선 서당에서 흐를 것 같은 국악 로파이 믹스입니다."
+      - "먹 냄새 나는 한옥 서재 감성의 논스톱 공부 배경음악이에요."
+      - "선비처럼 앉아 책 펴고 싶어지는 잔잔한 믹스입니다."
+    top_hashtags: ["#공부플리", "#조선로파이", "#lofi"]
+    extra_tags: ["공부할때듣는음악", "공부음악", "공부플레이리스트", "집중음악", "시험기간", "새벽공부", "studymotivation", "focus"]
+  groove:
+    label: "조선 로파이"
+    playlist_title: "조선 로파이 | 산책·드라이브"
+    situations:
+      - id: night_stroll
+        title: "한양 밤거리를 걷는 기분, 산책용 조선 로파이"
+        thumb_main: "한양 밤산책"
+        thumb_sub: "신나는 조선 로파이"
+      - id: joseon_drive
+        title: "달빛 아래 말 타고 퇴근할 때 듣던 소리"
+        thumb_main: "조선식 퇴근길"
+        thumb_sub: "드라이브 조선 로파이"
+      - id: makgeolli_time
+        title: "막걸리 한 사발에 어울리는 조선 로파이"
+        thumb_main: "막걸리 한 사발"
+        thumb_sub: "안주는 조선 로파이"
+      - id: jumo_offwork
+        title: "주모가 마감하고 듣는 신나는 로파이"
+        thumb_main: "주모의 퇴근길"
+        thumb_sub: "신나는 조선 로파이"
+      - id: rainy_jumak
+        title: "비 오는 주막에서 파전 기다리며 듣는 소리"
+        thumb_main: "비 오는 주막"
+        thumb_sub: "파전과 조선 로파이"
+      - id: midnight_bar
+        title: "임금님 몰래 여는 조선 심야 음악다방"
+        thumb_main: "조선 심야 다방"
+        thumb_sub: "임금님 몰래 오픈"
+      - id: palace_party
+        title: "궁궐 연회에서 흐르던 흥겨운 가락"
+        thumb_main: "궁궐 연회 플리"
+        thumb_sub: "신나는 조선 로파이"
+      - id: geupje_party
+        title: "과거 급제 축하연에서 틀던 노래"
+        thumb_main: "급제 축하연"
+        thumb_sub: "신나는 조선 로파이"
+      - id: gwangdae_swag
+        title: "조선 광대들의 스웩 넘치는 한마당"
+        thumb_main: "조선 광대 스웩"
+        thumb_sub: "가야금 힙합 로파이"
+      - id: spring_picnic
+        title: "꽃놀이 가는 길에 듣는 봄맞이 로파이"
+        thumb_main: "조선 꽃놀이"
+        thumb_sub: "봄 산책 조선 로파이"
+    taglines:
+      - "산책할 때 듣는 신나는 조선 로파이"
+      - "드라이브 국룰 가야금 힙합"
+      - "어깨 들썩이는 국악 로파이"
+      - "무드 잡을 때 트는 조선 브금"
+      - "기분 좋아지는 한옥 감성 그루브"
+      - "흥 오르는 조선 로파이 믹스"
+    description_blurbs:
+      - "밤 산책과 드라이브에 어울리는 신나는 조선 로파이 믹스입니다."
+      - "막걸리 한 잔 하고 싶어지는 흥겨운 국악 로파이예요."
+      - "어깨가 먼저 반응하는 가야금 힙합 믹스입니다."
+    top_hashtags: ["#조선로파이", "#플레이리스트", "#lofi"]
+    extra_tags: ["산책음악", "드라이브음악", "드라이브팝", "기분전환음악", "신나는음악", "무드음악", "국악힙합", "chillhop"]
+
+title_emojis:
+  - "📜"
+  - "🏮"
+  - "🌙"
+  - "🍵"
+  - "📖"
+  - "✍️"
+  - "🕯️"
+  - "☔"
+  - "🍶"
+
+# 채널 정보 (설명란 저작권 문구, 영상 워터마크 등에 사용)
+channel_name: "조선로파이"
+
+description_footer: |
+  사실... 로파이는 조선시대부터 있었다오. 🎧
+  모든 수록곡은 AI(Suno) 지원으로 작곡하고 직접 다듬었습니다.
+
+  💬 마음에 드는 가락이 있다면 댓글로 알려주시오.
+  👍 좋아요와 구독은 다음 가락을 만드는 큰 힘이 된다오.
+
+  🏮 조선로파이 (Joseon Lofi)
+  Music arranged with AI-assisted composition. Cover art generated with AI.
+  © Copyright 조선로파이. All rights reserved.
+
+# 두 무드 공통 태그 풀 (여기서 일부 + 무드별 extra_tags가 합쳐진다)
+tag_pool:
+  - "조선로파이"
+  - "조선"
+  - "국악로파이"
+  - "국악"
+  - "사극감성"
+  - "한국풍"
+  - "koreanlofi"
+  - "korealofi"
+  - "hanok"
+  - "lofi"
+  - "lofimusic"
+  - "playlist"
+  - "플레이리스트"
+  - "브금"
+  - "가야금"
+  - "대금"
+  - "kpop"

@@ -82,7 +82,7 @@ class TestPipeline(unittest.TestCase):
                 check=True, capture_output=True,
             ).stdout
 
-            def fake_generate_image(prompt, api_key, model, aspect_ratio_hint, output_path, session=None, extra_details=None):
+            def fake_generate_image(prompt, api_key, model, aspect_ratio_hint, output_path, session=None, extra_details=None, **kwargs):
                 Path(output_path).write_bytes(fake_image_bytes)
 
             with mock.patch.dict("os.environ", {"GEMINI_API_KEY": "fake-key"}, clear=False), \
@@ -144,7 +144,7 @@ class TestPipeline(unittest.TestCase):
             check=True, capture_output=True,
         ).stdout
 
-        def fake_generate_image(prompt, api_key, model, aspect_ratio_hint, output_path, session=None, extra_details=None):
+        def fake_generate_image(prompt, api_key, model, aspect_ratio_hint, output_path, session=None, extra_details=None, **kwargs):
             Path(output_path).write_bytes(fake_image_bytes)
         return fake_generate_image
 

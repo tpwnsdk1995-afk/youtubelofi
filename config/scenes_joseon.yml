@@ -1,0 +1,242 @@
+# [조선 리브랜딩] 비주얼 씬 프롬프트 풀. settings.yml의 concept: joseon일 때만 사용된다.
+#
+# 채널 컨셉 = "조선 로파이" (무드 2종). 씬마다:
+#   genres: 이 씬이 어울리는 무드 (calm=집중용 잔잔, groove=산책/드라이브용 신남)
+#   styles: 허용 그림체 (painterly=애니메이션 유화 / photoreal=실사 시네마틱) — 로테이션
+#
+# 구성 원칙 (사용자 요청 반영):
+#   - 인물 클로즈업 / 군중 와이드 / 풍경 / 인물 없는 정물(막걸리, 빈 주막)을 골고루
+#   - 위트 씬: 현대 물건 x 조선 인물 반전 개그 (왕+튜브+노트북 등)는 photoreal이 핵심
+#   - 같은 구도 반복 금지
+
+scenes:
+  # ===== calm (집중용 잔잔) =====
+  - id: scholar_headphones_closeup
+    genres: [calm]
+    styles: [painterly, photoreal]
+    prompt: >-
+      extreme close-up portrait of a strikingly handsome young Joseon-era Korean
+      scholar wearing a black gat and modern over-ear headphones, eyes closed in
+      bliss, warm candlelight glowing on one side of his face, deep teal shadows
+      on the other side, floating dust particles, stacks of old books softly
+      blurred behind
+  - id: gwageo_exam_hall
+    genres: [calm]
+    styles: [painterly]
+    prompt: >-
+      wide dramatic shot of the royal civil service examination in a huge palace
+      courtyard, hundreds of Joseon-era scholars in white hanbok seated in
+      perfect rows at low writing desks, one determined young scholar in sharp
+      focus in the center writing intensely, morning light rays breaking over
+      the palace walls
+  - id: jiphyeonjeon_library
+    genres: [calm]
+    styles: [painterly, photoreal]
+    prompt: >-
+      grand interior of a Joseon royal palace library at night, towering wooden
+      bookshelves packed with old bound books rising into the shadows, scholars
+      in official robes reading at long tables lit by rows of hanging paper
+      lanterns, warm golden atmosphere with deep perspective
+  - id: winter_ondol_study
+    genres: [calm]
+    styles: [painterly]
+    prompt: >-
+      cozy interior of a young Joseon-era scholar wrapped in a thick padded
+      blanket studying at a low desk in a warm ondol room, heavy snow falling
+      outside a partly open hanji lattice window, a glowing brazier and piles
+      of books beside him
+  - id: rainy_maru_reading
+    genres: [calm]
+    styles: [painterly, photoreal]
+    prompt: >-
+      a young Joseon-era scholar in white-indigo hanbok sitting on the wooden
+      porch of a hanok under wide eaves during heavy rain, absorbed in a book
+      with a steaming cup of tea beside him, fat raindrops dripping from the
+      tiled roof edge in the foreground, wet glistening stone courtyard
+  - id: calligraphy_cat_closeup
+    genres: [calm]
+    styles: [photoreal, painterly]
+    prompt: >-
+      warm close-up over a low wooden desk, elegant hands grinding an ink stick
+      on a stone inkstone next to a brush resting on hanji paper with fresh
+      calligraphy, a curious small orange kitten reaching one paw toward the
+      brush, soft window light, intimate cozy framing
+  - id: candlelit_allnight
+    genres: [calm]
+    styles: [painterly, photoreal]
+    prompt: >-
+      dramatic low-key scene of a young Joseon-era scholar writing by the small
+      warm glow of a single oil lamp deep in the night, the lamp carving his
+      focused face and the desk out of near-total darkness, ink stone and brush
+      pots catching the light, a moth circling the flame
+  - id: dawn_bell_seowon
+    genres: [calm]
+    styles: [painterly]
+    prompt: >-
+      misty mountain seowon academy at sunrise, a robed figure striking a huge
+      bronze bell in a wooden bell pavilion, golden morning haze rolling over
+      tiled roofs and stone steps, tall pine trees emerging from the fog, first
+      light rays cutting through the mist
+  - id: morning_madang_book
+    genres: [calm]
+    styles: [painterly]
+    prompt: >-
+      a young Joseon-era scholar standing on the stone steps of a hanok
+      courtyard at misty sunrise reading an open book, soft golden fog over the
+      courtyard, a big old persimmon tree by the low stone wall, chickens
+      pecking near the gate, peaceful start-of-day mood
+
+  # ===== 위트/개그 (현대 x 조선 반전 — photoreal이 핵심) =====
+  - id: king_pool_laptop
+    genres: [calm, groove]
+    styles: [photoreal]
+    prompt: >-
+      hilarious photorealistic scene of a Joseon king in full red royal dragon
+      robe and black ikseongwan crown lounging on a bright green inflatable
+      tube in a sparkling blue swimming pool, sipping iced coffee through a
+      straw, an open silver laptop balanced on his lap, deadpan serious
+      expression, bright summer sunlight, crisp advertising photography look
+  - id: runaway_gungnyeo_tree
+    genres: [calm, groove]
+    styles: [photoreal]
+    prompt: >-
+      cinematic photo of a young Joseon palace maid in pink and navy hanbok
+      with a long braid hiding flat on a thick tree branch high in a leafy
+      tree, peeking down nervously, a hand-painted wanted poster with her
+      portrait pinned to the trunk below, palace guards searching the hanok
+      courtyard far below, warm afternoon light through the leaves
+  - id: guard_headphones_gate
+    genres: [calm, groove]
+    styles: [photoreal, painterly]
+    prompt: >-
+      funny scene of a Joseon palace gate guard in full traditional armor and
+      helmet standing at his post wearing huge modern headphones, subtly
+      grooving with one foot tapping, a second stern guard beside him glaring
+      sideways in disbelief, massive red palace gate doors behind them,
+      afternoon light
+
+  # ===== groove (산책/드라이브용 신남) =====
+  - id: hanok_jazz_tavern
+    genres: [groove]
+    styles: [painterly, photoreal]
+    prompt: >-
+      inside a moody traditional Korean hanok tavern at night, a beautiful
+      young Joseon-era woman in an elegant jade-green and pink hanbok singing
+      into a vintage silver microphone with eyes closed, dozens of glowing red
+      and orange paper lanterns above, blurred musicians with a double bass in
+      the smoky background, warm amber stage light on her face
+  - id: jazz_singer_dark
+    genres: [groove]
+    styles: [photoreal]
+    prompt: >-
+      dark moody photorealistic portrait of an elegant Korean woman in a black
+      silk hanbok standing at a vintage chrome microphone, eyes closed
+      mid-note, swirling smoke and warm torch flames glowing in the deep teal
+      darkness behind her, dramatic rim light on her profile, film noir
+      atmosphere
+  - id: gisaeng_gayageum_blossom
+    genres: [groove]
+    styles: [painterly]
+    prompt: >-
+      a graceful Joseon-era gisaeng woman in a flowing pink and teal hanbok
+      playing a gayageum korean zither on a wooden veranda during a spring
+      evening, cherry blossom petals drifting through the air, glowing paper
+      lanterns hung among the blossom branches, romantic pastel palette
+  - id: jumak_market_evening
+    genres: [groove]
+    styles: [painterly, photoreal]
+    prompt: >-
+      lively evening scene at a Joseon-era roadside tavern in a market street,
+      travelers in hanbok eating and laughing at low wooden tables, an
+      innkeeper woman carrying a tray of brass bowls, steam rising from big
+      soup cauldrons, strings of warm lanterns over the street, bustling
+      detailed crowd full of small stories
+  - id: makgeolli_still_life
+    genres: [groove]
+    styles: [photoreal, painterly]
+    prompt: >-
+      appetizing still life on a low wooden tavern table, a dented brass kettle
+      of milky makgeolli beside two brass bowls filled to the brim, a golden
+      crispy green-onion pancake on a dark plate with steam rising, warm
+      lantern light, rain streaking past the open door in the dark background,
+      no people
+  - id: empty_jumak_night
+    genres: [groove]
+    styles: [photoreal, painterly]
+    prompt: >-
+      atmospheric empty interior of a Joseon-era tavern late at night after
+      closing, low wooden tables wiped clean, a single oil lamp still burning,
+      moonlight spilling through the open lattice door onto the wooden floor,
+      hanging dried herbs and gourds, quiet nostalgic mood, no people
+  - id: hanok_alley_nightwalk
+    genres: [groove]
+    styles: [painterly, photoreal]
+    prompt: >-
+      empty stone-paved alley between hanok walls at night lit by a string of
+      warm paper lanterns, tiled roofs silhouetted against a huge low full
+      moon, a cat sitting on a wall watching, gentle mist along the ground,
+      inviting night-walk mood, no people
+  - id: river_boat_daegeum
+    genres: [groove]
+    styles: [painterly]
+    prompt: >-
+      a serene Joseon-era scholar playing a daegeum bamboo flute while sitting
+      in a small wooden boat drifting down a misty river at sunset, layered
+      mountain silhouettes fading into golden haze, a boatman with a long pole
+      at the stern, ripples glowing orange and pink
+  - id: rooftop_haegeum
+    genres: [groove]
+    styles: [painterly]
+    prompt: >-
+      a Joseon-era musician sitting on the curved tiled roof ridge of a palace
+      building at night playing a haegeum string instrument, a sea of moonlit
+      hanok rooftops and drifting chimney smoke stretching to the horizon,
+      star-filled sky, romantic blue-and-amber palette
+
+  # ===== 공용 (양쪽 무드 모두) =====
+  - id: moon_pavilion_lanterns
+    genres: [calm, groove]
+    styles: [painterly]
+    prompt: >-
+      wide dramatic shot of a lone Joseon-era Korean scholar at a low desk
+      under a giant full moon, inside an open-air wooden pavilion above a
+      mirror-like lotus pond, hundreds of floating paper lanterns rising into
+      the night sky reflected in the water, cool indigo night with warm
+      lantern glow
+  - id: firefly_courtyard
+    genres: [calm, groove]
+    styles: [painterly]
+    prompt: >-
+      a relaxed young Joseon-era scholar lying on a straw mat in a hanok
+      courtyard on a summer night, an open book resting on his chest, dozens
+      of glowing fireflies drifting around him, warm lantern light spilling
+      from the open room behind, deep blue night sky above the roofline
+  - id: rain_giwa_tiles
+    genres: [calm, groove]
+    styles: [photoreal]
+    prompt: >-
+      macro cinematic shot of heavy rain hitting dark curved roof tiles of a
+      hanok, water streaming off the eaves in glittering ribbons, blurred wet
+      courtyard and a glowing lantern bokeh in the background, moody and
+      meditative, no people
+
+modifiers:
+  lighting:
+    - "warm flickering candle and oil lamp glow"
+    - "cool pale moonlight with deep blue shadows"
+    - "golden sunset light with long shadows"
+    - "soft misty dawn light in gold and pink"
+    - "overcast rainy-day light with glistening wet surfaces"
+    - "bright soft light reflected off fresh snow"
+    - "festival night glow from many paper lanterns"
+  details:
+    - "cherry blossom petals drifting through the air"
+    - "autumn maple leaves fluttering down"
+    - "light snow flakes falling gently"
+    - "a few glowing fireflies floating past"
+    - "steam rising from a celadon teacup"
+    - "a small cat watching quietly nearby"
+    - "a tall stack of traditional stitched-bound books"
+    - "glowing paper lanterns in the background"
+    - "an inkstone and brushes arranged on the desk"
+    - "a crane flying across the sky in the distance"
