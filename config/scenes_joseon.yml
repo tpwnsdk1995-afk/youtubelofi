@@ -250,6 +250,50 @@ scenes:
       courtyard and a glowing lantern bokeh in the background, moody and
       meditative, no people
 
+  # ===== 민화 까치호랑이 마스코트 (호랑이 담배 피우던 시절 -> 헤드폰) =====
+  # 전체 풀에 섞여 5~6일에 한 번꼴로 등장하는 시그니처. 전부 minhwa 그림체 고정.
+  - id: tiger_study_headphones
+    genres: [calm]
+    styles: [minhwa]
+    prompt: >-
+      a charming plump tiger from Korean minhwa folk painting wearing a black
+      gat and modern orange over-ear headphones, sitting upright at a low
+      wooden desk reading an open book with a serious scholarly face, a small
+      cheeky magpie perched on a stack of books pointing at a page with its
+      wing, candle glowing, decorative minhwa clouds in the background
+  - id: tiger_gayageum_band
+    genres: [groove]
+    styles: [minhwa]
+    prompt: >-
+      a joyful minhwa folk painting tiger in a black gat playing a gayageum
+      korean zither with big happy eyes, three magpies dancing and singing
+      around him, one magpie holding a tiny janggu drum, decorative peonies
+      and stylized clouds, festive warm colors
+  - id: tiger_moon_rest
+    genres: [calm]
+    styles: [minhwa]
+    prompt: >-
+      a relaxed minhwa folk painting tiger wearing a black gat lying on his
+      back on a wooden pavilion floor under a huge round yellow full moon, one
+      paw holding a small teacup, a magpie asleep on his round belly, stylized
+      minhwa pine branches framing the scene, deep indigo night sky
+  - id: tiger_ramen_gag
+    genres: [calm, groove]
+    styles: [minhwa]
+    prompt: >-
+      funny minhwa folk painting scene of a tiger in a black gat slurping
+      instant cup ramyeon noodles with chopsticks, steam rising, a shocked
+      magpie dropping a traditional brass spoon, decorative minhwa clouds and
+      a small hanok in the background, playful anachronism
+  - id: tiger_night_stroll
+    genres: [groove]
+    styles: [minhwa]
+    prompt: >-
+      a minhwa folk painting tiger in a black gat strolling happily down a
+      lantern-lit village path at night with headphones on and paws behind
+      his back, a magpie flying ahead carrying a tiny lantern, stylized
+      rolling hills and a big moon, cheerful night-walk mood
+
 modifiers:
   lighting:
     - "warm flickering candle and oil lamp glow"

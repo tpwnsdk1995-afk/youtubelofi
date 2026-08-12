@@ -44,6 +44,14 @@ JOSEON_STYLE_SUFFIXES = {
         "lighting, hyper detailed fabric textures, professional color grading, moody "
         "atmosphere, photorealistic, no text, no watermark"
     ),
+    # 시그니처 마스코트(까치호랑이) 전용 — 조선재즈류 실사 사극과 확실히 구분되는 화풍
+    "minhwa": (
+        "Korean minhwa folk painting style, bold confident black outlines, flat "
+        "vibrant obangsaek colors (red, cobalt blue, yellow, white, black), decorative "
+        "stylized clouds pine trees and waves, subtle hanji paper texture, charming "
+        "naive playful folk art like a Joseon woodblock print, whimsical and warm, "
+        "no text, no watermark"
+    ),
 }
 
 
