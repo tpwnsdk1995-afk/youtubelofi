@@ -18,7 +18,6 @@ import assemble_music
 import build_video as build_video_mod
 import generate_image
 import generate_metadata
-import make_thumbnail
 import state_manager as sm
 import sync_music_library
 import upload_youtube
@@ -105,19 +104,6 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
         metadata = generate_metadata.build_metadata(state, chapters, templates, settings, scene_id=scene["id"])
         print(f"  제목: {metadata['title']}")
 
-        # 썸네일: 씬 이미지 + 상황 붓글씨 문구 + 낙관. 실패해도 업로드는 진행한다
-        # (썸네일 없으면 유튜브가 영상 프레임을 대신 쓰므로 치명적이지 않음).
-        thumbnail_path = work_dir / "thumbnail.jpg"
-        try:
-            make_thumbnail.create_thumbnail(
-                image_path, metadata.get("thumb_text"), thumbnail_path,
-                stamp_text=templates.get("stamp_text"),
-            )
-            print(f"  썸네일 생성: {metadata.get('thumb_text', '').replace(chr(10), ' / ')}")
-        except Exception as e:
-            print(f"WARNING: 썸네일 생성 실패 (업로드는 계속 진행): {e}", file=sys.stderr)
-            thumbnail_path = None
-
         if dry_run:
             print("dry-run 모드: 실제 업로드는 건너뜁니다.")
             result = {"video_id": None, "title": metadata["title"], "scene_id": scene["id"], "description": metadata["description"]}
@@ -125,13 +111,6 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
             response = upload_youtube.upload_video(video_path, metadata, youtube_credentials)
             result = {"video_id": response["id"], "title": metadata["title"], "scene_id": scene["id"], "description": metadata["description"]}
             print(f"  업로드 완료 (비공개, 확인 대기): {result['video_id']}")
-
-            if thumbnail_path is not None:
-                try:
-                    upload_youtube.set_thumbnail(result["video_id"], thumbnail_path, youtube_credentials)
-                    print("  썸네일 설정 완료")
-                except Exception as e:
-                    print(f"WARNING: 썸네일 설정 실패 (업로드 자체는 성공): {e}", file=sys.stderr)
 
             try:
                 category = scene.get("category", "default")

@@ -31,8 +31,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install ffmpeg and Korean brush font (썸네일 붓글씨용)
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-nanum
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: Verify ffmpeg is available
         run: ffmpeg -version && ffprobe -version

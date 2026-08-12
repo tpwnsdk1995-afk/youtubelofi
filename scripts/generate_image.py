@@ -23,14 +23,11 @@ RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 
 # 모든 씬 프롬프트에 공통으로 덧붙이는 실사(candid photo) 스타일 지정 문구.
 # scenes.yml 각 항목에는 장면 내용만 적고, 사진처럼 보이게 하는 스타일 지시는 여기서 통일 관리한다.
-# [조선 리브랜딩] 실사 사진 -> 따뜻한 애니메이션 일러스트로 전환. 사극 실사는 AI 특유의
-# 어색함이 두드러지고, 로파이 장르 관습(Lofi Girl 등)도 일러스트라서 채널 정체성을
-# 그림체로 통일한다. 매 영상 장면은 달라도 그림체는 절대 바꾸지 않는다.
 PHOTOREALISM_SUFFIX = (
-    "warm hand-painted digital illustration in the style of a cozy animation film "
-    "still, soft painterly brush strokes, muted warm colors with gentle contrast, "
-    "subtle film grain, detailed atmospheric background, calm nostalgic mood, "
-    "no text, no watermark, no photorealism, no 3d render"
+    "candid photo taken with a phone camera from a natural angle, everyday snapshot, "
+    "slightly imperfect casual framing, soft natural or warm lamp lighting, "
+    "realistic textures and materials, not illustration, not painting, not anime, "
+    "not 3d render, not digital art, no text, no watermark"
 )
 
 

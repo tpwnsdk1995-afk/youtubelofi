@@ -11,15 +11,11 @@ import generate_metadata as gm
 def make_templates():
     return {
         "title_prefix": "Playlist (가사X)",
-        "situations": [
-            {"id": "gwageo_d1", "title": "과거시험 D-1, 전국 1등 유생이 듣던 소리", "thumb": "과거시험\nD-1"},
-            {"id": "amhaeng", "title": "암행어사 출두 직전에 듣는 소리", "thumb": "암행어사"},
-        ],
-        "taglines": ["집중할 때 흐르는 음악", "조선 서당 감성 로파이"],
-        "title_emojis": ["🌙", "📜"],
+        "hook_phrases": ["새벽 공부 루틴", "미친 집중력 모드"],
+        "taglines": ["집중할 때 흐르는 음악", "ADHD도 공부하게 만드는 음악"],
+        "title_emojis": ["🌙", "🎧"],
         "description_blurbs": ["새벽까지 이어지는 잔잔한 믹스입니다."],
         "channel_name": "noa music",
-        "stamp_text": "노아",
         "description_footer": "footer line 1\nfooter line 2",
         "top_hashtags": ["#공부플리", "#lofimusic", "#lofijazz"],
         "tag_pool": [f"tag{i}" for i in range(10)],
@@ -48,22 +44,6 @@ class TestBuildMetadata(unittest.TestCase):
         state = {}
         title = gm.build_title(state, make_templates(), rng=random.Random(1))
         self.assertTrue(title.startswith("Playlist (가사X) "))
-        self.assertLessEqual(len(title), 100)
-
-    def test_situation_couples_title_and_thumb(self):
-        state = {}
-        templates = make_templates()
-        situation = gm.draw_situation(state, templates, rng=random.Random(1))
-        title = gm.build_title(state, templates, rng=random.Random(1), situation=situation)
-        self.assertIn(situation["title"], title)
-
-    def test_metadata_includes_thumb_text(self):
-        state = {}
-        metadata = gm.build_metadata(state, [], make_templates(), make_video_settings(), rng=random.Random(5))
-        self.assertTrue(metadata["thumb_text"])
-        # thumb 문구는 반드시 situations 풀에서 나온 것이어야 한다
-        thumbs = {s["thumb"] for s in make_templates()["situations"]}
-        self.assertIn(metadata["thumb_text"], thumbs)
 
     def test_description_includes_tracklist_and_footer(self):
         state = {}

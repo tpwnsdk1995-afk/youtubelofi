@@ -32,22 +32,11 @@ def build_tracklist_section(chapters):
     return "\n".join(lines)
 
 
-def draw_situation(state, templates, rng=None):
-    """상황 어그로 훅을 하나 뽑는다. 제목 문구(title)와 썸네일 문구(thumb)가 세트로
-    묶여 있어, 영상 제목과 썸네일이 항상 같은 상황을 말하게 된다."""
-    situations = templates["situations"]
-    ids = [s["id"] for s in situations]
-    sid = sm.draw(state, "situation", ids, count=1, rng=rng)[0]
-    return next(s for s in situations if s["id"] == sid)
-
-
-def build_title(state, templates, rng=None, situation=None):
-    if situation is None:
-        situation = draw_situation(state, templates, rng=rng)
+def build_title(state, templates, rng=None):
+    hook = sm.draw(state, "hook_phrase", templates["hook_phrases"], count=1, rng=rng)[0]
     tagline = sm.draw(state, "tagline", templates["taglines"], count=1, rng=rng)[0]
     emoji = sm.draw(state, "title_emoji", templates["title_emojis"], count=1, rng=rng)[0]
-    # 유튜브 제목은 최대 100자 (초과 시 API가 거부하므로 방어적으로 자름)
-    return f"{templates['title_prefix']} {situation['title']} {emoji} {tagline}"[:100]
+    return f"{templates['title_prefix']} {hook} {emoji} {tagline}"
 
 
 def build_description(state, templates, chapters, rng=None):
@@ -74,8 +63,7 @@ def build_description(state, templates, chapters, rng=None):
 
 
 def build_metadata(state, chapters, templates, video_settings, scene_id=None, rng=None):
-    situation = draw_situation(state, templates, rng=rng)
-    title = build_title(state, templates, rng=rng, situation=situation)
+    title = build_title(state, templates, rng=rng)
     description, tags = build_description(state, templates, chapters, rng=rng)
 
     return {
@@ -87,8 +75,6 @@ def build_metadata(state, chapters, templates, video_settings, scene_id=None, rn
         "madeForKids": video_settings["youtube"]["made_for_kids"],
         "containsSyntheticMedia": video_settings["youtube"].get("contains_synthetic_media", True),
         "scene_id": scene_id,
-        # 썸네일에 큰 붓글씨로 들어갈 짧은 문구 (make_thumbnail.py가 사용)
-        "thumb_text": situation.get("thumb") or situation["title"],
     }
 
 

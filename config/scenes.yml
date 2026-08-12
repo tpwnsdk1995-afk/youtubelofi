@@ -1,107 +1,100 @@
 # 비주얼(정적 이미지) 씬 프롬프트 풀. state_manager가 셔플백 방식으로 순환 사용.
-# 그림체(따뜻한 애니메이션 일러스트) 공통 스타일 문구는 generate_image.py가 자동으로 덧붙인다.
-#
-# [조선 세계관 리브랜딩]
-# 채널 정체성 = "갓 쓴 조선 선비" 고정 주인공. 모든 씬에 같은 인물 묘사(CHARACTER)를
-# 반복해 넣어 어떤 씬이 뽑혀도 피드에서 한 채널로 알아볼 수 있게 한다 (Lofi Girl 공식).
-# 변주는 장소/계절/시간대/소품으로만 준다 — 인물과 그림체는 절대 바꾸지 않는다.
+# 실사 폰카 사진처럼 보이도록 하는 공통 스타일 문구는 generate_image.py가 자동으로 덧붙인다.
 #
 # category는 재생목록 분류용 (upload_youtube.get_or_create_playlist가 category별로
 # 별도 재생목록을 만들어 관리 -> title_templates.yml의 playlist_titles와 매칭).
-# 주의: category id(study/night/cafe/morning)는 state.json의 playlist_ids 키와 묶여
-# 있으므로 이름을 바꾸면 재생목록이 새로 생긴다. id는 유지하고 내용만 조선풍으로 교체함.
+#
+# 예전엔 9개 씬이 전부 "책상+노트북+따뜻한 조명" 구도라서 장소 이름만 다르지 실제
+# 생성된 이미지가 서로 구분이 잘 안 됐다 (사용자 피드백: 4일 전 사진과 거의 동일해
+# 보임). 그래서 씬마다 카메라 앵글/구도(top-down flat lay, 와이드샷, 클로즈업, 로우
+# 앵글 등)와 대표 오브젝트/색감을 확실히 다르게 지정해, 프롬프트 텍스트뿐 아니라
+# 실제 렌더링 결과도 씬마다 눈에 띄게 달라지게 한다.
+#
+# modifiers(lighting/details)는 매번 독립적으로 셔플백에서 하나씩 뽑혀 scene 프롬프트에
+# 덧붙는다. 같은 장소(scene) 컨셉이 다시 뽑히더라도 조명/소품 조합이 달라져 실제 생성되는
+# 이미지가 매번 눈에 띄게 달라진다 (9곳 x 7가지 조명 x 10가지 소품 = 630가지 조합).
 
 scenes:
-  - id: seodang_seoan
+  - id: desk_anatomy_notes
     category: study
     prompt: >-
-      a young Joseon-era Korean scholar wearing a simple white and indigo hanbok
-      and a black gat (traditional wide-brimmed horsehair hat), seen from behind,
-      sitting on the floor at a low wooden writing desk (seoan) in a cozy hanok
-      study room, holding a calligraphy brush over hanji paper, tall stacks of
-      traditional bound books beside the desk, wooden lattice doors covered with
-      warm hanji paper in the background
-  - id: sungkyunkwan_hall
+      top-down flat lay shot looking straight down at a study desk, open laptop
+      showing anatomy diagrams, a tablet propped up with handwritten notes, a pencil
+      case, a bright pink coffee mug, textbooks fanned open, everything neatly
+      arranged and visible from directly above
+  - id: whiteboard_study
     category: study
     prompt: >-
-      wide shot of a grand Joseon-era wooden lecture hall interior with rows of
-      empty low study desks receding into the distance, a single young scholar in
-      white-indigo hanbok and black gat seen from behind studying alone at one
-      desk, tall wooden pillars and beams, soft light falling through open
-      lattice doors
-  - id: winter_ondol
+      wide shot of a person seen from behind writing on a large whiteboard that
+      fills most of the frame, dense handwritten study notes and colorful diagrams
+      covering the whiteboard, ponytail hair, casual hoodie, no desk visible,
+      classroom fluorescent lighting
+  - id: library_reading_room
     category: study
     prompt: >-
-      a young Joseon-era Korean scholar in white-indigo hanbok and black gat,
-      seen from behind, reading at a low desk in a warm ondol-heated hanok room,
-      thick cotton blanket over his lap, snow falling outside visible through a
-      slightly open hanji lattice window, piles of traditional books and a small
-      brazier beside him
-  - id: autumn_seowon
+      wide-angle shot of a quiet university library open study area, tall arched
+      windows with daylight streaming in, rows of dark wooden desks receding into
+      the distance, stacks of old hardcover books, other students blurred far in
+      the background, high vaulted ceiling visible
+  - id: cubicle_desk
     category: study
     prompt: >-
-      a young Joseon-era Korean scholar in white-indigo hanbok and black gat seen
-      from behind at a low writing desk placed near the wide-open wooden doors of
-      a seowon study hall, looking out at a courtyard full of brilliant red and
-      orange maple trees, fallen autumn leaves scattered on the wooden porch,
-      books and brush pots around the desk
-  - id: candlelit_night
+      eye-level shot inside a beige office cubicle, gray fabric partition walls
+      framing the sides of the photo, a laptop showing photos, a metal travel
+      tumbler, a desk organizer with pens, fluorescent office ceiling lights
+      visible above the cubicle wall
+  - id: bed_study
     category: night
     prompt: >-
-      dramatic low-key night scene, a young Joseon-era Korean scholar in white
-      hanbok seen from behind writing by the small warm glow of a single oil lamp
-      (deungjanbul) on a low desk, the lamp casting a small pool of light on hanji
-      paper and an inkstone, the rest of the hanok room fading into deep shadow,
-      moonlit lattice window faintly visible behind
-  - id: moon_pavilion
+      extreme close-up low angle shot of an open laptop resting on a floral-pattern
+      blanket on a bed, scattered notebooks and printed photos around it, soft
+      pillows blurred in the background, cozy relaxed study-from-bed atmosphere
+  - id: cafe_corner_desk
+    category: cafe
+    prompt: >-
+      shot through a rain-speckled cafe window from outside looking in, a small
+      round table with a laptop and a ceramic coffee cup barely visible through the
+      glass, warm bokeh light reflections on the wet glass, autumn leaves in the
+      foreground
+  - id: night_desk_lamp
     category: night
     prompt: >-
-      a young Joseon-era Korean scholar in white-indigo hanbok and black gat seen
-      from behind, sitting in an open wooden pavilion (jeongja) at night reading a
-      book under a huge full moon, the pavilion overlooking a still lotus pond
-      reflecting the moonlight, distant mountain silhouettes, fireflies drifting
-      in the dark air
-  - id: rainy_maru
+      dramatic low-key close-up shot, a single warm desk lamp is the only light
+      source casting a small pool of light on an open notebook, everything outside
+      the lamp's glow fades into deep shadow, rain streaks visible on a dark window
+      behind
+  - id: train_window_study
     category: cafe
     prompt: >-
-      a young Joseon-era Korean scholar in white-indigo hanbok seen from behind,
-      sitting on the wooden porch floor (daecheongmaru) of a hanok under the
-      eaves during heavy rain, a book and a steaming cup of tea beside him,
-      raindrops dripping from the tiled roof edge in the foreground, wet stone
-      courtyard and glistening trees beyond
-  - id: hanok_teahouse
-    category: cafe
-    prompt: >-
-      interior of a cozy traditional Korean teahouse, a young Joseon-era scholar
-      in white-indigo hanbok and black gat seen from behind at a low wooden table
-      with a celadon teapot and steaming teacup, reading a small book, shelves of
-      ceramic tea jars along the wall, warm light through hanji windows
-  - id: morning_madang
+      over-the-shoulder shot from behind a train passenger, looking past their
+      shoulder at a laptop on the fold-down tray table, rainy night city lights
+      streaking past the window in motion blur, warm interior light reflected on
+      the glass
+  - id: morning_balcony_desk
     category: morning
     prompt: >-
-      wide shot of a misty hanok courtyard (madang) at sunrise, a young
-      Joseon-era Korean scholar in white-indigo hanbok and black gat seen from
-      behind standing on the stone steps holding an open book, soft golden
-      morning haze over the tiled roofs, a big old tree by the low stone wall,
-      quiet and serene atmosphere
+      wide shot from inside a room looking out through an open balcony door, a
+      small desk positioned right at the doorway silhouetted against bright misty
+      morning light, potted plants lining the balcony railing outside, hazy
+      cityscape visible in the distance
 
 modifiers:
   lighting:
-    - "warm flickering oil lamp glow"
-    - "pale blue moonlight"
-    - "soft golden dawn haze"
-    - "warm afternoon sun filtering through hanji lattice doors"
-    - "overcast rainy-day diffused light"
-    - "bright soft light reflected off fresh snow"
-    - "deep orange sunset glow on the wooden floor"
+    - "soft golden hour light"
+    - "cool blue evening light"
+    - "warm lamp-only lighting, rest of the room dim"
+    - "overcast diffused daylight through the window"
+    - "flickering candlelight glow"
+    - "pale moonlight coming through the window"
+    - "soft string lights glowing in the background"
   details:
-    - "an inkstone with a half-ground ink stick beside the desk"
-    - "a wooden brush stand with several calligraphy brushes"
-    - "a celadon teacup with steam rising"
-    - "a small charcoal brazier with a kettle gently steaming"
-    - "a plum blossom branch in a white porcelain vase"
-    - "a tall stack of traditional stitched-bound books"
-    - "a folding fan resting on the floor"
-    - "a paper lantern hanging from the eaves"
-    - "a half-unrolled scroll of calligraphy"
-    - "a small cat curled up asleep nearby"
+    - "a half-finished cup of tea with steam rising"
+    - "a small potted succulent on the desk"
+    - "scattered colorful sticky notes"
+    - "a pair of glasses resting on an open notebook"
+    - "a phone lying face-down next to the keyboard"
+    - "a few highlighters and pens in a cup"
+    - "a stack of index cards tied with a rubber band"
+    - "a small desk fan turned off"
+    - "a half-eaten snack on a small plate"
+    - "a pair of wired earphones coiled on the desk"
