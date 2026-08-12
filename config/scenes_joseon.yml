@@ -86,25 +86,55 @@ scenes:
       courtyard, a big old persimmon tree by the low stone wall, chickens
       pecking near the gate, peaceful start-of-day mood
 
-  # ===== 위트/개그 (현대 x 조선 반전 — photoreal이 핵심) =====
-  - id: king_pool_laptop
+  # ===== 위트/개그 (공식: 옛날 사람 x 현대 문물 반전. photoreal이 핵심) =====
+  # 주의: 레퍼런스 채널(조선재즈 등)의 특정 장면을 재현하지 말 것 — 공식만 차용하고
+  # 장면 조합은 반드시 오리지널로 만든다.
+  - id: king_gaming_chair
     genres: [calm, groove]
     styles: [photoreal]
     prompt: >-
       hilarious photorealistic scene of a Joseon king in full red royal dragon
-      robe and black ikseongwan crown lounging on a bright green inflatable
-      tube in a sparkling blue swimming pool, sipping iced coffee through a
-      straw, an open silver laptop balanced on his lap, deadpan serious
-      expression, bright summer sunlight, crisp advertising photography look
-  - id: runaway_gungnyeo_tree
-    genres: [calm, groove]
+      robe and black ikseongwan crown sitting on a modern black-and-red RGB
+      gaming chair placed where his throne should be in a grand palace hall,
+      arms crossed with a satisfied smirk, rows of confused ministers in
+      traditional robes bowing before him, glowing LED accents reflecting on
+      the polished wooden floor
+  - id: scribe_laptop_overtime
+    genres: [calm]
     styles: [photoreal]
     prompt: >-
-      cinematic photo of a young Joseon palace maid in pink and navy hanbok
-      with a long braid hiding flat on a thick tree branch high in a leafy
-      tree, peeking down nervously, a hand-painted wanted poster with her
-      portrait pinned to the trunk below, palace guards searching the hanok
-      courtyard far below, warm afternoon light through the leaves
+      funny cinematic photo of an exhausted Joseon royal chronicler in official
+      robes and hat typing rapidly on a modern silver laptop at a low wooden
+      desk beside the throne, tall stacks of paper records leaning beside him,
+      one candle burning low, dark palace hall at night, dramatic warm side
+      light, deadpan tired expression
+  - id: gungnyeo_selfie
+    genres: [groove]
+    styles: [photoreal]
+    prompt: >-
+      playful photorealistic shot of three Joseon palace maids in matching
+      green-and-navy hanbok crowding together to take a group selfie with a
+      smartphone on a selfie stick in a palace courtyard, one making a peace
+      sign, one mid-laugh, bright spring afternoon, palace roofs and blossoms
+      in the background
+  - id: king_chicken_delivery
+    genres: [groove]
+    styles: [photoreal]
+    prompt: >-
+      comedic photorealistic scene of a Joseon king at a royal banquet table
+      opening a modern cardboard fried chicken delivery box with delighted
+      wide eyes, steam rising from the golden fried chicken, shocked court
+      officials frozen mid-gesture around him, ornate palace hall with
+      candlelight, crisp advertising photography look
+  - id: king_smartphone_night
+    genres: [calm]
+    styles: [photoreal]
+    prompt: >-
+      funny intimate photo of a Joseon king lying under a silk blanket in his
+      dark royal bedchamber secretly scrolling a glowing smartphone, the phone
+      screen lighting his guilty face from below, royal crown resting beside
+      the pillow, moonlight through the lattice window, relatable
+      staying-up-too-late mood
   - id: guard_headphones_gate
     genres: [calm, groove]
     styles: [photoreal, painterly]
@@ -116,23 +146,23 @@ scenes:
       afternoon light
 
   # ===== groove (산책/드라이브용 신남) =====
-  - id: hanok_jazz_tavern
+  - id: gwangdae_boombox
     genres: [groove]
-    styles: [painterly, photoreal]
+    styles: [photoreal, painterly]
     prompt: >-
-      inside a moody traditional Korean hanok tavern at night, a beautiful
-      young Joseon-era woman in an elegant jade-green and pink hanbok singing
-      into a vintage silver microphone with eyes closed, dozens of glowing red
-      and orange paper lanterns above, blurred musicians with a double bass in
-      the smoky background, warm amber stage light on her face
-  - id: jazz_singer_dark
+      energetic scene of Joseon street performers (gwangdae) in colorful
+      traditional outfits gathered around a big retro boombox on a straw mat
+      in a market square, one performer mid-breakdance freeze while others
+      clap and cheer, strings of lanterns above, amused crowd in hanbok
+      watching, dynamic festive energy
+  - id: gisaeng_dj_table
     genres: [groove]
-    styles: [photoreal]
+    styles: [photoreal, painterly]
     prompt: >-
-      dark moody photorealistic portrait of an elegant Korean woman in a black
-      silk hanbok standing at a vintage chrome microphone, eyes closed
-      mid-note, swirling smoke and warm torch flames glowing in the deep teal
-      darkness behind her, dramatic rim light on her profile, film noir
+      stylish scene of a Joseon gisaeng in an elegant hanbok scratching a
+      vinyl record on DJ turntables built into a low lacquered wooden table,
+      one hand on her headphone, red paper lanterns glowing above, people in
+      hanbok vibing with drinks at low tables around her, warm night tavern
       atmosphere
   - id: gisaeng_gayageum_blossom
     genres: [groove]
