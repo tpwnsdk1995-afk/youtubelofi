@@ -167,7 +167,7 @@ title_emojis:
   - "🍶"
 
 # 채널 정보 (설명란 저작권 문구, 영상 워터마크 등에 사용)
-channel_name: "조선로파이"
+channel_name: "조선LoFi"
 
 # 채널 말투 = 하게체(훈장님 톤, "~다네/~주시게"). 조선재즈의 하오체("~다오")와 구분되는
 # 우리 목소리다. 문구도 반드시 오리지널로 — 레퍼런스 채널 문장 변형 금지.
@@ -178,9 +178,9 @@ description_footer: |
   💬 마음에 드는 가락은 댓글로 알려주시게.
   👍 좋아요와 구독은 다음 가락을 짓는 큰 힘이 됩니다.
 
-  🏮 조선로파이 (Joseon Lofi)
+  🏮 조선LoFi (Joseon LoFi)
   Music arranged with AI-assisted composition. Cover art generated with AI.
-  © Copyright 조선로파이. All rights reserved.
+  © Copyright 조선LoFi. All rights reserved.
 
 # 두 무드 공통 태그 풀 (여기서 일부 + 무드별 extra_tags가 합쳐진다)
 tag_pool:
