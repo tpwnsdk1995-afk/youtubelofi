@@ -2,100 +2,68 @@
   "pools": {
     "music_track": {
       "remaining": [
-        "Late Night Study_2.mp3",
-        "Midnight Library_15.mp3",
-        "Midnight Library_22.mp3",
-        "Quiet Morning Light_10.mp3",
-        "Midnight Study_2.mp3",
-        "Midnight Library_18.mp3",
-        "Midnight Study Session_6.mp3",
-        "Quiet Morning Light_6.mp3",
-        "Midnight Library_7.mp3",
-        "Late Night Study_6.mp3",
-        "Midnight Library_14.mp3",
-        "Quiet Morning Light_8.mp3",
-        "Midnight Library_11.mp3",
-        "Late Night Rain_5.mp3",
-        "Quiet Morning Light_7.mp3",
-        "Midnight Study_5.mp3",
-        "Quiet Study Ambience_1.mp3",
-        "Midnight Library_5.mp3",
-        "Midnight Library_19.mp3",
-        "Midnight Study Session_1.mp3",
-        "Late Night Rain.mp3",
-        "Quiet Morning Light_11.mp3",
-        "Rainy Night Jazz_1.mp3",
-        "Midnight Study_6.mp3",
-        "Midnight Study_9.mp3",
-        "Quiet Morning Light_9.mp3",
-        "Late Night Study_9.mp3",
-        "Quiet Study Ambience.mp3",
-        "Midnight Library_31.mp3",
-        "Midnight Library_16.mp3",
-        "Rain on the Window_1.mp3",
-        "Quiet Morning Light_2.mp3",
-        "Midnight Library_21.mp3",
-        "Midnight Library_2.mp3",
-        "Late Night Study_4.mp3",
-        "Midnight Library_1.mp3",
-        "Late Night Study_5.mp3",
-        "Quiet Morning Light_4.mp3",
-        "Midnight Study_4.mp3"
+        "199d5aa2.mp3",
+        "430db230.mp3",
+        "4c926172.mp3",
+        "6db5d40d.mp3",
+        "9f70340e.mp3",
+        "Bamboo Bounce.mp3",
+        "Bamboo Bounce_1.mp3",
+        "Bamboo Drum Parade.mp3",
+        "Bamboo Drum Parade_1.mp3",
+        "Bamboo Groove.mp3",
+        "Bamboo Groove_1.mp3",
+        "Bamboo Parade.mp3",
+        "Bamboo Parade_1.mp3",
+        "Bamboo Skip.mp3"
       ],
       "history": [
-        "Midnight Library_10.mp3",
-        "Late Night Rain_6.mp3",
-        "Midnight Library_6.mp3",
-        "Midnight Study Session_4.mp3",
-        "Midnight Library_17.mp3",
-        "Afternoon Rain_1.mp3",
-        "Midnight Library_23.mp3",
-        "Rainy Night Jazz.mp3",
-        "Rain on the Window.mp3",
-        "Quiet Morning Light_5.mp3",
-        "Quiet Morning Light_3.mp3",
-        "Quiet Morning Light_1.mp3",
-        "Quiet Morning Light.mp3",
-        "Midnight Study_8.mp3",
-        "Midnight Study_7.mp3",
-        "Midnight Study_3.mp3",
-        "Midnight Study_11.mp3",
-        "Midnight Study_10.mp3",
-        "Midnight Study_1.mp3",
-        "Midnight Study Session_7.mp3",
-        "Midnight Study Session_5.mp3",
-        "Midnight Study Session_2.mp3",
-        "Midnight Study Session.mp3",
-        "Midnight Study Loop_1.mp3",
-        "Midnight Study Loop.mp3",
-        "Midnight Library_8.mp3",
-        "Midnight Library_4.mp3",
-        "Midnight Library_30.mp3",
-        "Midnight Library_29.mp3",
-        "Midnight Library_28.mp3",
-        "Midnight Library_27.mp3",
-        "Midnight Library_26.mp3",
-        "Midnight Library_25.mp3",
-        "Midnight Library_24.mp3",
-        "Midnight Library_20.mp3",
-        "Midnight Library_13.mp3",
-        "Midnight Library_12.mp3",
-        "Midnight Library.mp3",
-        "Late Night Study_8.mp3",
-        "Late Night Study_7.mp3",
-        "Late Night Study_3.mp3",
-        "Late Night Study_1.mp3",
-        "Late Night Study.mp3",
-        "Late Night Rain_7.mp3",
-        "Late Night Rain_4.mp3",
-        "Late Night Rain_3.mp3",
-        "Late Night Rain_2.mp3",
-        "Late Night Rain_1.mp3",
-        "Afternoon Rain.mp3",
-        "Midnight Study.mp3",
-        "Midnight Study Session_3.mp3",
-        "Midnight Library_9.mp3",
-        "Midnight Library_3.mp3"
+        "새벽의 춤.mp3",
+        "달빛 장단_1.mp3",
+        "달빛 장단.mp3",
+        "b494595a.mp3",
+        "Sunlit Bamboo Loop_1.mp3",
+        "Sunlit Bamboo Loop.mp3",
+        "Rice Paper Bounce_1.mp3",
+        "Rice Paper Bounce.mp3",
+        "Peach Kites_1.mp3",
+        "Peach Kites.mp3",
+        "Paper Kite Walk_1.mp3",
+        "Paper Kite Walk.mp3",
+        "Paper Crane Bounce.mp3",
+        "Morning Parcel_1.mp3",
+        "Morning Parcel.mp3",
+        "Moonlit Market Bounce_1.mp3",
+        "Moonlit Market Bounce.mp3",
+        "Market Day Bounce_1.mp3",
+        "Market Day Bounce.mp3",
+        "Harvest Party_1.mp3",
+        "Harvest Party.mp3",
+        "Han River Bounce_7.mp3",
+        "Han River Bounce_6.mp3",
+        "Han River Bounce_5.mp3",
+        "Han River Bounce_4.mp3",
+        "Han River Bounce_3.mp3",
+        "Han River Bounce_2.mp3",
+        "Han River Bounce_1.mp3",
+        "Han River Bounce.mp3",
+        "Gayageum Groove_1.mp3",
+        "Gayageum Groove.mp3",
+        "Gaya Bounce_1.mp3",
+        "Gaya Bounce.mp3",
+        "Dandelion Steps.mp3",
+        "Dancing Janggu Street_1.mp3",
+        "Dancing Janggu Street.mp3",
+        "Daejeum Street Parade_1.mp3",
+        "Daejeum Street Parade.mp3",
+        "Daegeum Sunday Ride_1.mp3",
+        "Daegeum Sunday Ride.mp3",
+        "Chuseok Bounce_1.mp3",
+        "Chuseok Bounce.mp3",
+        "Cherry Steps_1.mp3",
+        "Cherry Steps.mp3",
+        "Cheonggye Drum Parade.mp3",
+        "Bamboo Skip_1.mp3"
       ]
     },
     "scene": {
@@ -161,17 +129,17 @@
     },
     "title_emoji": {
       "remaining": [
-        "📖"
+        "📖",
+        "📜",
+        "🏮",
+        "🍵",
+        "🕯️",
+        "☔"
       ],
       "history": [
-        "💡",
-        "☕",
         "✍️",
-        "📚",
-        "📝",
-        "⚡",
         "🌙",
-        "🎧"
+        "🍶"
       ]
     },
     "description_blurb": {
@@ -186,57 +154,131 @@
     },
     "tag": {
       "remaining": [
-        "focusmusic",
-        "공부플리",
-        "카공",
-        "nightstudy",
-        "noamusic"
+        "조선로파이",
+        "조선"
       ],
       "history": [
         "lofi",
-        "시험기간",
-        "집중력",
         "playlist",
-        "집중할때듣는음악",
-        "공부할때듣기좋은음악",
-        "공부할때듣는음악",
-        "집중음악",
-        "새벽공부",
-        "studymotivation",
-        "시험",
         "lofimusic",
-        "lofijazz",
-        "합격",
-        "focus"
+        "kpop",
+        "대금",
+        "가야금",
+        "브금",
+        "플레이리스트",
+        "hanok",
+        "korealofi",
+        "koreanlofi",
+        "한국풍",
+        "사극감성",
+        "국악",
+        "국악로파이"
       ]
     },
     "image_lighting": {
       "remaining": [
-        "soft golden hour light",
-        "overcast diffused daylight through the window"
+        "warm flickering candle and oil lamp glow",
+        "cool pale moonlight with deep blue shadows",
+        "golden sunset light with long shadows",
+        "soft misty dawn light in gold and pink",
+        "overcast rainy-day light with glistening wet surfaces",
+        "bright soft light reflected off fresh snow"
       ],
       "history": [
-        "pale moonlight coming through the window",
-        "flickering candlelight glow",
-        "warm lamp-only lighting, rest of the room dim",
-        "cool blue evening light",
-        "soft string lights glowing in the background"
+        "festival night glow from many paper lanterns"
       ]
     },
     "image_detail": {
       "remaining": [
-        "a half-finished cup of tea with steam rising",
-        "a half-eaten snack on a small plate",
-        "a small potted succulent on the desk",
-        "a phone lying face-down next to the keyboard",
-        "a pair of glasses resting on an open notebook",
-        "a pair of wired earphones coiled on the desk",
-        "a few highlighters and pens in a cup",
-        "a small desk fan turned off"
+        "cherry blossom petals drifting through the air",
+        "autumn maple leaves fluttering down",
+        "light snow flakes falling gently",
+        "a few glowing fireflies floating past",
+        "steam rising from a celadon teacup",
+        "a small cat watching quietly nearby",
+        "a tall stack of traditional stitched-bound books",
+        "glowing paper lanterns in the background",
+        "an inkstone and brushes arranged on the desk"
       ],
       "history": [
-        "a stack of index cards tied with a rubber band",
-        "scattered colorful sticky notes"
+        "a crane flying across the sky in the distance"
+      ]
+    },
+    "genre": {
+      "remaining": [
+        "calm",
+        "calm"
+      ],
+      "history": [
+        "groove"
+      ]
+    },
+    "scene_groove": {
+      "remaining": [
+        "king_gaming_chair",
+        "gungnyeo_selfie",
+        "king_chicken_delivery",
+        "guard_headphones_gate",
+        "gwangdae_boombox",
+        "gisaeng_dj_table",
+        "gisaeng_gayageum_blossom",
+        "jumak_market_evening",
+        "makgeolli_still_life",
+        "empty_jumak_night",
+        "hanok_alley_nightwalk",
+        "river_boat_daegeum",
+        "rooftop_haegeum",
+        "moon_pavilion_lanterns",
+        "firefly_courtyard",
+        "rain_giwa_tiles",
+        "tiger_gayageum_band",
+        "tiger_ramen_gag"
+      ],
+      "history": [
+        "tiger_night_stroll"
+      ]
+    },
+    "image_style": {
+      "remaining": [],
+      "history": [
+        "minhwa"
+      ]
+    },
+    "situation_groove": {
+      "remaining": [
+        "night_stroll",
+        "joseon_drive",
+        "makgeolli_time",
+        "jumo_offwork",
+        "rainy_jumak",
+        "midnight_bar",
+        "palace_party",
+        "geupje_party",
+        "gwangdae_swag"
+      ],
+      "history": [
+        "spring_picnic"
+      ]
+    },
+    "tagline_groove": {
+      "remaining": [
+        "산책할 때 듣는 신나는 조선 로파이",
+        "드라이브 국룰 가야금 힙합",
+        "어깨 들썩이는 국악 로파이",
+        "무드 잡을 때 트는 조선 브금",
+        "기분 좋아지는 한옥 감성 그루브"
+      ],
+      "history": [
+        "흥 오르는 조선 로파이 믹스"
+      ]
+    },
+    "blurb_groove": {
+      "remaining": [
+        "밤 산책과 드라이브에 어울리는 신나는 조선 로파이 믹스입니다.",
+        "막걸리 한 잔 하고 싶어지는 흥겨운 국악 로파이예요."
+      ],
+      "history": [
+        "어깨가 먼저 반응하는 가야금 힙합 믹스입니다."
       ]
     }
   },
@@ -337,6 +379,12 @@
       "title": "Playlist (가사X) 방학에 몰래 공부하기 🎧 ADHD도 공부하게 만드는 음악들",
       "scene_id": "morning_balcony_desk",
       "description": "#공부플리 #lofimusic #lofijazz\n\n집중이 필요한 순간을 위한 논스톱 배경음악이에요.\n\nTracklist🎧\n0:00 Emberfield\n1:53 Emberthos\n4:47 Hushtone\n6:54 Mellglow\n10:01 Deepwave\n14:12 Slowvale\n17:18 Calmvale\n19:37 Dimgleam\n23:08 Faintfloe\n27:31 Embergleam\n29:32 Duskshade\n32:21 Slowshade\n36:42 Ashure\n40:18 Faintform\n45:31 Mistythos\n49:01 Tenderthrum\n51:23 Subloom\n54:54 Rainglow\n58:15 Rainlet\n1:01:09 Gentlelight\n1:04:31 Deepecho\n1:07:40 Softsway\n1:10:44 Subfloe\n1:13:43 Mistyecho\n1:17:10 Mutedshade\n1:19:26 Moonrest\n1:21:56 Velmere\n1:25:12 Rainthos\n1:28:44 Basslight\n1:30:39 Ashgleam\n1:33:54 Rainlight\n1:36:19 Veldrift\n1:39:52 Mutedcurrent\n1:42:30 Dimshade\n1:45:06 Tendercurrent\n1:48:35 Sublet\n1:52:55 Mistybloom\n1:55:39 Nighthaze\n1:57:44 Mistygleam\n1:59:38 Deepfloe\n2:01:59 Rainveil\n2:05:31 Tenderlight\n2:08:14 Gentlehaze\n2:10:52 Velune\n2:14:01 Quietell\n2:16:31 Softell\n\n📌 모든 수록곡은 AI 지원으로 작곡되었습니다.\n💬 마음에 드는 트랙이 있다면 댓글로 알려주세요.\n반응이 좋으면 정식 음원으로 발매될 수도 있어요 :)\n👍 좋아요와 구독은 다음 영상을 만드는 큰 힘이 됩니다.\n\n🎧 noa music presents\nMusic arranged with AI-assisted composition. Cover art generated with AI.\n© Copyright noa music. All rights reserved.\n\n#study #공부플레이리스트 #공부음악 #studywithme #작업할때듣는음악 #lofi #시험기간 #집중력 #playlist #집중할때듣는음악 #공부할때듣기좋은음악 #공부할때듣는음악 #집중음악 #새벽공부 #studymotivation #시험 #lofimusic #lofijazz #합격 #focus"
+    },
+    {
+      "video_id": null,
+      "title": "Playlist 꽃놀이 가는 길에 듣는 봄맞이 로파이 🍶 흥 오르는 조선 로파이 믹스",
+      "scene_id": "tiger_night_stroll",
+      "description": "#조선로파이 #플레이리스트 #lofi\n\n어깨가 먼저 반응하는 가야금 힙합 믹스입니다.\n\nTracklist🎧\n0:00 Nightthrum\n1:06 Murmurthrum\n2:02 Cottonfold\n4:05 Stillvale\n5:43 Duskdrift\n7:29 Fadingglow\n8:23 Mutedlight\n8:50 Cottonform\n9:59 Warmvale\n11:18 Warmgleam\n12:20 Deepbloom\n14:18 Mistylet\n15:20 Slowsway\n17:23 Fadingdrift\n19:47 Mistyune\n21:41 Fadingfloe\n24:29 Nightell\n26:38 Velure\n28:06 Softtone\n28:48 Hushecho\n31:49 Paleloom\n33:11 Quietglow\n36:17 Calmfloe\n37:35 Calmhollow\n40:15 Hushsway\n42:39 Mistyfold\n43:56 Quietsway\n45:36 Warmdrift\n47:19 Slowgleam\n49:09 Bassshade\n50:36 Murmurmere\n52:48 Dimrest\n54:19 Quiettone\n57:03 Mistycurrent\n1:00:04 Deepmere\n1:02:04 Bassthos\n1:04:08 Dimfield\n1:06:23 Warmell\n1:06:57 Ambersway\n1:09:19 Lowform\n1:10:43 Mutedcrest\n1:12:46 Tendervale\n1:14:52 Faintthrum\n1:16:10 Duskrest\n1:17:45 Palehaze\n1:18:41 Softfloe\n\n사실... 로파이는 조선시대부터 있었다오. 🎧\n모든 수록곡은 AI(Suno) 지원으로 작곡하고 직접 다듬었습니다.\n\n💬 마음에 드는 가락이 있다면 댓글로 알려주시오.\n👍 좋아요와 구독은 다음 가락을 만드는 큰 힘이 된다오.\n\n🏮 조선로파이 (Joseon Lofi)\nMusic arranged with AI-assisted composition. Cover art generated with AI.\n© Copyright 조선로파이. All rights reserved.\n\n#산책음악 #드라이브음악 #드라이브팝 #기분전환음악 #신나는음악 #무드음악 #국악힙합 #chillhop #kpop #대금 #가야금 #브금 #플레이리스트 #hanok #korealofi #koreanlofi #한국풍 #사극감성 #국악 #국악로파이"
     }
   ],
   "track_names": {
@@ -431,7 +479,53 @@
     "Afternoon Rain.mp3": "Subloom",
     "Afternoon Rain_1.mp3": "Dusklight",
     "Late Night Rain.mp3": "Nightlight",
-    "Late Night Rain_1.mp3": "Sublet"
+    "Late Night Rain_1.mp3": "Sublet",
+    "Gayageum Groove_1.mp3": "Nightthrum",
+    "Harvest Party_1.mp3": "Murmurthrum",
+    "Chuseok Bounce_1.mp3": "Cottonfold",
+    "Paper Kite Walk.mp3": "Stillvale",
+    "Market Day Bounce.mp3": "Duskdrift",
+    "Harvest Party.mp3": "Fadingglow",
+    "Gayageum Groove.mp3": "Mutedlight",
+    "Cherry Steps_1.mp3": "Cottonform",
+    "Dancing Janggu Street_1.mp3": "Warmvale",
+    "Bamboo Skip_1.mp3": "Warmgleam",
+    "Market Day Bounce_1.mp3": "Deepbloom",
+    "Dandelion Steps.mp3": "Mistylet",
+    "Han River Bounce_1.mp3": "Slowsway",
+    "Peach Kites.mp3": "Fadingdrift",
+    "달빛 장단_1.mp3": "Mistyune",
+    "Han River Bounce_3.mp3": "Fadingfloe",
+    "Moonlit Market Bounce_1.mp3": "Nightell",
+    "Daejeum Street Parade.mp3": "Velure",
+    "Dancing Janggu Street.mp3": "Softtone",
+    "Sunlit Bamboo Loop.mp3": "Hushecho",
+    "Cherry Steps.mp3": "Paleloom",
+    "Han River Bounce_4.mp3": "Quietglow",
+    "Gaya Bounce_1.mp3": "Calmfloe",
+    "Han River Bounce_2.mp3": "Calmhollow",
+    "Han River Bounce_6.mp3": "Hushsway",
+    "Rice Paper Bounce_1.mp3": "Mistyfold",
+    "Gaya Bounce.mp3": "Quietsway",
+    "Moonlit Market Bounce.mp3": "Warmdrift",
+    "Morning Parcel_1.mp3": "Slowgleam",
+    "Daejeum Street Parade_1.mp3": "Bassshade",
+    "Daegeum Sunday Ride_1.mp3": "Murmurmere",
+    "Cheonggye Drum Parade.mp3": "Dimrest",
+    "Han River Bounce.mp3": "Quiettone",
+    "Han River Bounce_5.mp3": "Mistycurrent",
+    "Han River Bounce_7.mp3": "Deepmere",
+    "새벽의 춤.mp3": "Bassthos",
+    "Peach Kites_1.mp3": "Dimfield",
+    "Rice Paper Bounce.mp3": "Warmell",
+    "Daegeum Sunday Ride.mp3": "Ambersway",
+    "b494595a.mp3": "Lowform",
+    "Morning Parcel.mp3": "Mutedcrest",
+    "Paper Kite Walk_1.mp3": "Tendervale",
+    "Chuseok Bounce.mp3": "Faintthrum",
+    "달빛 장단.mp3": "Duskrest",
+    "Paper Crane Bounce.mp3": "Palehaze",
+    "Sunlit Bamboo Loop_1.mp3": "Softfloe"
   },
   "playlist_ids": {
     "night": "PLY0I9sQhFIXA",
