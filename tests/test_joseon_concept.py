@@ -132,6 +132,31 @@ class TestSceneGenreFilter(unittest.TestCase):
         scene = {"id": "x", "styles": ["photoreal"]}
         self.assertEqual(gi.draw_style(state, scene, rng=rng), "photoreal")
 
+    def test_situation_filters_incompatible_scenes(self):
+        state = {}
+        rng = random.Random(7)
+        scenes = {"scenes": [
+            {"id": "night_sc", "genres": ["groove"], "styles": ["painterly"], "time": "night", "prompt": "p"},
+            {"id": "spring_day_sc", "genres": ["groove"], "styles": ["painterly"], "season": "spring", "time": "day", "prompt": "p"},
+            {"id": "any_sc", "genres": ["groove"], "styles": ["painterly"], "prompt": "p"},
+        ]}
+        situation = {"id": "spring_picnic", "season": "spring", "time": "day"}
+        for _ in range(10):
+            scene = gi.draw_scene(state, scenes, rng=rng, genre="groove",
+                                  pool_name="scene_groove_t", situation=situation)
+            self.assertIn(scene["id"], {"spring_day_sc", "any_sc"})
+
+    def test_situation_filter_falls_back_when_no_match(self):
+        state = {}
+        rng = random.Random(8)
+        scenes = {"scenes": [
+            {"id": "night_sc", "genres": ["calm"], "styles": ["painterly"], "time": "night", "prompt": "p"},
+        ]}
+        situation = {"id": "day_only", "time": "day"}
+        scene = gi.draw_scene(state, scenes, rng=rng, genre="calm",
+                              pool_name="scene_calm_t", situation=situation)
+        self.assertEqual(scene["id"], "night_sc")
+
     def test_style_suffix_applied_to_prompt(self):
         prompt = gi.build_full_prompt("scene", "16:9", style_suffix=gi.JOSEON_STYLE_SUFFIXES["painterly"])
         self.assertIn("oil painting", prompt)

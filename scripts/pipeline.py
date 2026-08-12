@@ -81,6 +81,7 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
         # 조선 컨셉이면 오늘의 무드(calm=집중/groove=산책·드라이브)를 먼저 뽑는다 —
         # 음원 폴더, 씬 후보, 문구 풀이 전부 무드를 따라간다.
         genre = None
+        situation = None
         if concept == "joseon":
             # 무드별 라이브러리 현황을 항상 로그에 남긴다 (곡 부족을 빨리 알아차리도록)
             for g in templates["genres"]:
@@ -88,7 +89,9 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
                 count = len(list(gdir.glob("*.mp3"))) if gdir.is_dir() else 0
                 print(f"  라이브러리 [{g}]: {count}곡")
             genre = generate_metadata.draw_genre(state, templates)
-            print(f"오늘의 무드: {genre}")
+            # 상황 문구를 먼저 뽑아 씬 선택과 계절/시간대를 맞춘다 (꽃놀이 문구 + 밤 씬 방지)
+            situation = generate_metadata.draw_situation(state, templates, genre)
+            print(f"오늘의 무드: {genre} / 상황: {situation['id']}")
             music_dir = Path(library_dir) / genre
             if not music_dir.is_dir() or not any(music_dir.glob("*.mp3")):
                 raise RuntimeError(
@@ -114,7 +117,7 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
         print("== 2/4 이미지 생성 ==")
         style_suffix = None
         if concept == "joseon":
-            scene = generate_image.draw_scene(state, scenes_config, genre=genre, pool_name=f"scene_{genre}")
+            scene = generate_image.draw_scene(state, scenes_config, genre=genre, pool_name=f"scene_{genre}", situation=situation)
             style = generate_image.draw_style(state, scene)
             style_suffix = generate_image.JOSEON_STYLE_SUFFIXES[style]
             print(f"  그림체: {style}")
@@ -139,7 +142,7 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
         )
 
         print("== 4/4 메타데이터 생성 + 업로드 ==")
-        metadata = generate_metadata.build_metadata(state, chapters, templates, settings, scene_id=scene["id"], genre=genre)
+        metadata = generate_metadata.build_metadata(state, chapters, templates, settings, scene_id=scene["id"], genre=genre, situation=situation)
         print(f"  제목: {metadata['title']}")
 
         # 썸네일 (조선 컨셉 전용): 씬 이미지 + 팝 텍스트. 실패해도 업로드는 진행한다.

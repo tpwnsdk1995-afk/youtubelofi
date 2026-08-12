@@ -60,14 +60,34 @@ def load_yaml(path):
         return yaml.safe_load(f)
 
 
-def draw_scene(state, scenes_config, rng=None, genre=None, pool_name="scene"):
+def _tag_compatible(a, b):
+    """계절/시간대 태그 비교: 양쪽 다 값이 지정된 경우에만 충돌로 본다 (미지정=무관)."""
+    return not a or not b or a == b
+
+
+def scene_matches_situation(scene, situation):
+    """씬과 상황 문구의 계절(season)/시간대(time) 태그가 충돌하지 않는지 검사한다.
+    (예: '꽃놀이 봄' 문구에 눈 내리는 겨울 씬이 뽑히는 어색함 방지)"""
+    if not situation:
+        return True
+    return (_tag_compatible(scene.get("season"), situation.get("season"))
+            and _tag_compatible(scene.get("time"), situation.get("time")))
+
+
+def draw_scene(state, scenes_config, rng=None, genre=None, pool_name="scene", situation=None):
     """씬을 셔플백으로 뽑는다. genre가 주어지면 그 무드에 어울리는 씬만 후보로 쓰고,
-    무드별로 풀 이름을 분리해(pool_name) 셔플백 순환이 서로 섞이지 않게 한다."""
+    무드별로 풀 이름을 분리해(pool_name) 셔플백 순환이 서로 섞이지 않게 한다.
+    situation이 주어지면 계절/시간대가 충돌하는 씬을 후보에서 제외한다 (호환 씬이
+    하나도 없으면 안전하게 무드 필터만 적용)."""
     scenes = scenes_config["scenes"]
     if genre is not None:
         scenes = [s for s in scenes if genre in s.get("genres", [])]
         if not scenes:
             raise ValueError(f"'{genre}' 무드에 해당하는 씬이 없습니다")
+    if situation is not None:
+        matching = [s for s in scenes if scene_matches_situation(s, situation)]
+        if matching:
+            scenes = matching
     scene_ids = [s["id"] for s in scenes]
     scene_id = sm.draw(state, pool_name, scene_ids, count=1, rng=rng)[0]
     return next(s for s in scenes if s["id"] == scene_id)

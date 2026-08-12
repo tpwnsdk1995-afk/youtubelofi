@@ -98,7 +98,7 @@ def build_description(state, templates, chapters, rng=None, genre=None):
     return "\n".join(parts), tags
 
 
-def build_metadata(state, chapters, templates, video_settings, scene_id=None, rng=None, genre=None):
+def build_metadata(state, chapters, templates, video_settings, scene_id=None, rng=None, genre=None, situation=None):
     metadata = {
         "categoryId": video_settings["youtube"]["category_id"],
         "privacyStatus": video_settings["youtube"]["privacy_status"],
@@ -110,7 +110,8 @@ def build_metadata(state, chapters, templates, video_settings, scene_id=None, rn
     if is_joseon(templates):
         if genre is None:
             genre = draw_genre(state, templates, rng=rng)
-        situation = draw_situation(state, templates, genre, rng=rng)
+        if situation is None:
+            situation = draw_situation(state, templates, genre, rng=rng)
         metadata["title"] = build_title(state, templates, rng=rng, genre=genre, situation=situation)
         metadata["description"], metadata["tags"] = build_description(state, templates, chapters, rng=rng, genre=genre)
         metadata["genre"] = genre

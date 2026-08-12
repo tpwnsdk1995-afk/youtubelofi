@@ -32,14 +32,17 @@ genres:
         thumb_main: "암행어사 출두"
         thumb_sub: "직전에 듣는 조선 로파이"
       - id: king_allnight
+        time: night
         title: "왕이 침전에서 몰래 야근하며 듣던 소리"
         thumb_main: "왕의 야근 브금"
         thumb_sub: "조선 로파이"
       - id: sungkyunkwan_4am
+        time: night
         title: "새벽 4시 성균관 자습실에서 흐르던 소리"
         thumb_main: "성균관 새벽 4시"
         thumb_sub: "조선 로파이"
       - id: hunjang_secret
+        time: day
         title: "서당에서 훈장님 몰래 듣던 소리"
         thumb_main: "훈장님 몰래"
         thumb_sub: "듣는 조선 로파이"
@@ -52,18 +55,23 @@ genres:
         thumb_main: "과거 삼수생"
         thumb_sub: "정신 붙잡는 조선 로파이"
       - id: jiphyeonjeon_overtime
+        time: night
         title: "집현전 학사들의 야근 브금"
         thumb_main: "집현전 야근"
         thumb_sub: "조선 로파이"
       - id: donguibogam
+        time: night
         title: "동의보감 집필하던 밤의 초집중 브금"
         thumb_main: "동의보감 집필"
         thumb_sub: "초집중 조선 로파이"
       - id: snow_ondol
+        season: winter
+        time: night
         title: "눈 오는 밤 온돌방에서 듣는 겨울 로파이"
         thumb_main: "눈 오는 온돌방"
         thumb_sub: "겨울 조선 로파이"
       - id: chaekgeori_done
+        time: day
         title: "책거리 끝낸 선비의 홀가분한 오후"
         thumb_main: "책거리 끝!"
         thumb_sub: "조선 로파이"
@@ -87,18 +95,22 @@ genres:
     playlist_title: "조선 로파이 | 산책·드라이브"
     situations:
       - id: night_stroll
+        time: night
         title: "한양 밤거리를 걷는 기분, 산책용 조선 로파이"
         thumb_main: "한양 밤산책"
         thumb_sub: "신나는 조선 로파이"
       - id: joseon_drive
+        time: night
         title: "달빛 아래 말 타고 퇴근할 때 듣던 소리"
         thumb_main: "조선식 퇴근길"
         thumb_sub: "드라이브 조선 로파이"
       - id: makgeolli_time
+        time: night
         title: "막걸리 한 사발에 어울리는 조선 로파이"
         thumb_main: "막걸리 한 사발"
         thumb_sub: "안주는 조선 로파이"
       - id: jumo_offwork
+        time: night
         title: "주모가 마감하고 듣는 신나는 로파이"
         thumb_main: "주모의 퇴근길"
         thumb_sub: "신나는 조선 로파이"
@@ -107,6 +119,7 @@ genres:
         thumb_main: "비 오는 주막"
         thumb_sub: "파전과 조선 로파이"
       - id: midnight_bar
+        time: night
         title: "임금님 몰래 여는 조선 심야 음악다방"
         thumb_main: "조선 심야 다방"
         thumb_sub: "임금님 몰래 오픈"
@@ -123,6 +136,8 @@ genres:
         thumb_main: "조선 광대 스웩"
         thumb_sub: "가야금 힙합 로파이"
       - id: spring_picnic
+        season: spring
+        time: day
         title: "꽃놀이 가는 길에 듣는 봄맞이 로파이"
         thumb_main: "조선 꽃놀이"
         thumb_sub: "봄 산책 조선 로파이"

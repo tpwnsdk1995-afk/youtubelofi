@@ -21,6 +21,7 @@ scenes:
       on the other side, floating dust particles, stacks of old books softly
       blurred behind
   - id: gwageo_exam_hall
+    time: day
     genres: [calm]
     styles: [painterly]
     prompt: >-
@@ -30,6 +31,7 @@ scenes:
       focus in the center writing intensely, morning light rays breaking over
       the palace walls
   - id: jiphyeonjeon_library
+    time: night
     genres: [calm]
     styles: [painterly, photoreal]
     prompt: >-
@@ -38,6 +40,7 @@ scenes:
       in official robes reading at long tables lit by rows of hanging paper
       lanterns, warm golden atmosphere with deep perspective
   - id: winter_ondol_study
+    season: winter
     genres: [calm]
     styles: [painterly]
     prompt: >-
@@ -62,6 +65,7 @@ scenes:
       calligraphy, a curious small orange kitten reaching one paw toward the
       brush, soft window light, intimate cozy framing
   - id: candlelit_allnight
+    time: night
     genres: [calm]
     styles: [painterly, photoreal]
     prompt: >-
@@ -70,6 +74,7 @@ scenes:
       focused face and the desk out of near-total darkness, ink stone and brush
       pots catching the light, a moth circling the flame
   - id: dawn_bell_seowon
+    time: day
     genres: [calm]
     styles: [painterly]
     prompt: >-
@@ -78,6 +83,7 @@ scenes:
       tiled roofs and stone steps, tall pine trees emerging from the fog, first
       light rays cutting through the mist
   - id: morning_madang_book
+    time: day
     genres: [calm]
     styles: [painterly]
     prompt: >-
@@ -100,6 +106,7 @@ scenes:
       traditional robes bowing before him, glowing LED accents reflecting on
       the polished wooden floor
   - id: scribe_laptop_overtime
+    time: night
     genres: [calm]
     styles: [photoreal]
     prompt: >-
@@ -109,6 +116,7 @@ scenes:
       one candle burning low, dark palace hall at night, dramatic warm side
       light, deadpan tired expression
   - id: gungnyeo_selfie
+    time: day
     genres: [groove]
     styles: [photoreal]
     prompt: >-
@@ -127,6 +135,7 @@ scenes:
       officials frozen mid-gesture around him, ornate palace hall with
       candlelight, crisp advertising photography look
   - id: king_smartphone_night
+    time: night
     genres: [calm]
     styles: [photoreal]
     prompt: >-
@@ -156,6 +165,7 @@ scenes:
       clap and cheer, strings of lanterns above, amused crowd in hanbok
       watching, dynamic festive energy
   - id: gisaeng_dj_table
+    time: night
     genres: [groove]
     styles: [photoreal, painterly]
     prompt: >-
@@ -165,6 +175,7 @@ scenes:
       hanbok vibing with drinks at low tables around her, warm night tavern
       atmosphere
   - id: gisaeng_gayageum_blossom
+    season: spring
     genres: [groove]
     styles: [painterly]
     prompt: >-
@@ -173,6 +184,7 @@ scenes:
       evening, cherry blossom petals drifting through the air, glowing paper
       lanterns hung among the blossom branches, romantic pastel palette
   - id: jumak_market_evening
+    time: night
     genres: [groove]
     styles: [painterly, photoreal]
     prompt: >-
@@ -191,6 +203,7 @@ scenes:
       lantern light, rain streaking past the open door in the dark background,
       no people
   - id: empty_jumak_night
+    time: night
     genres: [groove]
     styles: [photoreal, painterly]
     prompt: >-
@@ -199,6 +212,7 @@ scenes:
       moonlight spilling through the open lattice door onto the wooden floor,
       hanging dried herbs and gourds, quiet nostalgic mood, no people
   - id: hanok_alley_nightwalk
+    time: night
     genres: [groove]
     styles: [painterly, photoreal]
     prompt: >-
@@ -215,6 +229,7 @@ scenes:
       mountain silhouettes fading into golden haze, a boatman with a long pole
       at the stern, ripples glowing orange and pink
   - id: rooftop_haegeum
+    time: night
     genres: [groove]
     styles: [painterly]
     prompt: >-
@@ -225,6 +240,7 @@ scenes:
 
   # ===== 공용 (양쪽 무드 모두) =====
   - id: moon_pavilion_lanterns
+    time: night
     genres: [calm, groove]
     styles: [painterly]
     prompt: >-
@@ -234,6 +250,8 @@ scenes:
       the night sky reflected in the water, cool indigo night with warm
       lantern glow
   - id: firefly_courtyard
+    season: summer
+    time: night
     genres: [calm, groove]
     styles: [painterly]
     prompt: >-
@@ -270,6 +288,7 @@ scenes:
       around him, one magpie holding a tiny janggu drum, decorative peonies
       and stylized clouds, festive warm colors
   - id: tiger_moon_rest
+    time: night
     genres: [calm]
     styles: [minhwa]
     prompt: >-
@@ -286,6 +305,7 @@ scenes:
       magpie dropping a traditional brass spoon, decorative minhwa clouds and
       a small hanok in the background, playful anachronism
   - id: tiger_night_stroll
+    time: night
     genres: [groove]
     styles: [minhwa]
     prompt: >-
