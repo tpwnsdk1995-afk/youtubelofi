@@ -1,0 +1,27 @@
+name: Make legacy videos private (rebrand one-off)
+
+# 조선로파이 리브랜딩 전환용: 기존 노아뮤직 시절 영상을 전부 비공개로 내린다.
+# 삭제가 아니라 비공개라 되돌릴 수 있다. 전환 후엔 이 워크플로우를 삭제해도 된다.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  private:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Set all existing videos to private
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          SCRIPT_B64: "IiIi66as67iM656c65SpIOyghO2ZmDog7LGE64SQ7J2YIOq4sOyhtChsZWdhY3kpIOyYgeyDgeydhCDsoITrtoAg67mE6rO16rCc66GcIOyghO2ZmO2VnOuLpC4gMe2ajOyEsS4iIiIKaW1wb3J0IHN5cwoKc3lzLnBhdGguaW5zZXJ0KDAsICJzY3JpcHRzIikKaW1wb3J0IHVwbG9hZF95b3V0dWJlIGFzIHV5CmZyb20gZ29vZ2xlYXBpY2xpZW50LmRpc2NvdmVyeSBpbXBvcnQgYnVpbGQKCgpkZWYgbWFpbigpOgogICAgY3JlZHMgPSB1eS5nZXRfY3JlZGVudGlhbHMoKQogICAgeXQgPSBidWlsZCgieW91dHViZSIsICJ2MyIsIGNyZWRlbnRpYWxzPWNyZWRzKQoKICAgIGNoID0geXQuY2hhbm5lbHMoKS5saXN0KHBhcnQ9ImNvbnRlbnREZXRhaWxzIiwgbWluZT1UcnVlKS5leGVjdXRlKCkKICAgIHVwbG9hZHMgPSBjaFsiaXRlbXMiXVswXVsiY29udGVudERldGFpbHMiXVsicmVsYXRlZFBsYXlsaXN0cyJdWyJ1cGxvYWRzIl0KCiAgICB2aWRlb19pZHMgPSBbXQogICAgdG9rZW4gPSBOb25lCiAgICB3aGlsZSBUcnVlOgogICAgICAgIHIgPSB5dC5wbGF5bGlzdEl0ZW1zKCkubGlzdCgKICAgICAgICAgICAgcGFydD0iY29udGVudERldGFpbHMiLCBwbGF5bGlzdElkPXVwbG9hZHMsIG1heFJlc3VsdHM9NTAsIHBhZ2VUb2tlbj10b2tlbgogICAgICAgICkuZXhlY3V0ZSgpCiAgICAgICAgdmlkZW9faWRzICs9IFtpWyJjb250ZW50RGV0YWlscyJdWyJ2aWRlb0lkIl0gZm9yIGkgaW4gci5nZXQoIml0ZW1zIiwgW10pXQogICAgICAgIHRva2VuID0gci5nZXQoIm5leHRQYWdlVG9rZW4iKQogICAgICAgIGlmIG5vdCB0b2tlbjoKICAgICAgICAgICAgYnJlYWsKCiAgICBjaGFuZ2VkID0gMAogICAgZm9yIHZpZCBpbiB2aWRlb19pZHM6CiAgICAgICAgaXRlbXMgPSB5dC52aWRlb3MoKS5saXN0KHBhcnQ9InN0YXR1cyxzbmlwcGV0IiwgaWQ9dmlkKS5leGVjdXRlKCkuZ2V0KCJpdGVtcyIsIFtdKQogICAgICAgIGlmIG5vdCBpdGVtczoKICAgICAgICAgICAgY29udGludWUKICAgICAgICB2ID0gaXRlbXNbMF0KICAgICAgICBzdGF0dXMgPSB2WyJzdGF0dXMiXQogICAgICAgIGlmIHN0YXR1cy5nZXQoInByaXZhY3lTdGF0dXMiKSAhPSAicHJpdmF0ZSI6CiAgICAgICAgICAgIHN0YXR1c1sicHJpdmFjeVN0YXR1cyJdID0gInByaXZhdGUiCiAgICAgICAgICAgIHl0LnZpZGVvcygpLnVwZGF0ZShwYXJ0PSJzdGF0dXMiLCBib2R5PXsiaWQiOiB2aWQsICJzdGF0dXMiOiBzdGF0dXN9KS5leGVjdXRlKCkKICAgICAgICAgICAgY2hhbmdlZCArPSAxCiAgICAgICAgICAgIHByaW50KGYi67mE6rO16rCcIOyghO2ZmDoge3ZpZH0gLSB7dlsnc25pcHBldCddWyd0aXRsZSddWzo1MF19IikKICAgICAgICBlbHNlOgogICAgICAgICAgICBwcmludChmIuydtOuvuCDruYTqs7XqsJw6IHt2aWR9IC0ge3ZbJ3NuaXBwZXQnXVsndGl0bGUnXVs6NTBdfSIpCiAgICBwcmludChmIuyZhOujjDog7KCE7LK0IHtsZW4odmlkZW9faWRzKX3qsJwg7KSRIHtjaGFuZ2VkfeqwnCDruYTqs7XqsJwg7KCE7ZmYIikKCgppZiBfX25hbWVfXyA9PSAiX19tYWluX18iOgogICAgbWFpbigpCg=="
+        run: |
+          echo "$SCRIPT_B64" | base64 -d > legacy_private.py
+          python3 legacy_private.py

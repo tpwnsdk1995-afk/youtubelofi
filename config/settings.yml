@@ -4,7 +4,7 @@
 # (scenes_joseon.yml + title_templates_joseon.yml + 썸네일 + 무드 로테이션 활성화).
 # D-day에 joseon으로 바꾸기 전 필요한 것: Drive 음악 폴더 안에 calm/, groove/ 하위
 # 폴더를 만들고 각 무드의 mp3를 채워야 한다.
-concept: legacy
+concept: joseon
 video:
   # 목표 길이를 강제하지 않음 - audio.track_count_min~max 범위에서 무작위로 뽑힌 곡 수만큼의 길이가 그대로 영상 길이가 됨.
   resolution: "1920x1080"
