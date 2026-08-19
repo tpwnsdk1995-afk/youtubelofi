@@ -141,6 +141,25 @@ class TestCountFlatWeeks(unittest.TestCase):
         self.assertEqual(wr.count_flat_weeks([]), 0)
 
 
+class TestShouldAppendHistory(unittest.TestCase):
+    def test_appends_when_empty(self):
+        self.assertTrue(wr.should_append_history([], datetime(2026, 8, 24, 9, 0, tzinfo=KST)))
+
+    def test_skips_same_week_rerun(self):
+        now = datetime(2026, 8, 24, 9, 0, tzinfo=KST)
+        history = [{"at": (now - timedelta(hours=2)).isoformat()}]
+        self.assertFalse(wr.should_append_history(history, now))
+
+    def test_appends_after_a_week(self):
+        now = datetime(2026, 8, 24, 9, 0, tzinfo=KST)
+        history = [{"at": (now - timedelta(days=7)).isoformat()}]
+        self.assertTrue(wr.should_append_history(history, now))
+
+    def test_appends_when_timestamp_malformed(self):
+        now = datetime(2026, 8, 24, 9, 0, tzinfo=KST)
+        self.assertTrue(wr.should_append_history([{"at": "not-a-date"}], now))
+
+
 class TestRecommendations(unittest.TestCase):
     def test_first_report_says_do_not_change(self):
         recs = wr.build_recommendations(

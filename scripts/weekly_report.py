@@ -241,6 +241,21 @@ def build_recommendations(channel_stats, channel_prev, total_delta, genre_groups
     return lines
 
 
+def should_append_history(history, now, min_days=6):
+    """추세 기록은 주 1회만 남긴다. 진단 목적의 수동 재실행이 같은 주에 여러 항목을
+    쌓으면 '몇 주째 정체' 판단이 망가지기 때문이다."""
+    if not history:
+        return True
+    last_at = history[-1].get("at")
+    if not last_at:
+        return True
+    try:
+        last = datetime.fromisoformat(last_at)
+    except ValueError:
+        return True
+    return (now - last) >= timedelta(days=min_days)
+
+
 def count_flat_weeks(history):
     """최근 몇 주 연속으로 주간 조회수 증가가 MIN_TOTAL_DELTA 미만이었는지 센다."""
     if not history:
@@ -436,12 +451,13 @@ def main():
     weekly_view_delta = None
     if channel_prev:
         weekly_view_delta = channel_stats["viewCount"] - channel_prev.get("viewCount", channel_stats["viewCount"])
-    history = history + [{
-        "at": now.isoformat(),
-        "subscriberCount": channel_stats["subscriberCount"],
-        "viewCount": channel_stats["viewCount"],
-        "weekly_view_delta": weekly_view_delta,
-    }]
+    if should_append_history(history, now):
+        history = history + [{
+            "at": now.isoformat(),
+            "subscriberCount": channel_stats["subscriberCount"],
+            "viewCount": channel_stats["viewCount"],
+            "weekly_view_delta": weekly_view_delta,
+        }]
     save_json(args.weekly_stats, {
         "snapshot_at": now.isoformat(),
         "channel": channel_stats,
