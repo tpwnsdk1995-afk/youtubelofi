@@ -116,6 +116,7 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
 
         print("== 2/4 이미지 생성 ==")
         style_suffix = None
+        style = None
         if concept == "joseon":
             scene = generate_image.draw_scene(state, scenes_config, genre=genre, pool_name=f"scene_{genre}", situation=situation)
             style = generate_image.draw_style(state, scene)
@@ -158,16 +159,25 @@ def run_pipeline(settings_path="config/settings.yml", scenes_path="config/scenes
                 print(f"WARNING: 썸네일 생성 실패 (업로드는 계속 진행): {e}", file=sys.stderr)
                 thumbnail_path = None
 
+        # genre/situation/style을 결과에 남겨 둔다 (state.json의 recent_videos에 기록되어
+        # 주간 리포트가 무드/그림체별 반응을 집계할 때 사용한다).
+        common_fields = {
+            "scene_id": scene["id"],
+            "genre": genre,
+            "situation_id": situation["id"] if situation else None,
+            "style": style,
+        }
+
         if dry_run:
             print("dry-run 모드: 실제 업로드는 건너뜁니다.")
-            result = {"video_id": None, "title": metadata["title"], "scene_id": scene["id"], "description": metadata["description"]}
+            result = {"video_id": None, "title": metadata["title"], "description": metadata["description"], **common_fields}
             if thumbnail_path is not None:
                 # 리허설에서 사용자가 결과물을 눈으로 확인할 수 있게 워킹 디렉토리 밖에 복사
                 shutil.copy(thumbnail_path, "thumbnail_preview.jpg")
                 print("  썸네일 미리보기 저장: thumbnail_preview.jpg")
         else:
             response = upload_youtube.upload_video(video_path, metadata, youtube_credentials)
-            result = {"video_id": response["id"], "title": metadata["title"], "scene_id": scene["id"], "description": metadata["description"]}
+            result = {"video_id": response["id"], "title": metadata["title"], "description": metadata["description"], **common_fields}
             print(f"  업로드 완료 (비공개, 확인 대기): {result['video_id']}")
 
             if thumbnail_path is not None:

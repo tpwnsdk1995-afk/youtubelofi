@@ -40,6 +40,25 @@
 - Routine 프롬프트 안에 위 절대 규칙(지각 도착 시 스킵, 재시도 금지)이 이미 내장되어 있다.
 - 정상 소요시간: 생성 전체 35~45분. 1시간 넘게 in_progress면 이상 신호.
 
+## 주간 리포트 (매주 월요일 09:00 KST)
+
+| 시각 | 담당 | 동작 |
+|---|---|---|
+| 월요일 09:00 | Routine `trig_01Ks8E9B2Ax569HW4TAvqP2F` (cron `0 0 * * 1` UTC) | 오늘(월요일) 실행 기록 없으면 `weekly-report.yml` 1회 dispatch |
+
+- `scripts/weekly_report.py`가 채널 전체(구독자/총 조회수)와 공개 영상별 조회수를
+  집계해 텔레그램으로 직접 보낸다 (일간 파이프라인과 동일하게 워크플로우 자체가
+  알림을 보내므로 Routine이 중복으로 또 보내지 않음).
+- 지난주 대비 증가분을 계산하려고 매 실행마다 `state/weekly_stats.json`에 그 시점
+  스냅샷을 저장해 두고 다음 실행에서 차이를 비교한다 (state.json과 같은 방식으로
+  워크플로우가 커밋·푸시). **최초 1회는 비교 대상이 없어 증가분 없이 누적값만 나온다.**
+- 무드(calm/groove)별 반응은 `pipeline.py`가 `state.json`의 `recent_videos`에 남기는
+  `genre` 필드를 우선 쓰고, 리포트 도입 이전 옛 영상은 설명란 첫 줄(top_hashtags)로
+  역추정한다. 이 리포트를 보고 무드 비중(`genre_rotation`)이나 씬 구성을 조정할지
+  판단한다 — 자동으로 바꾸지는 않음, 사람이 보고 결정.
+- 요일이 월요일이 아니거나 이미 그 주 실행 기록이 있으면 Routine이 조용히 스킵한다
+  (일간 사이클과 동일한 "밀린 날 건너뛰기" 규칙 적용).
+
 ## 텔레그램 실시간 웹훅 (n8n)
 
 - **경로**: 텔레그램 버튼 → `https://n8n.issuejupjup.com/webhook/noamusic-telegram`
@@ -63,6 +82,8 @@
     ffmpeg → 업로드 → 이슈/텔레그램)
   - `handle-telegram-decision.yml` — n8n이 dispatch하는 승인/거부 처리
   - `auto-publish.yml` — 19:14 무응답 자동 공개 (자체 텔레그램 알림 포함 → Routine이
+    중복 알림 보내면 안 됨)
+  - `weekly-report.yml` — 매주 월요일 주간 반응 리포트 (자체 텔레그램 발송 → Routine이
     중복 알림 보내면 안 됨)
   - `finalize-publish.yml`, `check-video-status.yml`, `list-channel-videos.yml` — 수동 도구
   - `setup-n8n-telegram-webhook.yml` — n8n 웹훅 재배포용
