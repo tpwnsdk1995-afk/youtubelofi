@@ -1,5 +1,5 @@
 {
-  "snapshot_at": "2026-08-20T07:12:35.271883+09:00",
+  "snapshot_at": "2026-08-20T07:25:22.923786+09:00",
   "channel": {
     "subscriberCount": 0,
     "viewCount": 6,
@@ -90,5 +90,13 @@
       "viewCount": 10,
       "likeCount": 0
     }
-  }
+  },
+  "history": [
+    {
+      "at": "2026-08-20T07:25:22.923786+09:00",
+      "subscriberCount": 0,
+      "viewCount": 6,
+      "weekly_view_delta": 0
+    }
+  ]
 }
