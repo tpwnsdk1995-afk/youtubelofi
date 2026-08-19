@@ -35,6 +35,10 @@ jobs:
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # 음원 재고(무드별 곡 수)를 리포트에 포함하기 위한 읽기 전용 조회.
+          # 없으면 해당 섹션만 생략되고 리포트는 정상 발송된다.
+          GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+          GDRIVE_MUSIC_FOLDER_ID: ${{ secrets.GDRIVE_MUSIC_FOLDER_ID }}
         run: python3 scripts/weekly_report.py
 
       - name: Commit updated weekly snapshot
