@@ -28,6 +28,7 @@ from googleapiclient.discovery import build
 
 import sync_music_library
 import upload_youtube as uy
+import youtube_analytics
 
 KST = timezone(timedelta(hours=9))
 
@@ -40,6 +41,13 @@ MEANINGFUL_RATIO = 1.5    # 이 배수 이상 차이 나야 "유의미한 차이
 # 라이브러리 권장 규모. 한 영상이 40~50곡을 쓰는데 라이브러리가 이보다 작으면
 # 영상 간 곡 중복이 심해져 유튜브 반복 콘텐츠 정책에 불리하다.
 RECOMMENDED_LIBRARY_SIZE = 100
+
+# 퍼널 진단 기준. 유튜브 공식 도움말이 "대부분 채널의 노출 클릭률은 2~10%"라고
+# 밝히고 있어 2%를 썸네일 개선 신호로 삼는다.
+# (support.google.com/youtube/answer/9314486)
+MIN_WEEKLY_IMPRESSIONS = 1000   # 이 밑이면 노출 자체가 없는 단계 = 콘텐츠 문제 아님
+LOW_CTR = 2.0                   # % - 노출은 되는데 안 눌린다 = 썸네일 문제
+LOW_VIEW_MINUTES = 3.0          # 분 - 눌렀는데 바로 나간다 = 음악/도입부 문제
 
 
 def load_yaml(path):
@@ -175,6 +183,86 @@ def compare_groups(groups):
     return best, worst
 
 
+def diagnose_funnel(analytics, prev_summary=None):
+    """노출 -> 클릭 -> 시청 순서로 어디서 막히는지 짚는다.
+    각 단계는 조치가 완전히 다르므로, 어느 단계가 병목인지 아는 것이 핵심이다.
+    (분석 데이터가 없으면 빈 리스트)"""
+    if not analytics:
+        return []
+
+    summary = analytics["summary"]
+    impressions = summary.get("videoThumbnailImpressions")
+    ctr = summary.get("videoThumbnailImpressionsClickRate")
+    avg_seconds = summary.get("averageViewDuration", 0) or 0
+    avg_minutes = avg_seconds / 60
+    views = summary.get("views", 0) or 0
+    subs = summary.get("subscribersGained", 0) or 0
+
+    lines = []
+
+    # 지난 주 대비 추세를 먼저 (개선되고 있는지가 사용자의 핵심 관심사)
+    if prev_summary:
+        prev_imp = prev_summary.get("videoThumbnailImpressions")
+        if impressions is not None and prev_imp:
+            change = (impressions - prev_imp) / prev_imp * 100
+            direction = "증가" if change >= 0 else "감소"
+            lines.append(f"- 노출수 추세: 지난주 대비 {abs(change):.0f}% {direction}")
+
+    if impressions is None:
+        # 노출 지표를 못 받은 경우(스코프/지표 미지원) - 시청 시간만으로 판단
+        if views and avg_minutes < LOW_VIEW_MINUTES:
+            lines.append(f"- 평균 시청 {avg_minutes:.1f}분으로 짧습니다. 도입부 곡이 "
+                         f"바로 붙잡지 못하고 있을 가능성이 큽니다.")
+        return lines
+
+    if impressions < MIN_WEEKLY_IMPRESSIONS:
+        lines.append(f"- **병목: 노출 단계** (주간 노출 {impressions:,}회). 알고리즘이 아직 "
+                     f"우리 영상을 사람들에게 보여주지 않는 단계입니다. 썸네일이나 음악의 "
+                     f"문제가 아니므로 그쪽을 고쳐도 지금은 숫자가 안 움직입니다.")
+        lines.append("- 이 단계에서 유효한 것: 업로드 일관성 유지, 제목/태그의 검색 키워드, "
+                     "재생목록 정리. 시간이 필요한 구간입니다.")
+    elif ctr is not None and ctr < LOW_CTR:
+        lines.append(f"- **병목: 썸네일** (노출 {impressions:,}회는 충분한데 클릭률 {ctr:.1f}%). "
+                     f"유튜브가 보여주고는 있는데 사람들이 안 누릅니다. "
+                     f"대부분 채널이 2~10% 구간이라 개선 여지가 큽니다.")
+        lines.append("- 조치: config/title_templates_joseon.yml의 thumb_main 문구를 더 짧고 "
+                     "굵게, 또는 config/scenes_joseon.yml에서 인물/표정이 큰 씬 비중을 늘리세요.")
+    elif avg_minutes < LOW_VIEW_MINUTES:
+        lines.append(f"- **병목: 음악/도입부** (클릭률 {ctr:.1f}%로 양호한데 평균 시청 "
+                     f"{avg_minutes:.1f}분). 눌러서 들어왔다가 바로 나갑니다.")
+        lines.append("- 조치: 첫 곡이 튀거나 이질적일 수 있습니다. Suno에서 도입부용으로 "
+                     "잔잔하게 시작하는 곡을 보강해 주세요.")
+    else:
+        lines.append(f"- 퍼널 정상: 노출 {impressions:,}회 → 클릭률 {ctr:.1f}% → 평균 시청 "
+                     f"{avg_minutes:.1f}분. 이 조합이면 볼륨을 늘리는 게 맞습니다.")
+        if views and subs == 0:
+            lines.append("- 다만 구독 전환이 0입니다. 채널 아트/설명이 '이 채널을 구독할 이유'를 "
+                         "충분히 말하고 있는지 점검해 보세요.")
+
+    return lines
+
+
+def format_traffic_sources(sources):
+    """유입 경로를 사람이 읽는 이름으로."""
+    names = {
+        "YT_SEARCH": "유튜브 검색",
+        "RELATED_VIDEO": "추천 영상",
+        "BROWSE": "탐색 기능(홈/구독)",
+        "PLAYLIST": "재생목록",
+        "NOTIFICATION": "알림",
+        "EXT_URL": "외부 링크",
+        "CHANNEL": "채널 페이지",
+        "NO_LINK_OTHER": "기타",
+        "SUBSCRIBER": "구독 피드",
+    }
+    total = sum(sources.values()) or 1
+    lines = []
+    for key, views in sorted(sources.items(), key=lambda kv: -kv[1])[:5]:
+        label = names.get(key, key)
+        lines.append(f"- {label}: {views:,}회 ({views / total * 100:.0f}%)")
+    return lines
+
+
 def build_recommendations(channel_stats, channel_prev, total_delta, genre_groups,
                           style_groups, new_video_count, library_counts, history):
     """리포트 하단의 "이번 주 조치 제안". 데이터가 뒷받침하는 것만 제안하고,
@@ -286,7 +374,8 @@ def fmt_avg(n):
 
 
 def build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by_id, genre_lookup,
-                 library_counts=None, history=None):
+                 library_counts=None, history=None, analytics=None, prev_analytics_summary=None,
+                 analytics_error=None):
     week_start = now - timedelta(days=7)
     lines = []
     lines.append(f"📊 조선로파이 주간 리포트 ({week_start.strftime('%m/%d')} ~ {now.strftime('%m/%d')})")
@@ -310,6 +399,28 @@ def build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by
     lines.append(f"총 조회수: {view_text}")
     lines.append(f"공개 영상 수: {channel_stats['videoCount']}개")
     lines.append("")
+
+    if analytics:
+        summary = analytics["summary"]
+        start_date, end_date = analytics["period"]
+        lines.append(f"[유입 지표 ({start_date} ~ {end_date})]")
+        impressions = summary.get("videoThumbnailImpressions")
+        ctr = summary.get("videoThumbnailImpressionsClickRate")
+        if impressions is not None:
+            lines.append(f"노출수: {impressions:,}회")
+        if ctr is not None:
+            lines.append(f"노출 클릭률(CTR): {ctr:.2f}%")
+        avg_seconds = summary.get("averageViewDuration", 0) or 0
+        lines.append(f"평균 시청 시간: {avg_seconds / 60:.1f}분")
+        watched = summary.get("estimatedMinutesWatched", 0) or 0
+        lines.append(f"총 시청 시간: {watched:,.0f}분")
+        lines.append("")
+
+        if analytics.get("traffic_sources"):
+            lines.append("[유입 경로]")
+            lines.extend(format_traffic_sources(analytics["traffic_sources"]))
+            lines.append("")
+
 
     public_videos = {vid: v for vid, v in videos.items() if v["privacyStatus"] == "public"}
     description_by_id = {vid: v.get("description", "") for vid, v in public_videos.items()}
@@ -393,6 +504,16 @@ def build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by
 
     # 표본 판정에는 채널 전체 증가분을 쓴다 — 영상별 합계는 이번 주 신작(지난 주
     # 스냅샷에 없던 영상)의 조회수를 통째로 놓치기 때문에 과소평가된다.
+    funnel = diagnose_funnel(analytics, prev_analytics_summary)
+    if funnel:
+        lines.append("[원인 진단]")
+        lines.extend(funnel)
+        lines.append("")
+    elif analytics_error:
+        lines.append("[원인 진단]")
+        lines.append(f"- 노출수/클릭률 분석이 꺼져 있습니다: {analytics_error}")
+        lines.append("")
+
     total_delta = view_delta if view_delta is not None else (sum(deltas.values()) if deltas else 0)
     recommendations = build_recommendations(
         channel_stats, channel_prev, total_delta, genre_groups, style_groups,
@@ -439,8 +560,15 @@ def main():
     library_counts = fetch_library_counts()
 
     now = datetime.now(KST)
+    # Analytics는 추가 스코프가 필요하다. 미승인이면 (None, 사유)가 오고
+    # 리포트는 해당 섹션만 빠진 채 정상 발송된다.
+    analytics, analytics_error = youtube_analytics.safe_fetch(credentials, now)
+    prev_analytics_summary = (prev_snapshot.get("analytics") or {}).get("summary")
+
     report = build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by_id,
-                          genre_lookup, library_counts=library_counts, history=history)
+                          genre_lookup, library_counts=library_counts, history=history,
+                          analytics=analytics, prev_analytics_summary=prev_analytics_summary,
+                          analytics_error=analytics_error)
 
     with open(args.output, "w", encoding="utf-8") as f:
         f.write(report)
@@ -458,12 +586,19 @@ def main():
             "viewCount": channel_stats["viewCount"],
             "weekly_view_delta": weekly_view_delta,
         }]
-    save_json(args.weekly_stats, {
+    snapshot = {
         "snapshot_at": now.isoformat(),
         "channel": channel_stats,
         "videos": {vid: {"viewCount": v["viewCount"], "likeCount": v["likeCount"]} for vid, v in videos.items()},
         "history": history[-12:],
-    })
+    }
+    if analytics:
+        # 다음 주에 노출수 추세("지난주 대비 N% 증가")를 계산하기 위해 보관
+        snapshot["analytics"] = analytics
+    elif prev_snapshot.get("analytics"):
+        # 이번 주 조회가 실패했다면 직전 값을 지워버리지 않는다
+        snapshot["analytics"] = prev_snapshot["analytics"]
+    save_json(args.weekly_stats, snapshot)
 
     if not args.dry_run:
         import send_telegram_message

@@ -266,3 +266,97 @@ class TestReportIncludesRecommendations(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def make_analytics(impressions=None, ctr=None, avg_seconds=600, views=100, subs=0, watched=1000):
+    summary = {
+        "views": views,
+        "estimatedMinutesWatched": watched,
+        "averageViewDuration": avg_seconds,
+        "subscribersGained": subs,
+    }
+    if impressions is not None:
+        summary["videoThumbnailImpressions"] = impressions
+    if ctr is not None:
+        summary["videoThumbnailImpressionsClickRate"] = ctr
+    return {"period": ("2026-08-17", "2026-08-23"), "summary": summary, "traffic_sources": {}}
+
+
+class TestDiagnoseFunnel(unittest.TestCase):
+    def test_no_analytics_returns_empty(self):
+        self.assertEqual(wr.diagnose_funnel(None), [])
+
+    def test_low_impressions_blames_discovery_not_content(self):
+        lines = wr.diagnose_funnel(make_analytics(impressions=120, ctr=5.0))
+        joined = "\n".join(lines)
+        self.assertIn("병목: 노출 단계", joined)
+        self.assertIn("썸네일이나 음악의 문제가 아니므로", joined.replace("\n", ""))
+
+    def test_high_impressions_low_ctr_blames_thumbnail(self):
+        lines = wr.diagnose_funnel(make_analytics(impressions=50000, ctr=1.1))
+        joined = "\n".join(lines)
+        self.assertIn("병목: 썸네일", joined)
+        self.assertIn("title_templates_joseon.yml", joined)
+
+    def test_good_ctr_short_watch_blames_music(self):
+        lines = wr.diagnose_funnel(make_analytics(impressions=50000, ctr=6.0, avg_seconds=90))
+        joined = "\n".join(lines)
+        self.assertIn("병목: 음악/도입부", joined)
+        self.assertIn("Suno", joined)
+
+    def test_healthy_funnel_says_scale_up(self):
+        lines = wr.diagnose_funnel(make_analytics(impressions=50000, ctr=6.0, avg_seconds=900, subs=20))
+        joined = "\n".join(lines)
+        self.assertIn("퍼널 정상", joined)
+
+    def test_healthy_funnel_but_no_subs_flags_branding(self):
+        lines = wr.diagnose_funnel(make_analytics(impressions=50000, ctr=6.0, avg_seconds=900, subs=0))
+        self.assertIn("구독 전환이 0", "\n".join(lines))
+
+    def test_impression_trend_vs_last_week(self):
+        cur = make_analytics(impressions=2000, ctr=5.0, avg_seconds=900)
+        prev = {"videoThumbnailImpressions": 1000}
+        lines = wr.diagnose_funnel(cur, prev)
+        self.assertIn("노출수 추세: 지난주 대비 100% 증가", "\n".join(lines))
+
+    def test_falls_back_when_impressions_unavailable(self):
+        lines = wr.diagnose_funnel(make_analytics(impressions=None, avg_seconds=60, views=10))
+        self.assertIn("평균 시청", "\n".join(lines))
+
+
+class TestTrafficSources(unittest.TestCase):
+    def test_formats_with_percentages(self):
+        lines = wr.format_traffic_sources({"YT_SEARCH": 60, "RELATED_VIDEO": 40})
+        self.assertIn("- 유튜브 검색: 60회 (60%)", lines)
+        self.assertIn("- 추천 영상: 40회 (40%)", lines)
+
+    def test_unknown_key_passes_through(self):
+        lines = wr.format_traffic_sources({"SOME_NEW_SOURCE": 5})
+        self.assertIn("SOME_NEW_SOURCE", "\n".join(lines))
+
+
+class TestReportWithAnalytics(unittest.TestCase):
+    def test_includes_funnel_and_traffic(self):
+        now = datetime(2026, 8, 24, 9, 0, tzinfo=KST)
+        channel_stats = {"subscriberCount": 0, "viewCount": 200, "videoCount": 7}
+        channel_prev = {"subscriberCount": 0, "viewCount": 100, "videoCount": 7}
+        analytics = make_analytics(impressions=50000, ctr=1.2, avg_seconds=600)
+        analytics["traffic_sources"] = {"YT_SEARCH": 80, "BROWSE": 20}
+        report = wr.build_report(now, channel_stats, channel_prev, {}, {}, {},
+                                 wr.build_genre_lookup(make_templates()),
+                                 history=[], analytics=analytics)
+        self.assertIn("[유입 지표", report)
+        self.assertIn("노출 클릭률(CTR): 1.20%", report)
+        self.assertIn("[유입 경로]", report)
+        self.assertIn("[원인 진단]", report)
+        self.assertIn("병목: 썸네일", report)
+
+    def test_reports_analytics_disabled_reason(self):
+        now = datetime(2026, 8, 24, 9, 0, tzinfo=KST)
+        channel_stats = {"subscriberCount": 0, "viewCount": 6, "videoCount": 7}
+        report = wr.build_report(now, channel_stats, {"viewCount": 6}, {}, {}, {},
+                                 wr.build_genre_lookup(make_templates()),
+                                 history=[], analytics=None,
+                                 analytics_error="Analytics 스코프 미승인 - 재인증 필요")
+        self.assertIn("노출수/클릭률 분석이 꺼져 있습니다", report)
+        self.assertIn("재인증", report)

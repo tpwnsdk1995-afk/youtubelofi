@@ -61,6 +61,23 @@
   판단한다 — 자동으로 바꾸지는 않음, 사람이 보고 결정.
 - 요일이 월요일이 아니거나 이미 그 주 실행 기록이 있으면 Routine이 조용히 스킵한다
   (일간 사이클과 동일한 "밀린 날 건너뛰기" 규칙 적용).
+- `scripts/weekly_report.py` — 매주 월요일. `state/weekly_stats.json`에 지난 주
+  스냅샷을 저장해 두고 그 차이를 "이번 주 증가분"으로 낸다. history는 주 1회만
+  append(수동 재실행이 추세를 오염시키지 않도록 6일 가드).
+- **표본 게이트**: 주간 조회수 증가 30회 미만이면 무드/그림체 기반 설정 변경 제안을
+  내지 않고 "지금 바꾸지 마세요"를 명시한다. 조회수 한 자릿수 구간의 차이는
+  노이즈다 — 여기서 genre_rotation을 건드리면 안 된다.
+- **원인 진단(퍼널)**: 노출 → 클릭 → 시청 순으로 병목을 짚는다. 노출 부족이면
+  콘텐츠 문제가 아니고, 노출은 되는데 CTR<2%면 썸네일, CTR은 괜찮은데 평균 시청이
+  짧으면 음악/도입부 문제다. 각각 조치가 완전히 다르다.
+- **Analytics 스코프 (중요)**: 노출수/CTR은 YouTube **Analytics** API(v2) 소관이고
+  `yt-analytics.readonly` 스코프가 필요하다. 현재 refresh token은 `youtube`
+  스코프만 가지므로 해당 섹션은 꺼져 있다. **Analytics API는 device flow를
+  지원하지 않아** 1번 설정에 쓴 모바일 절차를 재사용할 수 없다 — SETUP.md 8절의
+  웹 애플리케이션 + `http://localhost` 리디렉션 방식으로 재발급해야 한다.
+  (노출/CTR 지표 자체는 2026-01-15에 Analytics API에 추가됐다.)
+- 스코프가 없어도 리포트는 정상 발송된다 (해당 섹션만 생략 + 사유 표시).
+
 
 ## 텔레그램 실시간 웹훅 (n8n)
 
@@ -86,8 +103,10 @@
   - `handle-telegram-decision.yml` — n8n이 dispatch하는 승인/거부 처리
   - `auto-publish.yml` — 19:14 무응답 자동 공개 (자체 텔레그램 알림 포함 → Routine이
     중복 알림 보내면 안 됨)
-  - `weekly-report.yml` — 매주 월요일 주간 반응 리포트 (자체 텔레그램 발송 → Routine이
-    중복 알림 보내면 안 됨)
+  - `weekly-report.yml` — 매주 월요일 09:00 KST 주간 리포트 (Routine
+    `trig_01Ks8E9B2Ax569HW4TAvqP2F`, cron `0 0 * * 1` UTC). 조회수/구독자 증감,
+    무드·그림체별 반응, 음원 재고, 원인 진단, 조치 제안을 텔레그램으로 발송.
+    자체 알림을 보내므로 Routine이 중복 알림 보내면 안 됨.
   - `finalize-publish.yml`, `check-video-status.yml`, `list-channel-videos.yml` — 수동 도구
   - `setup-n8n-telegram-webhook.yml` — n8n 웹훅 재배포용
 - 음원: 저장소가 아니라 **Google Drive** (`sync_music_library.py`가 실행 시 다운로드).

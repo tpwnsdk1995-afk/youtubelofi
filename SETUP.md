@@ -107,3 +107,66 @@ Google 계정의 무료 저장 공간(Gmail/Photos/Drive 합산 15GB)을 초과�
 ## 7. 공개 전 확인 플로우
 
 `config/settings.yml`의 `youtube.privacy_status`는 `private`입니다 — 즉 매번 자동으로 영상을 만들어 **비공개로만** 업로드하고, 바로 공개하지 않습니다. 업로드가 끝나면 저장소에 `pending-confirmation` 라벨의 Issue가 자동 생성되고(제목/설명/비공개 링크 포함), 채팅 세션이 이를 감지해 알림을 보냅니다. 사진과 제목/설명을 확인한 뒤 채팅에서 확인해주면, 그때 `.github/workflows/finalize-publish.yml` 워크플로우가 트리거되어 실제로 공개 전환됩니다 (필요하면 이때 제목/설명도 함께 수정). 별도로 사용자가 직접 할 일은 없고, 채팅으로 "확인" 또는 수정 요청을 답하기만 하면 됩니다.
+
+## 8. (선택) 노출수·클릭률 분석 켜기 — YouTube Analytics 스코프 추가
+
+주간 리포트의 **원인 진단**(노출 단계 / 썸네일 / 음악 중 어디가 병목인지)은 YouTube
+Analytics API가 필요합니다. 이걸 켜지 않아도 리포트는 정상 발송되며, 해당 섹션만
+빠집니다. 켜면 아래 지표가 추가됩니다.
+
+- `videoThumbnailImpressions` — 노출수 (알고리즘이 우리 영상을 몇 번 보여줬나)
+- `videoThumbnailImpressionsClickRate` — 노출 클릭률 (썸네일이 클릭을 유도하나)
+- `averageViewDuration` — 평균 시청 시간 (음악이 실제로 붙잡나)
+- 유입 경로 (검색 / 추천 / 탐색)
+
+### 왜 1번의 device flow를 재사용할 수 없나
+
+**YouTube Analytics API는 device flow(TV 및 제한된 입력 기기)를 지원하지 않습니다.**
+1번에서 쓴 방식으로는 `yt-analytics.readonly` 스코프를 받을 수 없어, 아래의 별도
+절차가 필요합니다. (출처: developers.google.com/youtube/reporting/guides/authorization)
+
+### 절차 (폰만으로 가능, PC 불필요)
+
+> ⚠️ 이 절차는 `YOUTUBE_CLIENT_ID` / `YOUTUBE_CLIENT_SECRET` / `YOUTUBE_REFRESH_TOKEN`
+> **3개를 모두 교체**합니다. 잘못되면 매일 업로드가 멈추므로, **기존 3개 값을 먼저
+> 어딘가에 복사해 두세요.** 문제가 생기면 되돌릴 수 있어야 합니다.
+
+1. Google Cloud Console → "API 및 서비스 → 라이브러리"에서 **YouTube Analytics API**를
+   검색해 사용 설정합니다. (Data API와 별개의 API입니다)
+
+2. "사용자 인증 정보 만들기 → OAuth 클라이언트 ID"에서 유형을 **"웹 애플리케이션"**으로
+   선택하고, **승인된 리디렉션 URI**에 `http://localhost` 를 추가해 생성합니다.
+   새 `client_id`, `client_secret`을 기록합니다.
+
+3. 폰 브라우저에서 아래 주소를 엽니다 (`YOUR_CLIENT_ID`만 바꿔서 한 줄로):
+
+   ```
+   https://accounts.google.com/o/oauth2/v2/auth?client_id=YOUR_CLIENT_ID&redirect_uri=http://localhost&response_type=code&access_type=offline&prompt=consent&scope=https://www.googleapis.com/auth/youtube%20https://www.googleapis.com/auth/yt-analytics.readonly
+   ```
+
+   > 두 스코프를 **함께** 요청하는 게 핵심입니다. 그래야 refresh token 하나로
+   > 업로드와 분석이 모두 됩니다. `prompt=consent`가 있어야 refresh token이 나옵니다.
+
+4. 채널 계정으로 로그인/동의하면 `http://localhost/?code=4/0A...&scope=...` 로
+   이동하며 **"사이트에 연결할 수 없음" 오류 페이지가 뜹니다. 정상입니다.**
+   주소창의 `code=` 뒤부터 `&` 앞까지의 값을 복사합니다.
+
+5. 그 코드를 토큰으로 교환합니다 (이 저장소 세션의 에이전트에게 맡겨도 됩니다):
+
+   ```bash
+   curl -s -X POST https://oauth2.googleapis.com/token \
+     -d client_id=YOUR_CLIENT_ID \
+     -d client_secret=YOUR_CLIENT_SECRET \
+     -d code=CODE_FROM_STEP_4 \
+     -d redirect_uri=http://localhost \
+     -d grant_type=authorization_code
+   ```
+
+   응답의 `refresh_token` 값을 기록합니다.
+
+6. GitHub Secrets에서 `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`,
+   `YOUTUBE_REFRESH_TOKEN` 3개를 새 값으로 교체합니다.
+
+7. **검증**: `weekly-report.yml`을 수동 실행해 리포트에 `[유입 지표]` 섹션이 나오는지
+   확인하고, 이어서 `publish-video.yml`을 `dry_run: true`로 실행해 업로드 경로도
+   여전히 정상인지 확인합니다. 둘 다 통과하면 완료입니다.
