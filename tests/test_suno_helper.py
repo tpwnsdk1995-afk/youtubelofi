@@ -124,6 +124,59 @@ class TestReport(unittest.TestCase):
         self.assertIn("번 생성", out)
 
 
+class TestPerFolderMessages(unittest.TestCase):
+    """한 통으로 합쳐 보내면 텔레그램 4096자에서 잘려 calm 끝과 groove 시작이
+    한 통에 뒤섞인다. 사장님이 "두 개 양식이 다르다"고 지적한 것이 이것이다."""
+
+    def _audit(self):
+        return {
+            "calm": sh.audit_folder([mp3(f"c{i}.mp3") for i in range(58)]),
+            "groove": sh.audit_folder([mp3(f"g{i}.mp3") for i in range(59)]),
+        }
+
+    def test_one_message_per_folder_plus_summary(self):
+        msgs = sh.build_messages(CFG, self._audit(), {}, random.Random(11))
+        self.assertEqual(len(msgs), 3)
+        self.assertIn("수노 음원 보충 안내", msgs[0])
+        self.assertIn("calm/ 폴더", msgs[1])
+        self.assertIn("groove/ 폴더", msgs[2])
+
+    def test_each_message_fits_in_one_telegram_send(self):
+        msgs = sh.build_messages(CFG, self._audit(), {}, random.Random(11))
+        for m in msgs:
+            self.assertLess(len(m), 4032, f"통이 4096자에서 잘립니다: {m[:60]}")
+
+    def test_folder_messages_share_the_same_structure(self):
+        msgs = sh.build_messages(CFG, self._audit(), {}, random.Random(11))
+        for m in msgs[1:]:
+            self.assertIn("수노는 한 번에 2곡을 만듭니다", m)
+            self.assertIn("복붙은", m)
+            self.assertIn("체크리스트", m)
+            self.assertIn("Instrumental 토글 켜기", m)
+            self.assertIn("폴더에 넣기", m)
+
+    def test_each_folder_message_names_its_own_folder(self):
+        msgs = sh.build_messages(CFG, self._audit(), {}, random.Random(11))
+        self.assertIn("Drive의 calm/ 폴더에 넣기", msgs[1])
+        self.assertNotIn("groove", msgs[1])
+        self.assertIn("Drive의 groove/ 폴더에 넣기", msgs[2])
+
+    def test_folder_with_no_shortfall_gets_no_message(self):
+        audit = {
+            "calm": sh.audit_folder([mp3(f"c{i}.mp3") for i in range(sh.TARGET_PER_MOOD)]),
+            "groove": sh.audit_folder([mp3(f"g{i}.mp3") for i in range(10)]),
+        }
+        msgs = sh.build_messages(CFG, audit, {}, random.Random(1))
+        self.assertEqual(len(msgs), 2)
+        self.assertIn("groove/ 폴더", msgs[1])
+
+    def test_nothing_needed_sends_only_the_summary(self):
+        audit = {"calm": sh.audit_folder([mp3(f"c{i}.mp3") for i in range(sh.TARGET_PER_MOOD)])}
+        msgs = sh.build_messages(CFG, audit, {}, random.Random(1))
+        self.assertEqual(len(msgs), 1)
+        self.assertIn("보충하실 것이 없습니다", msgs[0])
+
+
 class TestGenerationPlan(unittest.TestCase):
     """부족분만큼 서로 다른 프롬프트를 주면 42곡에 42번 복붙이 된다.
     수노가 한 번에 2곡을 만든다는 점을 반영해 복붙 횟수를 최소로 줄인다."""

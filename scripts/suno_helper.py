@@ -189,34 +189,38 @@ def plan_generations(shortfall, limit=MAX_PROMPTS_PER_MOOD,
     }
 
 
-def format_prompt_lines(cfg, audit, state, rng, limit=MAX_PROMPTS_PER_MOOD):
-    need = needed_counts(audit)
-    lines = []
-    for mood in sorted(need):
-        shortfall = need[mood]
-        if shortfall == 0:
-            continue
-        plan = plan_generations(shortfall, limit=limit)
-        spec = cfg["moods"][mood]
+def format_prompt_lines(cfg, mood, shortfall, state, rng, limit=MAX_PROMPTS_PER_MOOD):
+    """한 무드(=Drive 폴더) 몫의 프롬프트 블록."""
+    plan = plan_generations(shortfall, limit=limit)
+    spec = cfg["moods"][mood]
 
+    lines = [f"🎵 {mood}/ 폴더 — {shortfall}곡 필요", ""]
+    lines.append(spec["description"])
+    lines.append("")
+    if plan["repeats"] == 1:
+        lines.append(f"수노는 한 번에 2곡을 만듭니다. 아래 {plan['prompt_count']}개를 "
+                     f"한 번씩 돌리시면 {plan['songs']}곡입니다.")
+    else:
+        lines.append(f"수노는 한 번에 2곡을 만듭니다. 아래 {plan['prompt_count']}개를 "
+                     f"각 {plan['repeats']}번씩 돌리시면 {plan['songs']}곡입니다.")
+    lines.append(f"복붙은 {plan['prompt_count']}번이면 끝납니다.")
+
+    for i in range(plan["prompt_count"]):
         lines.append("")
-        lines.append(f"[{mood} — {shortfall}곡 필요] {spec['description']}")
-        if plan["repeats"] == 1:
-            lines.append(f"수노는 한 번에 2곡을 만듭니다. 아래 {plan['prompt_count']}개를 "
-                         f"한 번씩 돌리시면 {plan['songs']}곡입니다.")
-        else:
-            lines.append(f"수노는 한 번에 2곡을 만듭니다. 아래 {plan['prompt_count']}개를 "
-                         f"각 {plan['repeats']}번씩 돌리시면 {plan['songs']}곡입니다.")
-        lines.append(f"복붙은 {plan['prompt_count']}번이면 끝납니다.")
-        for i in range(plan["prompt_count"]):
-            lines.append("")
-            lines.append(f"{i + 1}. {build_prompt(cfg, mood, state, rng)}")
-            if plan["repeats"] > 1:
-                lines.append(f"   → {plan['repeats']}번 생성")
+        lines.append(f"{i + 1}. {build_prompt(cfg, mood, state, rng)}")
+        if plan["repeats"] > 1:
+            lines.append(f"   → {plan['repeats']}번 생성")
+
+    lines.append("")
+    lines.append(f"[{mood}/ 체크리스트]")
+    lines.append("· Instrumental 토글 켜기 (보컬 들어가면 못 씁니다)")
+    lines.append("· MP3 형식으로 다운로드")
+    lines.append(f"· Drive의 {mood}/ 폴더에 넣기")
     return lines
 
 
-def build_report(cfg, audit, state, rng, limit=MAX_PROMPTS_PER_MOOD):
+def build_summary(audit):
+    """맨 처음 보내는 재고 요약 한 통."""
     need = needed_counts(audit)
     total_need = sum(need.values())
 
@@ -226,22 +230,32 @@ def build_report(cfg, audit, state, rng, limit=MAX_PROMPTS_PER_MOOD):
     else:
         detail = " · ".join(f"{m} {n}곡" for m, n in sorted(need.items()) if n)
         lines.append(f"한 줄 요약: {detail} 더 필요합니다 (총 {total_need}곡).")
+        lines.append("폴더별 프롬프트를 이어서 따로 보내드립니다.")
     lines.append("")
     lines.extend(format_audit_lines(audit))
-
-    if total_need:
-        lines.extend(format_prompt_lines(cfg, audit, state, rng, limit=limit))
-        lines.append("")
-        lines.append("[사용법]")
-        lines.append("1. 수노에서 위 문장을 'Style of Music' 칸에 붙여넣고, 적힌 횟수만큼 "
-                     "반복해서 생성합니다 (같은 문장이어도 매번 다른 곡이 나옵니다).")
-        lines.append("2. Instrumental 토글을 반드시 켭니다 — 보컬이 들어가면 못 씁니다"
-                     " (채널 제목이 '가사X'입니다).")
-        lines.append("3. 생성된 곡을 MP3 형식으로 다운로드합니다.")
-        lines.append("4. Drive의 해당 무드 폴더(calm/ 또는 groove/)에 넣습니다.")
-        lines.append("5. 끝입니다 — 다음 영상부터 자동으로 섞여 들어갑니다.")
-
     return "\n".join(lines)
+
+
+def build_messages(cfg, audit, state, rng, limit=MAX_PROMPTS_PER_MOOD):
+    """보낼 메시지를 통 단위로 만든다.
+
+    예전에는 전부 한 문자열로 만들어 보냈는데, 텔레그램 4096자 제한에 걸려
+    중간에서 잘리는 바람에 calm 끝부분과 groove 시작이 한 통에 뒤섞였다.
+    사장님이 "두 개 양식이 다르다"고 지적한 것이 이것이다. 폴더 단위로 나눠
+    보내면 매 통이 같은 구조로 완결된다."""
+    messages = [build_summary(audit)]
+    need = needed_counts(audit)
+    for mood in sorted(need):
+        if need[mood] == 0:
+            continue
+        messages.append("\n".join(
+            format_prompt_lines(cfg, mood, need[mood], state, rng, limit=limit)))
+    return messages
+
+
+def build_report(cfg, audit, state, rng, limit=MAX_PROMPTS_PER_MOOD):
+    """파일 저장/콘솔 출력용 전체 리포트 (텔레그램은 build_messages를 쓴다)."""
+    return "\n\n".join(build_messages(cfg, audit, state, rng, limit=limit))
 
 
 def main():
@@ -275,17 +289,21 @@ def main():
 
     state = state_manager.load_state(args.state)
     rng = random.Random(args.seed) if args.seed is not None else random
-    report = build_report(cfg, audit, state, rng, limit=args.limit)
+    messages = build_messages(cfg, audit, state, rng, limit=args.limit)
     state_manager.save_state(args.state, state)
 
+    report = "\n\n".join(messages)
     with open(args.output, "w", encoding="utf-8") as f:
         f.write(report)
     print(report)
 
     if not args.dry_run:
         import send_telegram_message
-        sys.argv = ["send_telegram_message.py", f"--text={report}"]
-        send_telegram_message.main()
+        # 폴더(무드)마다 한 통씩. 한 통으로 합쳐 보내면 4096자에서 잘려
+        # calm 끝과 groove 시작이 뒤섞인다.
+        for msg in messages:
+            sys.argv = ["send_telegram_message.py", f"--text={msg}"]
+            send_telegram_message.main()
 
 
 if __name__ == "__main__":
