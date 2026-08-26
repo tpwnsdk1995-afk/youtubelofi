@@ -4,6 +4,11 @@ name: Monthly channel report
 # 담당한다. GitHub 자체 schedule은 이 저장소에서 지연·누락이 반복돼 쓰지 않는다.
 on:
   workflow_dispatch: {}
+  # 보조 트리거. 주 트리거는 Routine이고, 이건 Routine이 한도초과 등으로
+  # 깨어나지 못한 날을 메우기 위한 것이다. 매달 1일 09:40 KST (Routine의 09:00보다 40분 뒤)
+  # 평소에는 guard가 즉시 건너뛰므로 아무 일도 하지 않는다.
+  schedule:
+    - cron: "40 0 1 * *"
 
 concurrency:
   group: monthly-report
@@ -14,7 +19,58 @@ permissions:
   issues: write
 
 jobs:
+  guard:
+    # GitHub schedule을 보조 트리거로 두면 Routine과 같은 날 둘 다 실행될 수 있다.
+    # 리포트를 하루에 두 번 돌리면 두 번째 실행이 방금 저장된 스냅샷과 비교하게 돼
+    # "증가 0회"라는 잘못된 리포트가 텔레그램으로 나간다. 그래서 오늘 이미
+    # 성공한 실행이 있으면 건너뛴다.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+      reason: ${{ steps.check.outputs.reason }}
+    steps:
+      - id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const kstDate = (iso) =>
+              new Date(new Date(iso).getTime() + 9 * 3600 * 1000)
+                .toISOString().slice(0, 10);
+            const today = kstDate(new Date().toISOString());
+
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'monthly-report.yml',
+              per_page: 20,
+            });
+            const doneToday = runs.data.workflow_runs.filter(
+              (r) => r.id !== context.runId
+                && r.conclusion === 'success'
+                && kstDate(r.created_at) === today
+            );
+
+            if (doneToday.length > 0) {
+              core.setOutput('skip', 'true');
+              core.setOutput('reason',
+                `오늘(${today} KST) 이미 발송됨: run #${doneToday[0].run_number}`);
+              core.notice(`중복 발송 방지: run #${doneToday[0].run_number}`);
+            } else {
+              core.setOutput('skip', 'false');
+              core.setOutput('reason', `오늘(${today} KST) 발송 기록 없음 - 진행`);
+            }
+
+      - name: Report guard decision
+        run: |
+          echo "skip=${{ steps.check.outputs.skip }} / ${{ steps.check.outputs.reason }}"
+          echo "### 중복 발송 가드" >> $GITHUB_STEP_SUMMARY
+          echo "- 판정: ${{ steps.check.outputs.skip == 'true' && '건너뜀' || '진행' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 근거: ${{ steps.check.outputs.reason }}" >> $GITHUB_STEP_SUMMARY
+
   report:
+    needs: guard
+    if: needs.guard.outputs.skip != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

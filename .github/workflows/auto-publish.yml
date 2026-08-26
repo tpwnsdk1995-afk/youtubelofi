@@ -12,6 +12,13 @@ name: Auto-publish (daily deadline)
 # 맞는데도 한 번도 스스로 발동한 적이 없어 제거했다.
 on:
   workflow_dispatch: {}
+  # 보조 트리거. 주 트리거는 19:14 KST의 Routine이고, 이건 Routine이 깨어나지
+  # 못한 날을 메운다. 19:30 KST = 10:30 UTC.
+  # 이 워크플로우는 본래 멱등하다 — 열려 있는 pending-confirmation 이슈를 찾아
+  # 공개하고, 없으면(이미 공개됐거나 그날 영상이 없으면) 조용히 아무 일도 하지
+  # 않는다. 그래서 중복 방지 가드가 따로 필요 없다.
+  schedule:
+    - cron: "30 10 * * *"
 
 permissions:
   issues: write

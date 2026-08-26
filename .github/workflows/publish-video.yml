@@ -27,6 +27,12 @@ on:
         description: "true면 오늘 이미 영상이 나갔어도 강제로 다시 생성 (하루 2편이 되므로 주의)"
         type: boolean
         default: false
+  # 보조 트리거. 주 트리거는 매일 17:15 KST의 Routine이고, 이건 Routine이
+  # 한도초과 등으로 깨어나지 못한 날을 메운다. 18:10 KST = 09:10 UTC.
+  # Routine이 정상 동작한 날은 위 guard 잡이 3초 만에 건너뛰므로 아무 일도 없다.
+  # schedule은 inputs를 주지 않으므로 dry_run/force 모두 false로 동작한다.
+  schedule:
+    - cron: "10 9 * * *"
 
 concurrency:
   group: publish-video
