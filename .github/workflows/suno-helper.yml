@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
     inputs:
       limit:
-        description: "무드당 프롬프트 개수 (텔레그램이 길어지면 줄이세요)"
+        description: "무드당 프롬프트 개수 = 복붙 횟수 (기본 7, 늘리면 스타일이 더 다양해집니다)"
         type: string
-        default: "20"
+        default: "7"
 
 concurrency:
   group: suno-helper

@@ -118,9 +118,37 @@ class TestReport(unittest.TestCase):
         out = sh.build_report(CFG, self._audit(), {}, random.Random(5), limit=2)
         self.assertNotIn("**", out)
 
-    def test_limit_caps_prompts_and_says_so(self):
-        out = sh.build_report(CFG, self._audit(), {}, random.Random(5), limit=2)
-        self.assertIn("다시 실행해 주세요", out)
+    def test_report_tells_how_many_times_to_run_each_prompt(self):
+        out = sh.build_report(CFG, self._audit(), {}, random.Random(5))
+        self.assertIn("복붙은", out)
+        self.assertIn("번 생성", out)
+
+
+class TestGenerationPlan(unittest.TestCase):
+    """부족분만큼 서로 다른 프롬프트를 주면 42곡에 42번 복붙이 된다.
+    수노가 한 번에 2곡을 만든다는 점을 반영해 복붙 횟수를 최소로 줄인다."""
+
+    def test_shortfall_is_halved_because_suno_makes_two_songs(self):
+        p = sh.plan_generations(42, limit=7)
+        self.assertEqual(p["prompt_count"], 7)
+        self.assertEqual(p["repeats"], 3)
+        self.assertEqual(p["songs"], 42)
+
+    def test_copy_paste_count_never_exceeds_limit(self):
+        for shortfall in (1, 5, 42, 100, 500):
+            self.assertLessEqual(sh.plan_generations(shortfall, limit=7)["prompt_count"], 7)
+
+    def test_plan_always_covers_the_shortfall(self):
+        for shortfall in range(1, 120):
+            self.assertGreaterEqual(sh.plan_generations(shortfall, limit=7)["songs"], shortfall)
+
+    def test_small_shortfall_does_not_ask_for_seven_prompts(self):
+        p = sh.plan_generations(4, limit=7)
+        self.assertEqual(p["prompt_count"], 2)
+        self.assertEqual(p["repeats"], 1)
+
+    def test_nothing_needed(self):
+        self.assertEqual(sh.plan_generations(0)["prompt_count"], 0)
 
 
 if __name__ == "__main__":

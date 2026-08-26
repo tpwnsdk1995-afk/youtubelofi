@@ -41,8 +41,14 @@ MIN_BYTES = 700_000
 # 3분짜리 mp3가 20MB를 넘을 일은 없다. 넘으면 무손실이거나 잘못된 파일이다.
 MAX_BYTES = 20_000_000
 
-# 한 번에 너무 많은 프롬프트를 뽑으면 텔레그램에서 읽기 힘들다.
-MAX_PROMPTS_PER_MOOD = 25
+# 수노는 프롬프트 1개당 곡을 2개 만든다. 42곡이 필요해도 생성은 21번이면 된다.
+SONGS_PER_GENERATION = 2
+
+# 부족분만큼 서로 다른 프롬프트를 주면 42곡에 42번 복붙이 된다. 그건 못 할 일이다.
+# 같은 프롬프트로 돌려도 수노는 매번 다른 곡을 만들므로, 프롬프트를 나누는 목적은
+# '곡을 다르게' 가 아니라 '라이브러리 전체가 한 색으로 쏠리지 않게' 하는 것이다.
+# 그 목적에는 무드당 7~8개면 충분하고, 사장님 손은 그만큼만 가면 된다.
+MAX_PROMPTS_PER_MOOD = 7
 
 
 def list_all_files(service, folder_id):
@@ -164,22 +170,49 @@ def format_audit_lines(audit):
     return lines
 
 
+def plan_generations(shortfall, limit=MAX_PROMPTS_PER_MOOD,
+                    per_generation=SONGS_PER_GENERATION):
+    """부족한 곡 수를 '프롬프트 몇 개를 각각 몇 번 돌릴지'로 바꾼다.
+
+    복붙 횟수(prompt_count)를 최소로 하는 것이 목적이다. 수노가 한 번에 2곡을
+    만든다는 점을 반영하면 필요한 생성 횟수는 부족분의 절반이다."""
+    if shortfall <= 0:
+        return {"prompt_count": 0, "repeats": 0, "generations": 0, "songs": 0}
+    generations = -(-shortfall // per_generation)  # 올림
+    prompt_count = min(limit, generations)
+    repeats = -(-generations // prompt_count)  # 올림
+    return {
+        "prompt_count": prompt_count,
+        "repeats": repeats,
+        "generations": prompt_count * repeats,
+        "songs": prompt_count * repeats * per_generation,
+    }
+
+
 def format_prompt_lines(cfg, audit, state, rng, limit=MAX_PROMPTS_PER_MOOD):
     need = needed_counts(audit)
     lines = []
     for mood in sorted(need):
-        count = need[mood]
-        if count == 0:
+        shortfall = need[mood]
+        if shortfall == 0:
             continue
-        shown = min(count, limit)
+        plan = plan_generations(shortfall, limit=limit)
         spec = cfg["moods"][mood]
+
         lines.append("")
-        lines.append(f"[{mood} 프롬프트 {shown}개] — {spec['description']}")
-        if shown < count:
-            lines.append(f"(총 {count}곡 필요하지만 길어서 {shown}개만 보냅니다. "
-                         f"다 쓰시면 다시 실행해 주세요 — 매번 다른 조합이 나옵니다.)")
-        for i in range(shown):
+        lines.append(f"[{mood} — {shortfall}곡 필요] {spec['description']}")
+        if plan["repeats"] == 1:
+            lines.append(f"수노는 한 번에 2곡을 만듭니다. 아래 {plan['prompt_count']}개를 "
+                         f"한 번씩 돌리시면 {plan['songs']}곡입니다.")
+        else:
+            lines.append(f"수노는 한 번에 2곡을 만듭니다. 아래 {plan['prompt_count']}개를 "
+                         f"각 {plan['repeats']}번씩 돌리시면 {plan['songs']}곡입니다.")
+        lines.append(f"복붙은 {plan['prompt_count']}번이면 끝납니다.")
+        for i in range(plan["prompt_count"]):
+            lines.append("")
             lines.append(f"{i + 1}. {build_prompt(cfg, mood, state, rng)}")
+            if plan["repeats"] > 1:
+                lines.append(f"   → {plan['repeats']}번 생성")
     return lines
 
 
@@ -200,7 +233,8 @@ def build_report(cfg, audit, state, rng, limit=MAX_PROMPTS_PER_MOOD):
         lines.extend(format_prompt_lines(cfg, audit, state, rng, limit=limit))
         lines.append("")
         lines.append("[사용법]")
-        lines.append("1. 수노에서 위 문장을 'Style of Music' 칸에 그대로 붙여넣습니다.")
+        lines.append("1. 수노에서 위 문장을 'Style of Music' 칸에 붙여넣고, 적힌 횟수만큼 "
+                     "반복해서 생성합니다 (같은 문장이어도 매번 다른 곡이 나옵니다).")
         lines.append("2. Instrumental 토글을 반드시 켭니다 — 보컬이 들어가면 못 씁니다"
                      " (채널 제목이 '가사X'입니다).")
         lines.append("3. 생성된 곡을 MP3 형식으로 다운로드합니다.")
