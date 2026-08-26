@@ -35,6 +35,10 @@ MIN_MONTH_VIEWS = 100     # 이 밑이면 아직 노출 단계 - 설정 변경 �
 # 구독자 1,000명 + 최근 12개월 공개 영상 시청 4,000시간.
 YPP_SUBSCRIBERS = 1000
 YPP_WATCH_HOURS = 4000
+# 도달 예상이 이 개월 수를 넘으면 숫자를 그대로 보여주는 게 무의미하다
+# (실제로 "10,435개월 후 도달" = 870년이 나온 적이 있다). 대신 배수로 환산해
+# "얼마나 더 나와야 하는지"를 말한다.
+MAX_MEANINGFUL_ETA_MONTHS = 120
 
 
 def previous_month_range(now):
@@ -144,7 +148,13 @@ def monetization_progress(channel_stats, analytics, prev_channel):
             gained = subs - prev_channel["subscriberCount"]
             if gained > 0:
                 months_left = (YPP_SUBSCRIBERS - subs) / gained
-                lines.append(f"  이번 달 +{gained:,}명. 이 속도가 유지되면 약 {months_left:.0f}개월 후 도달합니다.")
+                if months_left > MAX_MEANINGFUL_ETA_MONTHS:
+                    # 989개월(82년) 같은 숫자는 산술적으로만 맞고 아무 판단에도 못 쓴다.
+                    lines.append(f"  이번 달 +{gained:,}명. 이 속도로는 사실상 도달 불가입니다"
+                                 f"(산술적으로 {months_left:,.0f}개월). "
+                                 f"1년 안에 채우려면 월 +{(YPP_SUBSCRIBERS - subs) / 12:,.0f}명이 필요합니다.")
+                else:
+                    lines.append(f"  이번 달 +{gained:,}명. 이 속도가 유지되면 약 {months_left:.0f}개월 후 도달합니다.")
             else:
                 lines.append("  이번 달 증가 없음 — 도달 시점을 추정할 수 없습니다.")
 
@@ -155,7 +165,13 @@ def monetization_progress(channel_stats, analytics, prev_channel):
         lines.append(f"- 시청 시간: 이번 달 {hours:,.1f}시간 (기준 {YPP_WATCH_HOURS:,}시간 / 최근 12개월 누적)")
         if hours > 0:
             months_left = YPP_WATCH_HOURS / hours
-            lines.append(f"  이 속도면 약 {months_left:.0f}개월치가 쌓여야 기준을 채웁니다.")
+            if months_left > MAX_MEANINGFUL_ETA_MONTHS:
+                lines.append(f"  현재 속도로는 사실상 도달 불가입니다(산술적으로 {months_left:,.0f}개월). "
+                             f"기준을 채우려면 월 시청 시간이 지금의 "
+                             f"{YPP_WATCH_HOURS / 12 / hours:,.0f}배는 되어야 합니다 — "
+                             f"편수보다 '한 편이 오래 재생되는 것'이 관건입니다.")
+            else:
+                lines.append(f"  이 속도가 유지되면 약 {months_left:.0f}개월 후 기준을 채웁니다.")
         avg_seconds = summary.get("averageViewDuration", 0) or 0
         views = summary.get("views", 0) or 0
         if views:
@@ -163,6 +179,65 @@ def monetization_progress(channel_stats, analytics, prev_channel):
     else:
         lines.append(f"- 시청 시간: 집계 불가 (Analytics 스코프 미승인). 기준은 최근 12개월 {YPP_WATCH_HOURS:,}시간입니다.")
 
+    return lines
+
+
+def channel_wide_ranking(videos, recent_by_id, top_n=5, bottom_n=3):
+    """채널에 공개된 전체 영상을 조회수로 줄 세운다.
+
+    월간은 '그 달'만 보면 안 된다. 그 달에 업로드가 없었어도 채널은 계속 돌아가고,
+    사장님이 알아야 할 것은 '지금까지 올린 것 중 무엇이 먹혔나'이기 때문이다.
+    주간에는 없는, 월간 전용 관점이다."""
+    public = {vid: v for vid, v in videos.items() if v.get("privacyStatus") == "public"}
+    if len(public) < 2:
+        return []
+
+    ranked = sorted(public.items(), key=lambda kv: -kv[1].get("viewCount", 0))
+    total_views = sum(v.get("viewCount", 0) for v in public.values())
+    avg = total_views / len(public)
+
+    lines = [f"[채널 전체 성과 (공개 {len(public)}편 누적)]",
+             f"누적 조회수 {total_views:,}회 · 편당 평균 {avg:.1f}회"]
+
+    lines.append(f"▶ 상위 {min(top_n, len(ranked))}편")
+    for rank, (vid, v) in enumerate(ranked[:top_n], 1):
+        entry = recent_by_id.get(vid) or {}
+        tag = entry.get("genre") or "?"
+        short = v["title"][:34] + ("…" if len(v["title"]) > 34 else "")
+        lines.append(f"  {rank}. {v.get('viewCount', 0):,}회 ({tag}) {short}")
+
+    if len(ranked) > top_n + bottom_n:
+        lines.append(f"▶ 하위 {bottom_n}편")
+        for vid, v in ranked[-bottom_n:]:
+            entry = recent_by_id.get(vid) or {}
+            tag = entry.get("genre") or "?"
+            short = v["title"][:34] + ("…" if len(v["title"]) > 34 else "")
+            lines.append(f"  · {v.get('viewCount', 0):,}회 ({tag}) {short}")
+
+    top_views = ranked[0][1].get("viewCount", 0)
+    if avg > 0 and top_views >= avg * 2:
+        lines.append(f"→ 1위가 평균의 {top_views / avg:.1f}배입니다. 이 영상의 제목·무드·씬을 "
+                     f"다음 달 기획의 기준선으로 삼으세요.")
+    return lines
+
+
+def month_over_month(month_views, month_uploads, prev_snapshot):
+    """전월 대비 성장률. 월간은 '지난달보다 나아졌나'가 핵심 질문이다."""
+    prev = (prev_snapshot or {}).get("last_month") or {}
+    prev_views = prev.get("month_views")
+    prev_uploads = prev.get("month_uploads")
+    if prev_views is None:
+        return []
+
+    lines = ["[전월 대비]"]
+    if prev_views > 0:
+        change = (month_views - prev_views) / prev_views * 100
+        arrow = "▲" if change >= 0 else "▼"
+        lines.append(f"- 신작 조회수: {prev_views:,}회 → {month_views:,}회 ({arrow} {abs(change):.0f}%)")
+    else:
+        lines.append(f"- 신작 조회수: {prev_views:,}회 → {month_views:,}회")
+    if prev_uploads is not None:
+        lines.append(f"- 업로드: {prev_uploads}편 → {month_uploads}편")
     return lines
 
 
@@ -238,8 +313,103 @@ def build_monthly_recommendations(month_views, upload_count, expected_uploads,
     return lines
 
 
+def monthly_traffic_lines(analytics):
+    """한 달 치 유입 지표. 주간에도 같은 블록이 있지만 월간은 표본이 4~5배라
+    여기 숫자는 실제로 의사결정에 쓸 수 있는 수준이다."""
+    if not analytics:
+        return []
+    summary = analytics["summary"]
+    start_date, end_date = analytics["period"]
+    lines = [f"[유입 지표 ({start_date} ~ {end_date})]"]
+    impressions = summary.get("videoThumbnailImpressions")
+    ctr = summary.get("videoThumbnailImpressionsClickRate")
+    if impressions is not None:
+        lines.append(f"노출수: {impressions:,}회")
+    if ctr is not None:
+        lines.append(f"노출 클릭률(CTR): {ctr:.2f}%")
+    views = summary.get("views", 0) or 0
+    watched = summary.get("estimatedMinutesWatched", 0) or 0
+    avg_seconds = summary.get("averageViewDuration", 0) or 0
+    lines.append(f"조회수: {views:,}회")
+    lines.append(f"평균 시청 시간: {wr.fmt_duration(avg_seconds)}")
+    lines.append(f"총 시청 시간: {watched:,.0f}분 ({watched / 60:,.1f}시간)")
+    if analytics.get("traffic_sources"):
+        lines.append("")
+        lines.append("[유입 경로 (한 달 누적)]")
+        lines.extend(wr.format_traffic_sources(analytics["traffic_sources"]))
+        top = max(analytics["traffic_sources"].items(), key=lambda kv: kv[1])
+        total = sum(analytics["traffic_sources"].values()) or 1
+        share = top[1] / total * 100
+        if top[0] == "YT_SEARCH" and share >= 40:
+            lines.append("→ 검색 의존도가 높습니다. 추천·탐색 유입이 붙어야 규모가 커지므로 "
+                         "제목의 검색 키워드는 유지하되, 같은 무드를 연달아 올려 "
+                         "'다음 영상' 추천이 걸리게 하는 편이 낫습니다.")
+        elif top[0] == "EXT_URL" and share >= 40:
+            lines.append("→ 외부 유입 비중이 큽니다. 유튜브 내부 노출이 아직 안 붙은 상태이니 "
+                         "제목·태그의 검색 키워드를 점검하세요.")
+    return lines
+
+
+def build_next_month_plan(month_uploads, expected_uploads, library_counts, analytics,
+                          analytics_error, month_views, channel_stats):
+    """다음 달 실행 계획. 주간과 같은 3분할을 쓰되, 월간에는 '다음 달 판정 기준'을
+    숫자로 못박는다 — 한 달 뒤 이 리포트가 스스로를 채점할 수 있어야 하기 때문이다."""
+    manual = []
+    auto = ["매일 17:15 영상 생성 → 19:14 자동 공개 (응답 안 하셔도 공개됨)",
+            "매주 월요일 09:00 주간 리포트",
+            "매달 1일 09:00 월간 리포트"]
+
+    if library_counts:
+        for name, n in sorted(library_counts.items()):
+            if n < wr.RECOMMENDED_LIBRARY_SIZE:
+                need = wr.RECOMMENDED_LIBRARY_SIZE - n
+                manual.append(f"Suno에서 {name} 음원 {need}곡 이상 뽑아 Drive의 {name}/ 폴더에 넣기 "
+                              f"(현재 {n}곡 / 권장 {wr.RECOMMENDED_LIBRARY_SIZE}곡)")
+    if analytics_error:
+        manual.append("노출수·클릭률 분석 켜기 — SETUP.md 8절 재인증")
+    if month_uploads < expected_uploads:
+        manual.append(f"업로드 누락 {expected_uploads - month_uploads}일분 원인 확인 "
+                      f"(한도초과 / 워크플로우 실패 구분)")
+
+    lines = ["[다음 달 계획]"]
+    lines.append("▶ 사장님이 하실 일")
+    if manual:
+        for i, item in enumerate(manual, 1):
+            lines.append(f"  {i}. {item}")
+    else:
+        lines.append("  없음 — 이번 달은 손댈 것이 없습니다.")
+    lines.append("▶ 자동으로 처리됨")
+    for item in auto:
+        lines.append(f"  · {item}")
+
+    dont = []
+    if month_views < MIN_MONTH_VIEWS:
+        dont.append("무드 비중·씬·썸네일 문구 수정 "
+                    f"(한 달 신작 조회수 {month_views:,}회 — {MIN_MONTH_VIEWS}회 미만이라 "
+                    "바꿔도 효과를 측정할 수 없습니다)")
+        dont.append("밀린 날짜 몰아서 업로드 (하루 1편 초과는 반복 콘텐츠로 잡힙니다)")
+    if dont:
+        lines.append("▶ 하지 말아야 할 일")
+        for item in dont:
+            lines.append(f"  · {item}")
+
+    # 다음 달 판정 기준 - 월간에만 있는 항목
+    lines.append("▶ 다음 달 이 리포트가 볼 숫자")
+    target_uploads = 28
+    lines.append(f"  · 업로드 {target_uploads}편 이상 (이번 달 {month_uploads}편)")
+    if month_views > 0:
+        lines.append(f"  · 신작 조회수 {int(month_views * 1.5):,}회 이상 (이번 달 대비 +50%)")
+    else:
+        lines.append(f"  · 신작 조회수 {MIN_MONTH_VIEWS}회 이상 (진단을 낼 수 있는 최소 표본)")
+    subs = channel_stats.get("subscriberCount")
+    if subs is not None:
+        lines.append(f"  · 구독자 {subs + 10:,}명 이상 (현재 {subs:,}명)")
+    return lines
+
+
 def build_monthly_report(now, channel_stats, channel_prev, videos, recent_by_id, genre_lookup,
-                         library_counts=None, analytics=None, analytics_error=None):
+                         library_counts=None, analytics=None, analytics_error=None,
+                         prev_snapshot=None):
     start, end = previous_month_range(now)
     label = f"{start.year}년 {start.month}월"
     expected = calendar.monthrange(start.year, start.month)[1]
@@ -264,6 +434,11 @@ def build_monthly_report(now, channel_stats, channel_prev, videos, recent_by_id,
     lines.append(f"공개 영상: {channel_stats['videoCount']}개")
     lines.append("")
 
+    mom = month_over_month(month_views, len(month_videos), prev_snapshot)
+    if mom:
+        lines.extend(mom)
+        lines.append("")
+
     # 이번 달 성과
     lines.append(f"[{label} 성과]")
     lines.append(f"업로드: {len(month_videos)}/{expected}편")
@@ -272,6 +447,11 @@ def build_monthly_report(now, channel_stats, channel_prev, videos, recent_by_id,
         lines.append(f"영상당 평균: {month_views / len(month_videos):.1f}회")
     lines.append(f"좋아요 합계: {month_likes:,}개")
     lines.append("")
+
+    traffic = monthly_traffic_lines(analytics)
+    if traffic:
+        lines.extend(traffic)
+        lines.append("")
 
     description_by_id = {vid: v.get("description", "") for vid, v in month_videos.items()}
     genre_groups = group_by_field(
@@ -314,6 +494,11 @@ def build_monthly_report(now, channel_stats, channel_prev, videos, recent_by_id,
                 lines.append(f"- {v.get('viewCount', 0):,}회 · {short} · youtu.be/{vid}")
             lines.append("")
 
+    wide = channel_wide_ranking(videos, recent_by_id)
+    if wide:
+        lines.extend(wide)
+        lines.append("")
+
     lines.extend(monetization_progress(channel_stats, analytics, channel_prev))
     lines.append("")
 
@@ -342,6 +527,12 @@ def build_monthly_report(now, channel_stats, channel_prev, videos, recent_by_id,
     if recs:
         lines.append("[다음 달 실행 계획]")
         lines.extend(recs)
+        lines.append("")
+
+    lines.extend(build_next_month_plan(
+        len(month_videos), expected, library_counts, analytics, analytics_error,
+        month_views, channel_stats,
+    ))
 
     sub_gain = None
     if channel_prev and channel_stats["subscriberCount"] is not None \
@@ -399,15 +590,23 @@ def main():
 
     report = build_monthly_report(now, channel_stats, channel_prev, videos, recent_by_id,
                                   genre_lookup, library_counts=library_counts,
-                                  analytics=analytics, analytics_error=analytics_error)
+                                  analytics=analytics, analytics_error=analytics_error,
+                                  prev_snapshot=prev)
 
     with open(args.output, "w", encoding="utf-8") as f:
         f.write(report)
     print(report)
 
+    # 다음 달 리포트가 "전월 대비"를 계산하려면 이번 달 신작 실적을 남겨야 한다.
+    m_videos = videos_in_range(videos, m_start, m_end)
     wr.save_json(args.monthly_stats, {
         "snapshot_at": now.isoformat(),
         "channel": channel_stats,
+        "last_month": {
+            "label": f"{m_start.year}-{m_start.month:02d}",
+            "month_views": sum(v.get("viewCount", 0) for v in m_videos.values()),
+            "month_uploads": len(m_videos),
+        },
     })
 
     if not args.dry_run:

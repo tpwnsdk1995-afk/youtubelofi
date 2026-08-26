@@ -241,6 +241,93 @@ class TestMonthlyOnlySections(unittest.TestCase):
         out = "\n".join(mr.monetization_progress({"subscriberCount": 10}, analytics, None))
         self.assertIn("100.0시간", out)
 
+    def test_monetization_flags_unrealistic_eta(self):
+        out = "\n".join(mr.monetization_progress(
+            {"subscriberCount": 11, "viewCount": 20}, None, {"subscriberCount": 10}))
+        self.assertIn("사실상 도달 불가", out)
+
+    def test_channel_wide_ranking_renders_without_month_uploads(self):
+        videos = {
+            f"v{i}": {"privacyStatus": "public", "title": f"영상{i}", "viewCount": i * 10}
+            for i in range(1, 11)
+        }
+        out = "\n".join(mr.channel_wide_ranking(videos, {}))
+        self.assertIn("채널 전체 성과 (공개 10편 누적)", out)
+        self.assertIn("상위 5편", out)
+        self.assertIn("하위 3편", out)
+        self.assertIn("100회", out)
+
+    def test_channel_wide_ranking_skips_private(self):
+        videos = {
+            "a": {"privacyStatus": "public", "title": "공개", "viewCount": 10},
+            "b": {"privacyStatus": "private", "title": "비공개", "viewCount": 9999},
+            "c": {"privacyStatus": "public", "title": "공개2", "viewCount": 5},
+        }
+        out = "\n".join(mr.channel_wide_ranking(videos, {}))
+        self.assertIn("공개 2편 누적", out)
+        self.assertNotIn("비공개", out)
+
+    def test_channel_wide_ranking_needs_two_videos(self):
+        videos = {"a": {"privacyStatus": "public", "title": "하나", "viewCount": 10}}
+        self.assertEqual(mr.channel_wide_ranking(videos, {}), [])
+
+    def test_channel_wide_ranking_flags_outlier_top(self):
+        videos = {
+            "a": {"privacyStatus": "public", "title": "대박", "viewCount": 1000},
+            "b": {"privacyStatus": "public", "title": "보통", "viewCount": 10},
+            "c": {"privacyStatus": "public", "title": "보통2", "viewCount": 10},
+        }
+        out = "\n".join(mr.channel_wide_ranking(videos, {}))
+        self.assertIn("기준선으로 삼으세요", out)
+
+    def test_month_over_month_growth(self):
+        out = "\n".join(mr.month_over_month(150, 30, {"last_month": {"month_views": 100, "month_uploads": 20}}))
+        self.assertIn("전월 대비", out)
+        self.assertIn("▲ 50%", out)
+        self.assertIn("20편 → 30편", out)
+
+    def test_month_over_month_decline(self):
+        out = "\n".join(mr.month_over_month(50, 10, {"last_month": {"month_views": 100, "month_uploads": 20}}))
+        self.assertIn("▼ 50%", out)
+
+    def test_month_over_month_empty_without_prior_snapshot(self):
+        self.assertEqual(mr.month_over_month(50, 10, {}), [])
+        self.assertEqual(mr.month_over_month(50, 10, None), [])
+
+    def test_monthly_traffic_lines_include_watch_hours(self):
+        analytics = {
+            "summary": {"views": 120, "estimatedMinutesWatched": 900, "averageViewDuration": 450},
+            "period": ("2026-08-01", "2026-08-31"),
+            "traffic_sources": {"YT_SEARCH": 80, "EXT_URL": 40},
+        }
+        out = "\n".join(mr.monthly_traffic_lines(analytics))
+        self.assertIn("2026-08-01 ~ 2026-08-31", out)
+        self.assertIn("15.0시간", out)
+        self.assertIn("유입 경로 (한 달 누적)", out)
+        self.assertIn("검색 의존도가 높습니다", out)
+
+    def test_monthly_traffic_lines_empty_without_analytics(self):
+        self.assertEqual(mr.monthly_traffic_lines(None), [])
+
+    def test_next_month_plan_has_three_sections_and_targets(self):
+        out = "\n".join(mr.build_next_month_plan(
+            20, 31, {"calm": 58}, None, "스코프 미승인", 10, {"subscriberCount": 5}))
+        self.assertIn("사장님이 하실 일", out)
+        self.assertIn("자동으로 처리됨", out)
+        self.assertIn("하지 말아야 할 일", out)
+        self.assertIn("다음 달 이 리포트가 볼 숫자", out)
+        self.assertIn("Suno", out)
+        self.assertIn("재인증", out)
+        self.assertIn("11일분", out)
+        self.assertIn("구독자 15명 이상", out)
+
+    def test_next_month_plan_no_manual_work_when_healthy(self):
+        out = "\n".join(mr.build_next_month_plan(
+            31, 31, {"calm": 120}, {"summary": {}}, None, 5000, {"subscriberCount": 900}))
+        self.assertIn("없음 — 이번 달은 손댈 것이 없습니다.", out)
+        self.assertNotIn("하지 말아야 할 일", out)
+        self.assertIn("7,500회 이상", out)
+
 
 if __name__ == "__main__":
     unittest.main()
