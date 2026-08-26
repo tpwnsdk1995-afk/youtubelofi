@@ -19,6 +19,7 @@ MIN_TOTAL_DELTA 이상이고 각 그룹에 MIN_GROUP_VIDEOS개 이상 쌓였을 
 import argparse
 import json
 import os
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -265,6 +266,214 @@ def diagnose_funnel(analytics, prev_summary=None):
         if views and subs == 0:
             lines.append("- 다만 구독 전환이 0입니다. 채널 아트/설명이 '이 채널을 구독할 이유'를 "
                          "충분히 말하고 있는지 점검해 보세요.")
+
+    return lines
+
+
+# 제목은 "Playlist {상황 훅} {이모지} {효익 문구}" 형태로 생성된다.
+# 이모지가 두 조각의 경계이므로 그걸로 훅과 효익을 분리한다.
+EMOJI_RE = re.compile("[\U0001F300-\U0001FAFF\u2600-\u27BF\u2B00-\u2BFF]")
+
+# 축마다 "왜 그런 차이가 났나"의 메커니즘이 다르다. 순위만 보여주면
+# 사장님이 무엇을 바꿔야 할지 알 수 없으므로 축별 해석을 함께 낸다.
+FACTOR_MEANING = {
+    "무드": "무드는 검색 키워드와 직결됩니다. 앞선 무드는 그 키워드로 들어오는 사람이 "
+            "더 많다는 뜻이므로, 비중을 올리는 것이 가장 직접적인 조치입니다.",
+    "씬": "씬은 썸네일 첫인상입니다. 조회수 차이가 크면 클릭 단계에서 갈린 것이므로 "
+          "음악이 아니라 그림을 손봐야 합니다.",
+    "상황 훅": "제목 앞부분의 상황 묘사가 클릭을 만듭니다. 앞선 훅의 문장 구조를 "
+               "다음 제목 템플릿의 기준으로 삼으세요.",
+    "게시 요일": "같은 콘텐츠라도 올리는 요일에 따라 초기 노출이 달라집니다.",
+}
+
+
+def with_particle(word, pair=("이", "가")):
+    """받침 유무에 따라 조사를 고른다. "화요일가"처럼 나오면 리포트가 우스워진다."""
+    if not word:
+        return word
+    last = word[-1]
+    if "가" <= last <= "힣":
+        has_final = (ord(last) - 0xAC00) % 28 != 0
+    elif last.isdigit():
+        has_final = last in "0136780"
+    else:
+        has_final = False
+    return f"{word}{pair[0] if has_final else pair[1]}"
+
+
+def split_title_hook(title):
+    """제목을 (상황 훅, 효익 문구)로 쪼갠다. 이모지가 없으면 훅만 돌려준다."""
+    body = re.sub(r"^\s*Playlist\s*", "", title or "").strip()
+    body = re.sub(r"^\(가사X\)\s*", "", body).strip()
+    m = EMOJI_RE.search(body)
+    if not m:
+        return body, ""
+    # 이모지 뒤에 variation selector(U+FE0F)나 ZWJ가 남아 "️ 어깨 들썩이는"처럼
+    # 앞에 보이지 않는 글자가 붙어 나오는 일이 있었다.
+    benefit = re.sub(r"^[\uFE0E\uFE0F\u200D\s]+", "", body[m.end():])
+    return body[:m.start()].strip(), benefit.strip()
+
+
+def video_factors(vid, video, recent_by_id, genre_fn=None):
+    """한 영상에서 비교 가능한 속성을 뽑는다."""
+    entry = recent_by_id.get(vid) or {}
+    genre = entry.get("genre")
+    if not genre and genre_fn:
+        genre = genre_fn(vid)
+    hook, _benefit = split_title_hook(video.get("title", ""))
+    factors = {}
+    if genre:
+        factors["무드"] = genre
+    if entry.get("scene_id"):
+        factors["씬"] = entry["scene_id"]
+    if hook:
+        factors["상황 훅"] = hook
+    published = video.get("publishedAt")
+    if published:
+        try:
+            dt = datetime.fromisoformat(published.replace("Z", "+00:00")).astimezone(KST)
+            factors["게시 요일"] = "월화수목금토일"[dt.weekday()] + "요일"
+        except ValueError:
+            pass
+    return factors
+
+
+def factor_gap(ranked, recent_by_id, dimension, genre_fn=None, min_values=2,
+               min_per_value=2):
+    """한 축에서 값별 평균 조회수를 내고 1등과 꼴찌의 격차를 돌려준다.
+
+    값이 하나뿐이면 비교가 성립하지 않고, 한 편짜리 값끼리 비교하면
+    "화요일이 4배 앞선다(1편 vs 1편)" 같은 무의미한 결론이 나온다.
+    그래서 값마다 최소 영상 수를 요구한다."""
+    buckets = {}
+    for vid, video in ranked:
+        value = video_factors(vid, video, recent_by_id, genre_fn).get(dimension)
+        if not value:
+            continue
+        buckets.setdefault(value, []).append(video.get("viewCount", 0) or 0)
+    buckets = {v: views for v, views in buckets.items() if len(views) >= min_per_value}
+    if len(buckets) < min_values:
+        return None
+    stats = sorted(
+        ((v, sum(views) / len(views), len(views)) for v, views in buckets.items()),
+        key=lambda t: -t[1],
+    )
+    best, worst = stats[0], stats[-1]
+    return {"best": best, "worst": worst, "stats": stats}
+
+
+def success_factor_analysis(videos, recent_by_id, genre_fn=None,
+                            min_videos=4, confident_views=MIN_VIEWS_FOR_RETENTION,
+                            hook_examples=2):
+    """"무엇이 1위를 만들었고 무엇이 꼴찌를 만들었나"를 축별로 대조한다.
+
+    순위표만으로는 사장님이 다음에 무엇을 할지 정할 수 없다. 이 블록의 목적은
+    '잘된 것의 어떤 부분을 다음에 쓸 것인가'를 문장으로 못박는 것이다.
+
+    다만 표본이 작을 때 이걸 '원인'이라고 단정하면 8/26에 냈던 오진을 반복하게
+    된다. 그래서 총 조회수가 기준 미만이면 결론이 아니라 '다음 달에 검증할 가설'로
+    명시하고, 설정을 바꾸라고는 말하지 않는다."""
+    public = {vid: v for vid, v in videos.items() if v.get("privacyStatus") == "public"}
+    if len(public) < min_videos:
+        return []
+
+    ranked = sorted(public.items(), key=lambda kv: -(kv[1].get("viewCount", 0) or 0))
+    total_views = sum(v.get("viewCount", 0) or 0 for v in public.values())
+    confident = total_views >= confident_views
+
+    lines = ["[잘된 이유 · 안된 이유]"]
+    if confident:
+        lines.append(f"공개 {len(public)}편 · 누적 {total_views:,}회를 축별로 대조했습니다.")
+    else:
+        lines.append(f"※ 누적 {total_views:,}회 — 아직 가설 단계입니다({confident_views}회부터 결론으로 씁니다). "
+                     f"아래는 확정된 원인이 아니라 다음 달에 검증할 후보이고, "
+                     f"이 근거만으로 설정을 바꾸지는 않습니다.")
+
+    # 1위가 무엇이었나
+    top_vid, top_video = ranked[0]
+    top_hook, top_benefit = split_title_hook(top_video.get("title", ""))
+    top_f = video_factors(top_vid, top_video, recent_by_id, genre_fn)
+    desc = " · ".join(f"{k} {v}" for k, v in top_f.items() if k != "상황 훅")
+    lines.append("")
+    lines.append(f"▶ 1위 ({top_video.get('viewCount', 0):,}회)")
+    lines.append(f"  제목 훅: \"{top_hook}\"")
+    if top_benefit:
+        lines.append(f"  효익 문구: \"{top_benefit}\"")
+    if desc:
+        lines.append(f"  속성: {desc}")
+
+    # 축별 격차
+    gaps = []
+    for dimension in ("무드", "씬", "게시 요일"):
+        gap = factor_gap(ranked, recent_by_id, dimension, genre_fn)
+        if gap:
+            gaps.append((dimension, gap))
+
+    if gaps:
+        lines.append("")
+        lines.append("▶ 무엇이 갈랐나")
+    for dimension, gap in gaps:
+        (bv, bavg, bn) = gap["best"]
+        (wv, wavg, wn) = gap["worst"]
+        lines.append(f"  · {dimension}: {bv} 평균 {bavg:.1f}회({bn}편) vs {wv} 평균 {wavg:.1f}회({wn}편)")
+        if wavg > 0 and bavg >= wavg * 2:
+            lines.append(f"    {with_particle(bv)} {bavg / wavg:.1f}배 앞섭니다. {FACTOR_MEANING.get(dimension, '')}")
+        elif wavg == 0 and bavg > 0:
+            lines.append(f"    {with_particle(wv, ('은', '는'))} 아직 0회입니다. {FACTOR_MEANING.get(dimension, '')}")
+        else:
+            lines.append(f"    격차가 작습니다 — 이 축은 아직 승부를 가르는 요인이 아닙니다.")
+
+    # 하위권 공통점
+    bottom = [kv for kv in ranked if (kv[1].get("viewCount", 0) or 0) == 0]
+    if len(bottom) < 2 and len(ranked) >= 6:
+        # 한 편만 놓고 "공통점"이라고 부를 수는 없다. 최소 2편을 모은다.
+        bottom = ranked[-2:]
+    if len(bottom) >= 2:
+        shared = None
+        for vid, video in bottom:
+            f = set(video_factors(vid, video, recent_by_id, genre_fn).items())
+            shared = f if shared is None else (shared & f)
+        shared = {k: v for k, v in (shared or set()) if k != "상황 훅"}
+        lines.append("")
+        lines.append(f"▶ 하위 {len(bottom)}편의 공통점")
+        if shared:
+            for k, v in sorted(shared.items()):
+                lines.append(f"  · {k}: 전부 {v}")
+            lines.append("  → 이 조합이 반복되면 다음 달에 우선 교체 대상입니다.")
+        else:
+            lines.append("  · 공통 속성이 없습니다 — 특정 무드·씬 탓이 아니라 노출 자체가 "
+                         "부족했다는 뜻이므로, 콘텐츠보다 업로드 지속성이 먼저입니다.")
+
+    # 그래서 다음에 무엇을 할 것인가
+    lines.append("")
+    lines.append("▶ 그래서 다음에 이렇게 합니다")
+    actions = []
+    if top_hook:
+        actions.append(f"1위 제목의 구조(상황 묘사 \"{top_hook[:20]}…\" + 체감형 효익)를 "
+                       f"다음 제목의 기준선으로 쓴다")
+    pending = []
+    for dimension, gap in gaps:
+        (bv, bavg, bn), (wv, wavg, wn) = gap["best"], gap["worst"]
+        if bavg >= max(wavg * 2, 0.1):
+            if not confident:
+                pending.append(f"{dimension} {bv}")
+            elif dimension == "게시 요일":
+                # 매일 올리는 채널이라 요일 '비중'을 늘릴 수는 없다.
+                # 대신 그 요일에 무엇을 배치할지가 조정 가능한 부분이다.
+                actions.append(f"{bv}에 성과가 몰립니다 — 매일 올리므로 요일 자체는 못 바꾸지만, "
+                               f"가장 자신 있는 무드를 {bv}에 배치한다")
+            else:
+                actions.append(f"{with_particle(dimension, ('을', '를'))} {bv} 쪽으로 늘린다 "
+                               f"(현재 {bn}편 → 다음 비중 상향)")
+    if pending:
+        # 축마다 같은 문장을 반복하면 읽히지 않는다. 한 줄로 묶는다.
+        actions.append(f"{' / '.join(pending)} 우위가 진짜인지 다음 기간에 확인한다 "
+                       f"(지금 비중을 바꾸면 무엇이 효과였는지 알 수 없게 됩니다)")
+    if not confident:
+        actions.append(f"판단에 필요한 건 조회수입니다 — 매일 업로드를 끊지 않는 것이 "
+                       f"이 표를 의미 있게 만드는 유일한 방법입니다")
+    for i, a in enumerate(actions, 1):
+        lines.append(f"  {i}. {a}")
 
     return lines
 
@@ -627,6 +836,15 @@ def build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by
 
     # 표본 판정에는 채널 전체 증가분을 쓴다 — 영상별 합계는 이번 주 신작(지난 주
     # 스냅샷에 없던 영상)의 조회수를 통째로 놓치기 때문에 과소평가된다.
+    factor_lines = success_factor_analysis(
+        public_videos, recent_by_id,
+        genre_fn=lambda vid: infer_genre(vid, recent_by_id, description_by_id, genre_lookup),
+        min_videos=4,
+    )
+    if factor_lines:
+        lines.extend(factor_lines)
+        lines.append("")
+
     funnel = diagnose_funnel(analytics, prev_analytics_summary)
     if funnel:
         lines.append("[원인 진단]")

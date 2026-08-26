@@ -274,6 +274,89 @@ class TestReportIncludesRecommendations(unittest.TestCase):
         self.assertNotIn("YT_OTHER_PAGE", out)
 
 
+class TestSuccessFactorAnalysis(unittest.TestCase):
+    """순위표만으로는 "그래서 뭘 하지"에 답이 안 된다. 무엇이 갈랐는지를
+    낼 때 표본이 작으면 '가설'로 못박아야 한다."""
+
+    def make(self, multiplier=1):
+        videos = {}
+        views = [4, 4, 2, 1, 1, 1, 1, 1, 0]
+        for i, v in enumerate(views):
+            videos[f"v{i}"] = {
+                "privacyStatus": "public",
+                "viewCount": v * multiplier,
+                "publishedAt": f"2026-08-{13 + i:02d}T10:14:00Z",
+                "title": f"Playlist 상황 묘사 {i} 🍵 효익 문구 {i}",
+            }
+        recent = {
+            "v0": {"genre": "groove", "scene_id": "feast"},
+            "v1": {"genre": "groove", "scene_id": "feast"},
+            "v7": {"genre": "calm", "scene_id": "desk"},
+            "v8": {"genre": "calm", "scene_id": "desk"},
+        }
+        return videos, recent
+
+    def test_small_sample_is_labelled_hypothesis_not_conclusion(self):
+        videos, recent = self.make()
+        out = "\n".join(wr.success_factor_analysis(videos, recent))
+        self.assertIn("가설 단계", out)
+        # 표본이 작을 때 "비중을 늘려라"라고 말하면 안 된다
+        self.assertNotIn("쪽으로 늘린다", out)
+        self.assertIn("진짜인지", out)
+
+    def test_large_sample_gives_concrete_action(self):
+        videos, recent = self.make(multiplier=20)
+        out = "\n".join(wr.success_factor_analysis(videos, recent))
+        self.assertNotIn("가설 단계", out)
+        self.assertIn("쪽으로 늘린다", out)
+
+    def test_reports_winner_hook_and_losing_group(self):
+        videos, recent = self.make()
+        out = "\n".join(wr.success_factor_analysis(videos, recent))
+        self.assertIn("▶ 1위", out)
+        self.assertIn("제목 훅", out)
+        self.assertIn("무엇이 갈랐나", out)
+        self.assertIn("공통점", out)
+        self.assertIn("그래서 다음에 이렇게 합니다", out)
+
+    def test_skipped_when_too_few_videos(self):
+        videos = {"a": {"privacyStatus": "public", "viewCount": 1, "title": "가"}}
+        self.assertEqual(wr.success_factor_analysis(videos, {}), [])
+
+    def test_single_video_values_are_not_compared(self):
+        """1편 vs 1편으로 "4배 앞선다"를 말하면 안 된다."""
+        videos = {
+            f"v{i}": {"privacyStatus": "public", "viewCount": 10 - i,
+                      "title": f"Playlist 훅{i} 🍵 효익{i}"}
+            for i in range(5)
+        }
+        recent = {f"v{i}": {"genre": f"unique{i}"} for i in range(5)}
+        out = "\n".join(wr.success_factor_analysis(videos, recent))
+        self.assertNotIn("무드:", out)
+
+    def test_title_split_strips_variation_selector(self):
+        hook, benefit = wr.split_title_hook("Playlist 궁궐 연회 ✍️ 어깨 들썩이는 국악")
+        self.assertEqual(hook, "궁궐 연회")
+        self.assertEqual(benefit, "어깨 들썩이는 국악")
+
+    def test_title_split_without_emoji(self):
+        hook, benefit = wr.split_title_hook("Playlist (가사X) 그냥 제목")
+        self.assertEqual(hook, "그냥 제목")
+        self.assertEqual(benefit, "")
+
+    def test_particle_follows_final_consonant(self):
+        self.assertEqual(wr.with_particle("화요일"), "화요일이")
+        self.assertEqual(wr.with_particle("무드"), "무드가")
+        self.assertEqual(wr.with_particle("무드", ("을", "를")), "무드를")
+        self.assertEqual(wr.with_particle("씬", ("을", "를")), "씬을")
+
+    def test_weekday_action_does_not_suggest_changing_share(self):
+        videos, recent = self.make(multiplier=20)
+        out = "\n".join(wr.success_factor_analysis(videos, recent))
+        if "게시 요일" in out and "쪽으로 늘린다" in out:
+            self.assertNotIn("게시 요일을 ", out.split("그래서 다음에")[-1])
+
+
 if __name__ == "__main__":
     unittest.main()
 

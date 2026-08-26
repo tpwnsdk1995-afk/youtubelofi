@@ -500,12 +500,19 @@ def build_monthly_report(now, channel_stats, channel_prev, videos, recent_by_id,
             lines.append("")
 
     all_descriptions = {vid: v.get("description", "") for vid, v in videos.items()}
-    wide = channel_wide_ranking(
-        videos, recent_by_id,
-        genre_fn=lambda vid: wr.infer_genre(vid, recent_by_id, all_descriptions, genre_lookup),
-    )
+    genre_fn = lambda vid: wr.infer_genre(vid, recent_by_id, all_descriptions, genre_lookup)
+    wide = channel_wide_ranking(videos, recent_by_id, genre_fn=genre_fn)
     if wide:
         lines.extend(wide)
+        lines.append("")
+
+    # 순위표만으로는 "그래서 뭘 하지"에 답이 안 된다. 무엇이 1위를 만들었고
+    # 무엇이 꼴찌를 만들었는지 축별로 대조한다. 월간은 표본이 크므로
+    # 상황 훅까지 포함해 주간보다 깊게 본다.
+    factors = wr.success_factor_analysis(videos, recent_by_id, genre_fn=genre_fn,
+                                         min_videos=4)
+    if factors:
+        lines.extend(factors)
         lines.append("")
 
     lines.extend(monetization_progress(channel_stats, analytics, channel_prev))
