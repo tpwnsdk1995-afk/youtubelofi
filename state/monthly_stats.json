@@ -1,8 +1,13 @@
 {
-  "snapshot_at": "2026-08-26T15:42:16.392631+09:00",
+  "snapshot_at": "2026-08-26T15:51:43.883936+09:00",
   "channel": {
     "subscriberCount": 0,
-    "viewCount": 15,
+    "viewCount": 13,
     "videoCount": 9
+  },
+  "last_month": {
+    "label": "2026-07",
+    "month_views": 0,
+    "month_uploads": 0
   }
 }
