@@ -1,9 +1,17 @@
 name: Publish lofi video
 
-# 트리거는 GitHub 자체 cron이 아니라 매일 17:15 KST에 발동하는 Claude Code Remote
-# Routine이 workflow_dispatch로 담당한다. GitHub의 schedule 트리거는 지연/누락이
-# 잦았고(수 시간 지연되거나 아예 스킵됨), Routine이 이미 대신 실행한 뒤에 뒤늦게
-# 발동해 같은 날 중복 영상이 생성된 적도 있어 제거했다.
+# 주 트리거는 매일 17:15 KST에 발동하는 Claude Code Remote Routine의 workflow_dispatch다.
+# GitHub의 schedule 트리거는 지연/누락이 잦아(수 시간 지연되거나 아예 스킵됨) 주 트리거로는
+# 쓸 수 없다. 과거에 Routine이 이미 실행한 뒤 schedule이 뒤늦게 발동해 같은 날 영상이
+# 2편 생성된 적이 있어 제거했었다.
+#
+# 그런데 Routine은 Claude 세션을 깨우는 방식이라, 사용 한도 초과로 세션이 응답하지 못하면
+# 그날이 통째로 누락된다(2026-08-22~25, 4일 연속 누락). 그래서 schedule을 "보조 트리거"로
+# 되살리되, 중복 생성을 워크플로우 스스로 막도록 아래 guard 잡을 먼저 둔다.
+#
+# guard는 "오늘(KST) 이미 영상이 나갔는가"를 pending-confirmation 이슈의 생성 시각으로
+# 판단한다. 이 이슈는 non-dry-run 성공 시에만 열리므로 리허설이 실제 생성을 막는 오탐이
+# 없고, Claude가 깨어 있든 아니든 워크플로우 혼자 판단할 수 있다.
 on:
   workflow_dispatch:
     inputs:
@@ -15,6 +23,10 @@ on:
         description: "settings.yml의 concept 일회성 오버라이드 (리허설용, 비우면 설정값 사용)"
         type: string
         default: ""
+      force:
+        description: "true면 오늘 이미 영상이 나갔어도 강제로 다시 생성 (하루 2편이 되므로 주의)"
+        type: boolean
+        default: false
 
 concurrency:
   group: publish-video
@@ -25,7 +37,75 @@ permissions:
   issues: write
 
 jobs:
+  guard:
+    # 오늘 이미 영상이 나갔으면 publish 잡을 통째로 건너뛴다.
+    # 유튜브 반복 콘텐츠 정책상 하루 2편은 절대 금지이므로, 이 판단은
+    # Claude(Routine)가 아니라 워크플로우 자신이 할 수 있어야 한다.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+      reason: ${{ steps.check.outputs.reason }}
+    steps:
+      - id: check
+        uses: actions/github-script@v7
+        env:
+          FORCE: ${{ inputs.force }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        with:
+          script: |
+            const kstDate = (iso) =>
+              new Date(new Date(iso).getTime() + 9 * 3600 * 1000)
+                .toISOString().slice(0, 10);
+
+            if (process.env.FORCE === 'true') {
+              core.setOutput('skip', 'false');
+              core.setOutput('reason', '강제 실행(force=true)');
+              return;
+            }
+            // 리허설은 영상을 올리지 않으므로 막을 이유가 없다.
+            if (process.env.DRY_RUN === 'true') {
+              core.setOutput('skip', 'false');
+              core.setOutput('reason', '리허설(dry_run=true)');
+              return;
+            }
+
+            const today = kstDate(new Date().toISOString());
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              labels: 'pending-confirmation',
+              per_page: 30,
+              sort: 'created',
+              direction: 'desc',
+            });
+            // listForRepo는 PR도 함께 돌려주므로 걸러낸다.
+            const madeToday = issues.data.filter(
+              (i) => !i.pull_request && kstDate(i.created_at) === today
+            );
+
+            if (madeToday.length > 0) {
+              const titles = madeToday.map((i) => `#${i.number} ${i.title}`).join(', ');
+              core.setOutput('skip', 'true');
+              core.setOutput('reason', `오늘(${today} KST) 이미 영상이 생성됨: ${titles}`);
+              core.notice(`중복 생성 방지: ${titles}`);
+            } else {
+              core.setOutput('skip', 'false');
+              core.setOutput('reason', `오늘(${today} KST) 생성 기록 없음 - 진행`);
+            }
+
+      - name: Report guard decision
+        run: |
+          echo "skip=${{ steps.check.outputs.skip }}"
+          echo "reason=${{ steps.check.outputs.reason }}"
+          echo "### 중복 방지 가드" >> $GITHUB_STEP_SUMMARY
+          echo "- 판정: ${{ steps.check.outputs.skip == 'true' && '건너뜀' || '진행' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 근거: ${{ steps.check.outputs.reason }}" >> $GITHUB_STEP_SUMMARY
+
   publish:
+    needs: guard
+    if: needs.guard.outputs.skip != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
