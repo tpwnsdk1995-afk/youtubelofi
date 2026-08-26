@@ -328,6 +328,23 @@ class TestMonthlyOnlySections(unittest.TestCase):
         self.assertNotIn("하지 말아야 할 일", out)
         self.assertIn("7,500회 이상", out)
 
+    def test_channel_wide_ranking_uses_genre_fallback(self):
+        videos = {
+            "a": {"privacyStatus": "public", "title": "가", "viewCount": 10},
+            "b": {"privacyStatus": "public", "title": "나", "viewCount": 5},
+        }
+        out = "\n".join(mr.channel_wide_ranking(videos, {}, genre_fn=lambda vid: "calm"))
+        self.assertIn("(calm)", out)
+        self.assertNotIn("(?)", out)
+
+    def test_channel_wide_ranking_says_unknown_when_no_fallback(self):
+        videos = {
+            "a": {"privacyStatus": "public", "title": "가", "viewCount": 10},
+            "b": {"privacyStatus": "public", "title": "나", "viewCount": 5},
+        }
+        out = "\n".join(mr.channel_wide_ranking(videos, {}))
+        self.assertIn("무드 미상", out)
+
 
 if __name__ == "__main__":
     unittest.main()

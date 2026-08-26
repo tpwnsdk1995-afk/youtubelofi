@@ -182,7 +182,7 @@ def monetization_progress(channel_stats, analytics, prev_channel):
     return lines
 
 
-def channel_wide_ranking(videos, recent_by_id, top_n=5, bottom_n=3):
+def channel_wide_ranking(videos, recent_by_id, top_n=5, bottom_n=3, genre_fn=None):
     """채널에 공개된 전체 영상을 조회수로 줄 세운다.
 
     월간은 '그 달'만 보면 안 된다. 그 달에 업로드가 없었어도 채널은 계속 돌아가고,
@@ -199,20 +199,25 @@ def channel_wide_ranking(videos, recent_by_id, top_n=5, bottom_n=3):
     lines = [f"[채널 전체 성과 (공개 {len(public)}편 누적)]",
              f"누적 조회수 {total_views:,}회 · 편당 평균 {avg:.1f}회"]
 
+    def label(vid):
+        # recent_videos에 genre가 없는 옛 영상은 설명란으로 역추정한다.
+        # (그냥 "?"로 두면 랭킹을 보고도 어떤 무드가 먹혔는지 알 수 없다)
+        entry = recent_by_id.get(vid) or {}
+        tag = entry.get("genre")
+        if not tag and genre_fn:
+            tag = genre_fn(vid)
+        return tag or "무드 미상"
+
     lines.append(f"▶ 상위 {min(top_n, len(ranked))}편")
     for rank, (vid, v) in enumerate(ranked[:top_n], 1):
-        entry = recent_by_id.get(vid) or {}
-        tag = entry.get("genre") or "?"
         short = v["title"][:34] + ("…" if len(v["title"]) > 34 else "")
-        lines.append(f"  {rank}. {v.get('viewCount', 0):,}회 ({tag}) {short}")
+        lines.append(f"  {rank}. {v.get('viewCount', 0):,}회 ({label(vid)}) {short}")
 
     if len(ranked) > top_n + bottom_n:
         lines.append(f"▶ 하위 {bottom_n}편")
         for vid, v in ranked[-bottom_n:]:
-            entry = recent_by_id.get(vid) or {}
-            tag = entry.get("genre") or "?"
             short = v["title"][:34] + ("…" if len(v["title"]) > 34 else "")
-            lines.append(f"  · {v.get('viewCount', 0):,}회 ({tag}) {short}")
+            lines.append(f"  · {v.get('viewCount', 0):,}회 ({label(vid)}) {short}")
 
     top_views = ranked[0][1].get("viewCount", 0)
     if avg > 0 and top_views >= avg * 2:
@@ -494,7 +499,11 @@ def build_monthly_report(now, channel_stats, channel_prev, videos, recent_by_id,
                 lines.append(f"- {v.get('viewCount', 0):,}회 · {short} · youtu.be/{vid}")
             lines.append("")
 
-    wide = channel_wide_ranking(videos, recent_by_id)
+    all_descriptions = {vid: v.get("description", "") for vid, v in videos.items()}
+    wide = channel_wide_ranking(
+        videos, recent_by_id,
+        genre_fn=lambda vid: wr.infer_genre(vid, recent_by_id, all_descriptions, genre_lookup),
+    )
     if wide:
         lines.extend(wide)
         lines.append("")

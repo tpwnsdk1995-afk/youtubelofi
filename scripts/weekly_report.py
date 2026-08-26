@@ -281,6 +281,18 @@ def format_traffic_sources(sources):
         "CHANNEL": "채널 페이지",
         "NO_LINK_OTHER": "기타",
         "SUBSCRIBER": "구독 피드",
+        # 실제 응답에 이 코드들이 섞여 나왔다(2026-08 월간). 매핑이 없으면
+        # 리포트에 API 원문 코드가 그대로 찍혀 사장님이 읽을 수 없다.
+        "YT_CHANNEL": "채널 페이지",
+        "YT_OTHER_PAGE": "유튜브 기타 페이지",
+        "END_SCREEN": "종료 화면",
+        "ANNOTATION": "카드/주석",
+        "SHORTS": "쇼츠 피드",
+        "HASHTAGS": "해시태그",
+        "ADVERTISING": "광고",
+        "PROMOTED": "프로모션",
+        "CAMPAIGN_CARD": "캠페인 카드",
+        "SOUND_PAGE": "사운드 페이지",
     }
     total = sum(sources.values()) or 1
     lines = []

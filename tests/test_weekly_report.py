@@ -265,6 +265,14 @@ class TestReportIncludesRecommendations(unittest.TestCase):
         self.assertIn("[다음 주 계획]", report)
         self.assertIn("한 줄 요약:", report)
 
+    def test_traffic_sources_translate_unmapped_youtube_codes(self):
+        out = "\n".join(wr.format_traffic_sources(
+            {"YT_OTHER_PAGE": 3, "YT_CHANNEL": 2, "END_SCREEN": 1}))
+        self.assertIn("유튜브 기타 페이지", out)
+        self.assertIn("채널 페이지", out)
+        self.assertIn("종료 화면", out)
+        self.assertNotIn("YT_OTHER_PAGE", out)
+
 
 if __name__ == "__main__":
     unittest.main()
