@@ -1,0 +1,67 @@
+name: Suno music replenishment helper
+
+# 음원이 부족할 때 사장님이 직접 눌러 실행한다. 주간 리포트가 "calm 42곡 부족"이라고
+# 알려주면, 이걸 눌러서 그 42곡을 뽑을 프롬프트를 텔레그램으로 받는다.
+# 폰에서 GitHub 앱으로 Run workflow만 누르면 되므로 PC가 필요 없다.
+#
+# 매일 돌릴 이유는 없다 (주간 리포트가 이미 재고를 알려준다). 그래서 schedule 없이
+# 수동 실행만 둔다.
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "무드당 프롬프트 개수 (텔레그램이 길어지면 줄이세요)"
+        type: string
+        default: "20"
+
+concurrency:
+  group: suno-helper
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  helper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate Suno prompts and audit the Drive library
+        env:
+          GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+          GDRIVE_MUSIC_FOLDER_ID: ${{ secrets.GDRIVE_MUSIC_FOLDER_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 scripts/suno_helper.py --limit "${{ inputs.limit }}"
+
+      - name: Commit prompt shuffle-bag state
+        if: success()
+        run: |
+          git config user.name "lofi-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add state/suno_state.json
+          git commit -m "Update Suno prompt shuffle-bag state" || echo "no state changes to commit"
+          git pull --rebase origin ${{ github.ref_name }}
+          git push origin HEAD:${{ github.ref_name }}
+
+      - name: Open issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Suno helper workflow failed: ${new Date().toISOString().slice(0,10)}`,
+              body: `수노 보충 도우미 실행이 실패했습니다. 로그를 확인해 주세요: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              labels: ["automation-failure"],
+            });

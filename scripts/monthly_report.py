@@ -376,7 +376,8 @@ def build_next_month_plan(month_uploads, expected_uploads, library_counts, analy
             if n < wr.RECOMMENDED_LIBRARY_SIZE:
                 need = wr.RECOMMENDED_LIBRARY_SIZE - n
                 manual.append(f"Suno에서 {name} 음원 {need}곡 이상 뽑아 Drive의 {name}/ 폴더에 넣기 "
-                              f"(현재 {n}곡 / 권장 {wr.RECOMMENDED_LIBRARY_SIZE}곡)")
+                              f"(현재 {n}곡 / 권장 {wr.RECOMMENDED_LIBRARY_SIZE}곡) — "
+                              f"'Suno music replenishment helper' 워크플로우가 프롬프트를 만들어 줍니다")
     if analytics_error:
         manual.append("노출수·클릭률 분석 켜기 — SETUP.md 8절 재인증")
     if month_uploads < expected_uploads:

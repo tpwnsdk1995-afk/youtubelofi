@@ -688,7 +688,9 @@ def build_next_week_plan(new_video_count, library_counts, analytics, analytics_e
         for name, n in sorted(library_counts.items()):
             if n < RECOMMENDED_LIBRARY_SIZE:
                 need = RECOMMENDED_LIBRARY_SIZE - n
-                manual.append(f"Suno에서 {name} 음원 {need}곡 이상 뽑아 Drive의 {name}/ 폴더에 넣기 (현재 {n}곡)")
+                manual.append(f"Suno에서 {name} 음원 {need}곡 이상 뽑아 Drive의 {name}/ 폴더에 넣기 "
+                              f"(현재 {n}곡) — GitHub Actions의 'Suno music replenishment helper'를 "
+                              f"실행하시면 뽑을 프롬프트를 텔레그램으로 보내드립니다")
     if analytics_error:
         manual.append("노출수·클릭률 분석 켜기 — SETUP.md 8절 재인증 (안 켜면 원인 진단이 계속 비어 있습니다)")
     if new_video_count < 7:

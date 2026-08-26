@@ -1,0 +1,84 @@
+# 수노(Suno) 음원 보충용 프롬프트 조립 블록.
+#
+# 왜 조합식인가: 같은 프롬프트로 40곡을 뽑으면 40곡이 다 비슷하게 나온다. 그러면
+# 한 영상 안에서 지루하고, 영상끼리도 구분이 안 돼 유튜브 반복 콘텐츠 판정 위험이
+# 커진다. 축(리드 악기 / 리듬 / 질감 / 분위기)마다 따로 셔플백을 돌려 조합하므로
+# 매번 다른 프롬프트가 나온다.
+#
+# 수노 사용법: 아래 조합으로 만들어진 문장을 Suno의 "Style of Music" 칸에 붙여넣고,
+# Instrumental 토글을 켠 뒤 생성한다. (프롬프트에도 instrumental을 명시하지만
+# 토글을 켜는 쪽이 확실하다 — 채널 제목이 "(가사X)"이므로 보컬이 들어가면 못 쓴다.)
+
+# 모든 무드 공통으로 프롬프트 끝에 붙는 문구.
+common_suffix: "instrumental, no vocals, no lyrics, loopable, consistent mix"
+
+moods:
+  calm:
+    # 집중용 잔잔한 국악 로파이 — 채널의 기둥 (calm 2 : groove 1 비율)
+    description: "공부·집중용. 잔잔하고 방해되지 않아야 한다."
+    bpm: [60, 62, 64, 66, 68, 70, 72]
+    lead:
+      - "gayageum (Korean zither) plucked melody"
+      - "geomungo (Korean bass zither) low resonant plucks"
+      - "daegeum (Korean bamboo flute) breathy long tones"
+      - "haegeum (Korean two-string fiddle) soft bowed lines"
+      - "danso (small bamboo flute) airy melody"
+      - "ajaeng (bowed zither) sustained low strokes"
+      - "muted felt piano with gayageum accents"
+      - "yanggeum (hammered dulcimer) delicate figures"
+    rhythm:
+      - "soft brushed drums low in the mix"
+      - "minimal muted kick and rimshot"
+      - "no drums - ambient and free-time"
+      - "slow lo-fi boom bap with gentle swing"
+      - "light shaker and soft kick only"
+      - "sparse distant hand percussion"
+    texture:
+      - "warm vinyl crackle"
+      - "tape hiss and gentle wow-flutter"
+      - "rain on a hanji paper window"
+      - "distant temple bell fading"
+      - "crackling charcoal brazier"
+      - "soft snowfall ambience"
+      - "faint night crickets"
+      - "wind through pine trees"
+    mood:
+      - "contemplative and unhurried"
+      - "melancholic but comforting"
+      - "serene like early morning mist"
+      - "nostalgic as an old study room"
+      - "meditative and spacious"
+      - "quietly hopeful"
+
+  groove:
+    # 산책·드라이브용 신나는 가야금 힙합 계열
+    description: "산책·드라이브용. 어깨가 들썩이되 과하지 않아야 한다."
+    bpm: [85, 88, 90, 92, 95, 98, 100]
+    lead:
+      - "gayageum (Korean zither) syncopated plucks"
+      - "haegeum (Korean fiddle) catchy repeating riff"
+      - "geomungo (bass zither) walking bassline"
+      - "sparing taepyeongso (Korean shawm) bright stabs"
+      - "gayageum arpeggios over warm sub bass"
+      - "sogeum (small transverse flute) bright hook"
+    rhythm:
+      - "janggu (hourglass drum) driving jangdan pattern"
+      - "buk (barrel drum) steady heartbeat groove"
+      - "dusty lo-fi boom bap with head-nodding swing"
+      - "breakbeat with traditional Korean drum samples"
+      - "funky janggu with hand claps"
+      - "half-time drums with a fat snare"
+    texture:
+      - "warm analog sub bass"
+      - "dusty crate-dig sample texture"
+      - "vinyl crackle and tape saturation"
+      - "hand claps and finger snaps"
+      - "distant market-day crowd chatter"
+      - "wooden clack accents"
+    mood:
+      - "playful and swaggering"
+      - "festive like a village celebration"
+      - "confident and breezy"
+      - "sunny afternoon walk energy"
+      - "cheeky and light on its feet"
+      - "cool and understated"
