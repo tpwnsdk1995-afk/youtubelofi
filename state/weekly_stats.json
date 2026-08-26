@@ -1,5 +1,5 @@
 {
-  "snapshot_at": "2026-08-26T10:00:34.020867+09:00",
+  "snapshot_at": "2026-08-26T15:07:48.897039+09:00",
   "channel": {
     "subscriberCount": 0,
     "viewCount": 13,
@@ -112,5 +112,20 @@
       "viewCount": 13,
       "weekly_view_delta": 6
     }
-  ]
+  ],
+  "analytics": {
+    "period": [
+      "2026-08-19",
+      "2026-08-25"
+    ],
+    "summary": {
+      "views": 7,
+      "estimatedMinutesWatched": 1,
+      "averageViewDuration": 14,
+      "subscribersGained": 0
+    },
+    "traffic_sources": {
+      "YT_SEARCH": 7
+    }
+  }
 }
