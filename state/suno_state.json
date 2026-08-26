@@ -2,54 +2,54 @@
   "pools": {
     "suno_calm_lead": {
       "remaining": [
-        "daegeum (Korean bamboo flute) breathy long tones",
-        "muted felt piano with gayageum accents",
+        "geomungo (Korean bass zither) low resonant plucks",
+        "danso (small bamboo flute) airy melody",
         "haegeum (Korean two-string fiddle) soft bowed lines",
-        "ajaeng (bowed zither) sustained low strokes"
+        "yanggeum (hammered dulcimer) delicate figures",
+        "gayageum (Korean zither) plucked melody"
       ],
       "history": [
-        "yanggeum (hammered dulcimer) delicate figures",
-        "gayageum (Korean zither) plucked melody",
-        "danso (small bamboo flute) airy melody",
-        "geomungo (Korean bass zither) low resonant plucks"
+        "daegeum (Korean bamboo flute) breathy long tones",
+        "muted felt piano with gayageum accents",
+        "ajaeng (bowed zither) sustained low strokes"
       ]
     },
     "suno_calm_rhythm": {
       "remaining": [
-        "no drums - ambient and free-time",
         "minimal muted kick and rimshot",
-        "soft brushed drums low in the mix",
-        "sparse distant hand percussion"
+        "sparse distant hand percussion",
+        "slow lo-fi boom bap with gentle swing"
       ],
       "history": [
-        "slow lo-fi boom bap with gentle swing",
-        "light shaker and soft kick only"
+        "no drums - ambient and free-time",
+        "light shaker and soft kick only",
+        "soft brushed drums low in the mix"
       ]
     },
     "suno_calm_texture": {
       "remaining": [
-        "distant temple bell fading",
-        "crackling charcoal brazier",
+        "soft snowfall ambience",
         "faint night crickets",
-        "soft snowfall ambience"
+        "distant temple bell fading",
+        "warm vinyl crackle",
+        "wind through pine trees"
       ],
       "history": [
-        "tape hiss and gentle wow-flutter",
-        "wind through pine trees",
+        "crackling charcoal brazier",
         "rain on a hanji paper window",
-        "warm vinyl crackle"
+        "tape hiss and gentle wow-flutter"
       ]
     },
     "suno_calm_mood": {
       "remaining": [
-        "quietly hopeful",
         "serene like early morning mist",
-        "meditative and spacious",
-        "contemplative and unhurried"
+        "contemplative and unhurried",
+        "meditative and spacious"
       ],
       "history": [
-        "nostalgic as an old study room",
-        "melancholic but comforting"
+        "melancholic but comforting",
+        "quietly hopeful",
+        "nostalgic as an old study room"
       ]
     },
     "suno_calm_bpm": {
@@ -58,71 +58,71 @@
       ],
       "history": [
         "68",
+        "62",
+        "70",
         "60",
         "66",
-        "70",
-        "62",
         "64"
       ]
     },
     "suno_groove_lead": {
       "remaining": [
         "gayageum arpeggios over warm sub bass",
-        "geomungo (bass zither) walking bassline",
-        "sparing taepyeongso (Korean shawm) bright stabs",
-        "sogeum (small transverse flute) bright hook"
-      ],
-      "history": [
         "haegeum (Korean fiddle) catchy repeating riff",
         "gayageum (Korean zither) syncopated plucks"
+      ],
+      "history": [
+        "sparing taepyeongso (Korean shawm) bright stabs",
+        "geomungo (bass zither) walking bassline",
+        "sogeum (small transverse flute) bright hook"
       ]
     },
     "suno_groove_rhythm": {
       "remaining": [
         "half-time drums with a fat snare",
-        "janggu (hourglass drum) driving jangdan pattern",
-        "breakbeat with traditional Korean drum samples",
-        "buk (barrel drum) steady heartbeat groove"
+        "funky janggu with hand claps",
+        "janggu (hourglass drum) driving jangdan pattern"
       ],
       "history": [
         "dusty lo-fi boom bap with head-nodding swing",
-        "funky janggu with hand claps"
+        "breakbeat with traditional Korean drum samples",
+        "buk (barrel drum) steady heartbeat groove"
       ]
     },
     "suno_groove_texture": {
       "remaining": [
-        "wooden clack accents",
-        "hand claps and finger snaps",
-        "vinyl crackle and tape saturation",
-        "warm analog sub bass"
+        "dusty crate-dig sample texture",
+        "warm analog sub bass",
+        "vinyl crackle and tape saturation"
       ],
       "history": [
-        "distant market-day crowd chatter",
-        "dusty crate-dig sample texture"
+        "hand claps and finger snaps",
+        "wooden clack accents",
+        "distant market-day crowd chatter"
       ]
     },
     "suno_groove_mood": {
       "remaining": [
-        "cheeky and light on its feet",
-        "confident and breezy",
         "festive like a village celebration",
-        "cool and understated"
+        "playful and swaggering",
+        "sunny afternoon walk energy"
       ],
       "history": [
-        "sunny afternoon walk energy",
-        "playful and swaggering"
+        "cheeky and light on its feet",
+        "cool and understated",
+        "confident and breezy"
       ]
     },
     "suno_groove_bpm": {
       "remaining": [
-        "98"
+        "85"
       ],
       "history": [
-        "92",
-        "95",
-        "88",
-        "85",
         "90",
+        "98",
+        "95",
+        "92",
+        "88",
         "100"
       ]
     }
