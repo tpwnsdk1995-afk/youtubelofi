@@ -345,6 +345,26 @@ class TestMonthlyOnlySections(unittest.TestCase):
         out = "\n".join(mr.channel_wide_ranking(videos, {}))
         self.assertIn("무드 미상", out)
 
+    def test_ranking_does_not_command_when_sample_is_tiny(self):
+        """랭킹은 '기준선으로 삼으라'고 하는데 요인 분석은 '가설'이라고 하면 모순이다."""
+        videos = {
+            "a": {"privacyStatus": "public", "title": "대박", "viewCount": 8},
+            "b": {"privacyStatus": "public", "title": "보통", "viewCount": 1},
+            "c": {"privacyStatus": "public", "title": "보통2", "viewCount": 1},
+        }
+        out = "\n".join(mr.channel_wide_ranking(videos, {}))
+        self.assertIn("우연과 구분되지 않습니다", out)
+        self.assertNotIn("기준선으로 삼으세요", out)
+
+    def test_ranking_commands_once_sample_is_enough(self):
+        videos = {
+            "a": {"privacyStatus": "public", "title": "대박", "viewCount": 80},
+            "b": {"privacyStatus": "public", "title": "보통", "viewCount": 10},
+            "c": {"privacyStatus": "public", "title": "보통2", "viewCount": 10},
+        }
+        out = "\n".join(mr.channel_wide_ranking(videos, {}))
+        self.assertIn("기준선으로 삼으세요", out)
+
 
 if __name__ == "__main__":
     unittest.main()

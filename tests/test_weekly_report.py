@@ -357,6 +357,20 @@ class TestSuccessFactorAnalysis(unittest.TestCase):
             self.assertNotIn("게시 요일을 ", out.split("그래서 다음에")[-1])
 
 
+    def test_skipped_axes_are_explained_not_silently_dropped(self):
+        """씬이 매번 달라 비교 불가일 때, 축이 그냥 사라지면 왜 안 봤는지 알 수 없다."""
+        videos = {
+            f"v{i}": {"privacyStatus": "public", "viewCount": 5 - i,
+                      "publishedAt": f"2026-08-{13 + i:02d}T10:14:00Z",
+                      "title": f"Playlist 훅{i} 🍵 효익{i}"}
+            for i in range(5)
+        }
+        recent = {f"v{i}": {"genre": "calm", "scene_id": f"scene{i}"} for i in range(5)}
+        out = "\n".join(wr.success_factor_analysis(videos, recent))
+        self.assertIn("씬", out)
+        self.assertIn("비교 불가", out)
+
+
 if __name__ == "__main__":
     unittest.main()
 

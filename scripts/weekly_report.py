@@ -404,10 +404,13 @@ def success_factor_analysis(videos, recent_by_id, genre_fn=None,
 
     # 축별 격차
     gaps = []
+    skipped = []
     for dimension in ("무드", "씬", "게시 요일"):
         gap = factor_gap(ranked, recent_by_id, dimension, genre_fn)
         if gap:
             gaps.append((dimension, gap))
+        else:
+            skipped.append(dimension)
 
     if gaps:
         lines.append("")
@@ -422,6 +425,11 @@ def success_factor_analysis(videos, recent_by_id, genre_fn=None,
             lines.append(f"    {with_particle(wv, ('은', '는'))} 아직 0회입니다. {FACTOR_MEANING.get(dimension, '')}")
         else:
             lines.append(f"    격차가 작습니다 — 이 축은 아직 승부를 가르는 요인이 아닙니다.")
+
+    if skipped:
+        # 축이 그냥 사라지면 "왜 씬은 안 봤지?"가 된다. 못 본 이유를 밝힌다.
+        lines.append(f"  · {' / '.join(skipped)}: 같은 값이 2편 이상 쌓이지 않아 비교 불가입니다"
+                     f" — 매번 다른 값이 쓰이는 축이라, 판단하려면 시간이 더 필요합니다.")
 
     # 하위권 공통점
     bottom = [kv for kv in ranked if (kv[1].get("viewCount", 0) or 0) == 0]

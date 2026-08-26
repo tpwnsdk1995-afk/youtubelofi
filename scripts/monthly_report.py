@@ -221,8 +221,15 @@ def channel_wide_ranking(videos, recent_by_id, top_n=5, bottom_n=3, genre_fn=Non
 
     top_views = ranked[0][1].get("viewCount", 0)
     if avg > 0 and top_views >= avg * 2:
-        lines.append(f"→ 1위가 평균의 {top_views / avg:.1f}배입니다. 이 영상의 제목·무드·씬을 "
-                     f"다음 달 기획의 기준선으로 삼으세요.")
+        if total_views >= wr.MIN_VIEWS_FOR_RETENTION:
+            lines.append(f"→ 1위가 평균의 {top_views / avg:.1f}배입니다. 이 영상의 제목·무드·씬을 "
+                         f"다음 달 기획의 기준선으로 삼으세요.")
+        else:
+            # 바로 아래 요인 분석은 "가설"이라고 하는데 여기서는 "기준선으로 삼으라"고
+            # 단정하면 리포트가 앞뒤로 모순된다. 같은 표본 기준을 적용한다.
+            lines.append(f"→ 1위가 평균의 {top_views / avg:.1f}배지만 누적 {total_views:,}회 "
+                         f"구간이라 아직 우연과 구분되지 않습니다. 아래 요인 분석을 "
+                         f"참고하되 이것만으로 기획을 바꾸지는 마세요.")
     return lines
 
 
