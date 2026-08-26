@@ -45,9 +45,19 @@ RECOMMENDED_LIBRARY_SIZE = 100
 # 퍼널 진단 기준. 유튜브 공식 도움말이 "대부분 채널의 노출 클릭률은 2~10%"라고
 # 밝히고 있어 2%를 썸네일 개선 신호로 삼는다.
 # (support.google.com/youtube/answer/9314486)
+#
+# 주의: 노출수(videoThumbnailImpressions)와 CTR은 Analytics API v2가 실제로는
+# 거부한다("The query is not supported"). 2026-08-26에 실제 호출로 확인했다.
+# 스튜디오 앱에서만 볼 수 있으므로, 이 값들이 None인 경로가 사실상 상시 경로다.
 MIN_WEEKLY_IMPRESSIONS = 1000   # 이 밑이면 노출 자체가 없는 단계 = 콘텐츠 문제 아님
 LOW_CTR = 2.0                   # % - 노출은 되는데 안 눌린다 = 썸네일 문제
 LOW_VIEW_MINUTES = 3.0          # 분 - 눌렀는데 바로 나간다 = 음악/도입부 문제
+
+# 시청 시간 기반 진단을 낼 수 있는 최소 조회수. 조회수가 한 자릿수일 때는 한두 명이
+# 실수로 눌렀다 나가도 평균이 통째로 무너진다. 실제로 2026-08-26 주간 리포트가
+# 조회수 7회 구간의 "평균 14초"를 근거로 "음악이 문제"라고 단정하는 오진을 냈다
+# (같은 채널의 한 달 평균은 14분 24초였다). 표본이 이 밑이면 판단을 보류한다.
+MIN_VIEWS_FOR_RETENTION = 30
 
 
 def load_yaml(path):
@@ -209,10 +219,27 @@ def diagnose_funnel(analytics, prev_summary=None):
             lines.append(f"- 노출수 추세: 지난주 대비 {abs(change):.0f}% {direction}")
 
     if impressions is None:
-        # 노출 지표를 못 받은 경우(스코프/지표 미지원) - 시청 시간만으로 판단
-        if views and avg_minutes < LOW_VIEW_MINUTES:
-            lines.append(f"- 평균 시청 {avg_minutes:.1f}분으로 짧습니다. 도입부 곡이 "
-                         f"바로 붙잡지 못하고 있을 가능성이 큽니다.")
+        # 노출/CTR을 못 받은 경우 (API 미지원이라 사실상 상시 경로).
+        # 시청 시간만으로 판단하되, 표본이 충분할 때만 원인을 단정한다.
+        if not views:
+            lines.append("- 이번 구간 조회수가 0이라 진단할 데이터가 없습니다.")
+        elif views < MIN_VIEWS_FOR_RETENTION:
+            lines.append(f"- 조회수 {views}회 · 평균 시청 {fmt_duration(avg_seconds)} "
+                         f"(참고용). 표본이 {MIN_VIEWS_FOR_RETENTION}회 미만이라 "
+                         f"이 수치로 음악·썸네일을 판단하지 않습니다 — 한두 명의 "
+                         f"이탈만으로도 평균이 크게 흔들리는 구간입니다.")
+        elif avg_minutes < LOW_VIEW_MINUTES:
+            lines.append(f"- **병목: 음악/도입부** (조회수 {views}회, 평균 시청 "
+                         f"{fmt_duration(avg_seconds)}). 눌러서 들어왔다가 바로 나갑니다.")
+            lines.append("- 조치: 첫 곡이 튀거나 이질적일 수 있습니다. Suno에서 도입부용으로 "
+                         "잔잔하게 시작하는 곡을 보강해 주세요.")
+        else:
+            lines.append(f"- 시청 지속 양호: 조회수 {views}회, 평균 시청 "
+                         f"{fmt_duration(avg_seconds)}. 들어온 사람은 실제로 듣고 있습니다. "
+                         f"남은 과제는 '더 많이 노출되는 것'입니다.")
+            if subs == 0:
+                lines.append("- 다만 구독 전환이 0입니다. 채널 아트·설명이 '구독할 이유'를 "
+                             "말하고 있는지 점검해 보세요.")
         return lines
 
     if impressions < MIN_WEEKLY_IMPRESSIONS:
@@ -373,6 +400,15 @@ def fmt_avg(n):
     return f"{n:+.1f}" if abs(n) < 10 else f"{n:+.0f}"
 
 
+def fmt_duration(seconds):
+    """초를 '14분 24초' 형태로. 0.2분 같은 소수 분 표기는 직관에 안 맞고
+    실제로 오해를 불렀다."""
+    seconds = int(seconds or 0)
+    if seconds < 60:
+        return f"{seconds}초"
+    return f"{seconds // 60}분 {seconds % 60}초"
+
+
 def build_headline(channel_stats, sub_delta, view_delta, new_video_count, analytics):
     """리포트 맨 위 한 줄 요약. 바빠서 이것만 읽어도 이번 주가 어땠는지 알 수 있어야 한다."""
     bits = []
@@ -382,9 +418,13 @@ def build_headline(channel_stats, sub_delta, view_delta, new_video_count, analyt
         bits.append(f"구독자 {fmt_delta(sub_delta)}명")
     bits.append(f"업로드 {new_video_count}/7편")
     if analytics:
-        imp = analytics["summary"].get("videoThumbnailImpressions")
+        summary = analytics["summary"]
+        imp = summary.get("videoThumbnailImpressions")
         if imp is not None:
             bits.append(f"노출 {imp:,}회")
+        watched = summary.get("estimatedMinutesWatched")
+        if watched:
+            bits.append(f"시청 {watched:,}분")
     return "한 줄 요약: " + " · ".join(bits)
 
 
@@ -479,7 +519,7 @@ def build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by
         if ctr is not None:
             lines.append(f"노출 클릭률(CTR): {ctr:.2f}%")
         avg_seconds = summary.get("averageViewDuration", 0) or 0
-        lines.append(f"평균 시청 시간: {avg_seconds / 60:.1f}분")
+        lines.append(f"평균 시청 시간: {fmt_duration(avg_seconds)}")
         watched = summary.get("estimatedMinutesWatched", 0) or 0
         lines.append(f"총 시청 시간: {watched:,.0f}분")
         lines.append("")

@@ -149,12 +149,17 @@ def monetization_progress(channel_stats, analytics, prev_channel):
                 lines.append("  이번 달 증가 없음 — 도달 시점을 추정할 수 없습니다.")
 
     if analytics:
-        watched_min = analytics["summary"].get("estimatedMinutesWatched", 0) or 0
+        summary = analytics["summary"]
+        watched_min = summary.get("estimatedMinutesWatched", 0) or 0
         hours = watched_min / 60
         lines.append(f"- 시청 시간: 이번 달 {hours:,.1f}시간 (기준 {YPP_WATCH_HOURS:,}시간 / 최근 12개월 누적)")
         if hours > 0:
             months_left = YPP_WATCH_HOURS / hours
             lines.append(f"  이 속도면 약 {months_left:.0f}개월치가 쌓여야 기준을 채웁니다.")
+        avg_seconds = summary.get("averageViewDuration", 0) or 0
+        views = summary.get("views", 0) or 0
+        if views:
+            lines.append(f"- 평균 시청 지속: {wr.fmt_duration(avg_seconds)} (조회수 {views:,}회 기준)")
     else:
         lines.append(f"- 시청 시간: 집계 불가 (Analytics 스코프 미승인). 기준은 최근 12개월 {YPP_WATCH_HOURS:,}시간입니다.")
 
@@ -383,7 +388,14 @@ def main():
 
     library_counts = wr.fetch_library_counts()
     now = datetime.now(KST)
-    analytics, analytics_error = youtube_analytics.safe_fetch(credentials, now)
+    # 월간은 '지난달 전체'가 대상이므로 분석 구간도 그 달에 맞춘다.
+    # (주간의 기본값인 최근 7일을 쓰면 월간 리포트가 엉뚱한 구간을 진단한다)
+    m_start, m_end = previous_month_range(now)
+    analytics, analytics_error = youtube_analytics.safe_fetch(
+        credentials, now,
+        start_date=m_start.date().isoformat(),
+        end_date=(m_end - timedelta(days=1)).date().isoformat(),
+    )
 
     report = build_monthly_report(now, channel_stats, channel_prev, videos, recent_by_id,
                                   genre_lookup, library_counts=library_counts,

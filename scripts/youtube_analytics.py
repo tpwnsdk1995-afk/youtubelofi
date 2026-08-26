@@ -91,9 +91,12 @@ def _is_auth_error(exc):
     return "403" in text or "401" in text or "insufficient" in text.lower() or "scope" in text.lower()
 
 
-def safe_fetch(credentials, now):
-    """리포트에서 쓰는 진입점. 실패해도 예외를 밖으로 내보내지 않는다."""
-    start_date, end_date = date_range(now)
+def safe_fetch(credentials, now, start_date=None, end_date=None):
+    """리포트에서 쓰는 진입점. 실패해도 예외를 밖으로 내보내지 않는다.
+    start_date/end_date를 주면 그 구간을, 없으면 최근 7일을 본다
+    (주간은 기본값, 월간은 지난달 전체를 명시적으로 넘긴다)."""
+    if start_date is None or end_date is None:
+        start_date, end_date = date_range(now)
     summary, err = fetch_channel_summary(credentials, start_date, end_date)
     if summary is None:
         print(f"WARNING: {err}", file=sys.stderr)

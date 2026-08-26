@@ -321,9 +321,40 @@ class TestDiagnoseFunnel(unittest.TestCase):
         lines = wr.diagnose_funnel(cur, prev)
         self.assertIn("노출수 추세: 지난주 대비 100% 증가", "\n".join(lines))
 
-    def test_falls_back_when_impressions_unavailable(self):
-        lines = wr.diagnose_funnel(make_analytics(impressions=None, avg_seconds=60, views=10))
-        self.assertIn("평균 시청", "\n".join(lines))
+    def test_small_sample_refuses_to_blame_music(self):
+        """2026-08-26 오진 재발 방지: 조회수 7회 · 평균 14초를 근거로
+        '음악이 문제'라고 단정했던 버그. 같은 채널 월 평균은 14분 24초였다."""
+        lines = wr.diagnose_funnel(make_analytics(impressions=None, avg_seconds=14, views=7))
+        joined = "\n".join(lines)
+        self.assertIn("표본이", joined)
+        self.assertIn("판단하지 않습니다", joined)
+        self.assertNotIn("병목: 음악", joined)
+
+    def test_enough_sample_does_blame_music(self):
+        lines = wr.diagnose_funnel(make_analytics(impressions=None, avg_seconds=20, views=200))
+        self.assertIn("병목: 음악/도입부", "\n".join(lines))
+
+    def test_enough_sample_good_retention_says_needs_reach(self):
+        lines = wr.diagnose_funnel(make_analytics(impressions=None, avg_seconds=864, views=200, subs=0))
+        joined = "\n".join(lines)
+        self.assertIn("시청 지속 양호", joined)
+        self.assertIn("14분 24초", joined)
+        self.assertIn("구독 전환이 0", joined)
+
+    def test_zero_views_says_no_data(self):
+        lines = wr.diagnose_funnel(make_analytics(impressions=None, avg_seconds=0, views=0))
+        self.assertIn("조회수가 0", "\n".join(lines))
+
+
+class TestFormatDuration(unittest.TestCase):
+    def test_under_a_minute_shows_seconds(self):
+        self.assertEqual(wr.fmt_duration(14), "14초")
+
+    def test_minutes_and_seconds(self):
+        self.assertEqual(wr.fmt_duration(867), "14분 27초")
+
+    def test_handles_none(self):
+        self.assertEqual(wr.fmt_duration(None), "0초")
 
 
 class TestTrafficSources(unittest.TestCase):
