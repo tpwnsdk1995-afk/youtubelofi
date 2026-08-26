@@ -31,6 +31,11 @@ MIN_GROUP_VIDEOS = 5      # 비교하려는 각 그룹(무드/그림체)의 최�
 MIN_SITUATION_VIDEOS = 3  # 상황 훅은 종류가 많아 그룹당 표본이 작다
 MIN_MONTH_VIEWS = 100     # 이 밑이면 아직 노출 단계 - 설정 변경 제안 보류
 
+# 유튜브 파트너 프로그램(수익화) 기준. 채널의 최종 목표이므로 매달 진척을 추적한다.
+# 구독자 1,000명 + 최근 12개월 공개 영상 시청 4,000시간.
+YPP_SUBSCRIBERS = 1000
+YPP_WATCH_HOURS = 4000
+
 
 def previous_month_range(now):
     """리포트가 다루는 구간 = 직전 달 1일 00:00 ~ 말일 24:00 (KST).
@@ -83,6 +88,77 @@ def compare(groups, min_videos):
     if best[1]["avg"] / worst[1]["avg"] < wr.MEANINGFUL_RATIO:
         return None
     return best, worst
+
+
+def weekly_breakdown(month_videos, start, end):
+    """한 달을 주 단위로 쪼개 추이를 본다. 월 전체 합계만 보면 '월초엔 잘 되다가
+    월말에 죽었는지' 같은 흐름이 안 보이기 때문에, 월간에서만 제공하는 해상도다."""
+    if not month_videos:
+        return []
+    buckets = {}
+    for vid, v in month_videos.items():
+        week_index = (v["published"].day - 1) // 7 + 1  # 1~5주차
+        b = buckets.setdefault(week_index, {"count": 0, "views": 0})
+        b["count"] += 1
+        b["views"] += v.get("viewCount", 0)
+
+    lines = ["[주차별 추이]"]
+    for week in sorted(buckets):
+        b = buckets[week]
+        avg = b["views"] / b["count"] if b["count"] else 0
+        lines.append(f"- {week}주차: {b['count']}편, {b['views']:,}회 (편당 {avg:.1f}회)")
+
+    ordered = [buckets[w]["views"] / buckets[w]["count"] for w in sorted(buckets) if buckets[w]["count"]]
+    if len(ordered) >= 2:
+        if ordered[-1] > ordered[0]:
+            lines.append("→ 월말로 갈수록 편당 반응이 좋아졌습니다. 최근 방향이 맞습니다.")
+        elif ordered[-1] < ordered[0]:
+            lines.append("→ 월말로 갈수록 편당 반응이 떨어졌습니다. 후반부에 바뀐 것이 있는지 점검하세요.")
+    return lines
+
+
+def ranking_lines(groups, title, min_count, unit="편"):
+    """축별 전체 순위표. 월간은 표본이 커서 best/worst만이 아니라 전체를 보여줄 수 있다."""
+    eligible = [(k, v) for k, v in groups.items() if v["count"] >= min_count]
+    if len(eligible) < 2:
+        return []
+    ranked = sorted(eligible, key=lambda kv: -kv[1]["avg"])
+    lines = [f"[{title}]"]
+    for rank, (name, b) in enumerate(ranked, 1):
+        lines.append(f"{rank}. {name} — 평균 {b['avg']:.1f}회 ({b['count']}{unit}, 합계 {b['total']:,}회)")
+    return lines
+
+
+def monetization_progress(channel_stats, analytics, prev_channel):
+    """수익화(YPP) 진척. 이 채널의 최종 목표이므로 매달 남은 거리를 보여준다.
+    현재 증가 속도로 언제 도달하는지도 추정한다 (증가가 0이면 추정 불가로 명시)."""
+    lines = ["[수익화 진척 (YouTube 파트너 프로그램)]"]
+
+    subs = channel_stats.get("subscriberCount")
+    if subs is None:
+        lines.append("- 구독자 수가 비공개로 설정돼 있어 집계할 수 없습니다.")
+    else:
+        pct = subs / YPP_SUBSCRIBERS * 100
+        lines.append(f"- 구독자: {subs:,} / {YPP_SUBSCRIBERS:,}명 ({pct:.1f}%) — {YPP_SUBSCRIBERS - subs:,}명 남음")
+        if prev_channel and prev_channel.get("subscriberCount") is not None:
+            gained = subs - prev_channel["subscriberCount"]
+            if gained > 0:
+                months_left = (YPP_SUBSCRIBERS - subs) / gained
+                lines.append(f"  이번 달 +{gained:,}명. 이 속도가 유지되면 약 {months_left:.0f}개월 후 도달합니다.")
+            else:
+                lines.append("  이번 달 증가 없음 — 도달 시점을 추정할 수 없습니다.")
+
+    if analytics:
+        watched_min = analytics["summary"].get("estimatedMinutesWatched", 0) or 0
+        hours = watched_min / 60
+        lines.append(f"- 시청 시간: 이번 달 {hours:,.1f}시간 (기준 {YPP_WATCH_HOURS:,}시간 / 최근 12개월 누적)")
+        if hours > 0:
+            months_left = YPP_WATCH_HOURS / hours
+            lines.append(f"  이 속도면 약 {months_left:.0f}개월치가 쌓여야 기준을 채웁니다.")
+    else:
+        lines.append(f"- 시청 시간: 집계 불가 (Analytics 스코프 미승인). 기준은 최근 12개월 {YPP_WATCH_HOURS:,}시간입니다.")
+
+    return lines
 
 
 def build_monthly_recommendations(month_views, upload_count, expected_uploads,
@@ -168,6 +244,7 @@ def build_monthly_report(now, channel_stats, channel_prev, videos, recent_by_id,
     month_likes = sum(v.get("likeCount") or 0 for v in month_videos.values())
 
     lines = [f"📅 조선로파이 {label} 월간 리포트", ""]
+    # 헤드라인은 집계가 끝난 뒤 lines[1]에 끼워 넣는다 (아래 참조)
 
     # 채널 전체 (전월 스냅샷 대비)
     lines.append("[채널 누적]")
@@ -199,11 +276,22 @@ def build_monthly_report(now, channel_stats, channel_prev, videos, recent_by_id,
     style_groups = group_by_field(month_videos, recent_by_id, "style")
     situation_groups = group_by_field(month_videos, recent_by_id, "situation_id")
 
-    for title, groups in (("무드별", genre_groups), ("그림체별", style_groups)):
-        if groups:
-            lines.append(f"[{title} 성과 (누적 조회수)]")
-            for name, b in sorted(groups.items(), key=lambda kv: -kv[1]["avg"]):
-                lines.append(f"- {name}: {b['count']}편, 합계 {b['total']:,}회, 평균 {b['avg']:.1f}회/편")
+    scene_groups = group_by_field(month_videos, recent_by_id, "scene_id")
+
+    week_lines = weekly_breakdown(month_videos, start, end)
+    if week_lines:
+        lines.extend(week_lines)
+        lines.append("")
+
+    for groups, title, min_count in (
+        (genre_groups, "무드별 순위", 1),
+        (style_groups, "그림체별 순위", 1),
+        (situation_groups, "제목 훅(상황)별 순위", MIN_SITUATION_VIDEOS),
+        (scene_groups, "씬별 순위", MIN_SITUATION_VIDEOS),
+    ):
+        block = ranking_lines(groups, title, min_count)
+        if block:
+            lines.extend(block)
             lines.append("")
 
     # TOP / 최저 (이번 달 신작만)
@@ -220,6 +308,9 @@ def build_monthly_report(now, channel_stats, channel_prev, videos, recent_by_id,
                 short = v["title"][:38] + ("…" if len(v["title"]) > 38 else "")
                 lines.append(f"- {v.get('viewCount', 0):,}회 · {short} · youtu.be/{vid}")
             lines.append("")
+
+    lines.extend(monetization_progress(channel_stats, analytics, channel_prev))
+    lines.append("")
 
     if library_counts:
         lines.append("[음원 재고 (Drive)]")
@@ -244,8 +335,19 @@ def build_monthly_report(now, channel_stats, channel_prev, videos, recent_by_id,
         channel_stats, channel_prev, library_counts,
     )
     if recs:
-        lines.append("[다음 달 조치]")
+        lines.append("[다음 달 실행 계획]")
         lines.extend(recs)
+
+    sub_gain = None
+    if channel_prev and channel_stats["subscriberCount"] is not None \
+            and channel_prev.get("subscriberCount") is not None:
+        sub_gain = channel_stats["subscriberCount"] - channel_prev["subscriberCount"]
+    parts = [f"업로드 {len(month_videos)}/{expected}편", f"신작 조회수 {month_views:,}회"]
+    if sub_gain is not None:
+        parts.append(f"구독자 {wr.fmt_delta(sub_gain)}명")
+    if month_videos:
+        parts.append(f"편당 평균 {month_views / len(month_videos):.1f}회")
+    lines.insert(1, "한 줄 요약: " + " · ".join(parts))
 
     return "\n".join(lines)
 

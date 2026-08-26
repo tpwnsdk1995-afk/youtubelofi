@@ -260,8 +260,10 @@ class TestReportIncludesRecommendations(unittest.TestCase):
         )
         self.assertIn("[음원 재고 (Drive)]", report)
         self.assertIn("보충 필요", report)
-        self.assertIn("[이번 주 조치 제안]", report)
+        self.assertIn("[이번 주 진단]", report)
         self.assertIn("바꾸지 마세요", report)
+        self.assertIn("[다음 주 계획]", report)
+        self.assertIn("한 줄 요약:", report)
 
 
 if __name__ == "__main__":
@@ -360,3 +362,57 @@ class TestReportWithAnalytics(unittest.TestCase):
                                  analytics_error="Analytics 스코프 미승인 - 재인증 필요")
         self.assertIn("노출수/클릭률 분석이 꺼져 있습니다", report)
         self.assertIn("재인증", report)
+
+
+class TestTelegramSplit(unittest.TestCase):
+    def test_short_message_stays_one_chunk(self):
+        import send_telegram_message as stm
+        self.assertEqual(stm.split_message("짧은 메시지"), ["짧은 메시지"])
+
+    def test_splits_on_line_boundaries(self):
+        import send_telegram_message as stm
+        text = "\n".join(f"줄 {i} " + "가" * 100 for i in range(100))
+        chunks = stm.split_message(text)
+        self.assertGreater(len(chunks), 1)
+        for c in chunks:
+            self.assertLessEqual(len(c), stm.CHUNK_SIZE)
+        # 줄이 중간에 잘리지 않고 재조립되어야 한다
+        self.assertEqual("\n".join(chunks), text)
+
+    def test_single_overlong_line_is_hard_split(self):
+        import send_telegram_message as stm
+        text = "가" * (stm.CHUNK_SIZE * 2 + 50)
+        chunks = stm.split_message(text)
+        self.assertEqual("".join(chunks), text)
+        for c in chunks:
+            self.assertLessEqual(len(c), stm.CHUNK_SIZE)
+
+
+class TestWeeklyEnrichment(unittest.TestCase):
+    def test_headline_includes_key_numbers(self):
+        headline = wr.build_headline({"subscriberCount": 5}, 2, 30, 7, None)
+        self.assertIn("조회수 +30회", headline)
+        self.assertIn("구독자 +2명", headline)
+        self.assertIn("업로드 7/7편", headline)
+
+    def test_trend_needs_two_points(self):
+        self.assertEqual(wr.week_trend_lines([{"weekly_view_delta": 5, "at": "2026-08-24"}]), [])
+
+    def test_trend_detects_rising(self):
+        history = [
+            {"at": "2026-08-10T09:00:00+09:00", "weekly_view_delta": 5, "subscriberCount": 0},
+            {"at": "2026-08-17T09:00:00+09:00", "weekly_view_delta": 40, "subscriberCount": 3},
+        ]
+        out = "\n".join(wr.week_trend_lines(history))
+        self.assertIn("증가 추세", out)
+
+    def test_plan_separates_manual_and_auto(self):
+        out = "\n".join(wr.build_next_week_plan(5, {"calm": 58}, None, "스코프 미승인", 3))
+        self.assertIn("사장님이 하실 일", out)
+        self.assertIn("자동으로 처리됨", out)
+        self.assertIn("calm 음원 42곡", out)
+        self.assertIn("하지 말아야 할 일", out)
+
+    def test_plan_says_nothing_to_do_when_healthy(self):
+        out = "\n".join(wr.build_next_week_plan(7, {"calm": 150, "groove": 150}, {"summary": {}}, None, 500))
+        self.assertIn("손댈 것이 없습니다", out)

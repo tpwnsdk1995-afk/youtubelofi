@@ -170,10 +170,14 @@ class TestBuildMonthlyReport(unittest.TestCase):
         self.assertIn("2026년 8월 월간 리포트", report)
         self.assertIn("구독자: 40명 (+28)", report)
         self.assertIn("업로드: 10/31편", report)
-        self.assertIn("[무드별 성과", report)
+        self.assertIn("한 줄 요약:", report)
+        self.assertIn("[주차별 추이]", report)
+        self.assertIn("[무드별 순위]", report)
         self.assertIn("[이번 달 TOP 3]", report)
+        self.assertIn("[수익화 진척", report)
+        self.assertIn("구독자: 40 / 1,000명", report)
         self.assertIn("[음원 재고 (Drive)]", report)
-        self.assertIn("[다음 달 조치]", report)
+        self.assertIn("[다음 달 실행 계획]", report)
 
     def test_empty_month_does_not_crash(self):
         now = datetime(2026, 9, 1, 9, 0, tzinfo=KST)
@@ -181,6 +185,61 @@ class TestBuildMonthlyReport(unittest.TestCase):
             now, {"subscriberCount": 0, "viewCount": 0, "videoCount": 0}, None, {}, {},
             wr.build_genre_lookup(make_templates()))
         self.assertIn("업로드: 0/31편", report)
+
+
+class TestMonthlyOnlySections(unittest.TestCase):
+    """월간에만 있는 해상도 - 주간 리포트로는 낼 수 없는 것들."""
+
+    def test_weekly_breakdown_splits_month_into_weeks(self):
+        month_videos = {
+            "a": {"published": datetime(2026, 8, 2, tzinfo=KST), "viewCount": 100},
+            "b": {"published": datetime(2026, 8, 9, tzinfo=KST), "viewCount": 200},
+            "c": {"published": datetime(2026, 8, 20, tzinfo=KST), "viewCount": 300},
+        }
+        out = "\n".join(mr.weekly_breakdown(month_videos, None, None))
+        self.assertIn("1주차", out)
+        self.assertIn("2주차", out)
+        self.assertIn("3주차", out)
+
+    def test_weekly_breakdown_detects_improvement(self):
+        month_videos = {
+            "a": {"published": datetime(2026, 8, 1, tzinfo=KST), "viewCount": 10},
+            "b": {"published": datetime(2026, 8, 25, tzinfo=KST), "viewCount": 500},
+        }
+        out = "\n".join(mr.weekly_breakdown(month_videos, None, None))
+        self.assertIn("좋아졌습니다", out)
+
+    def test_ranking_lists_every_qualifying_group(self):
+        groups = {
+            "a": {"count": 5, "total": 500, "avg": 100},
+            "b": {"count": 5, "total": 250, "avg": 50},
+            "c": {"count": 5, "total": 50, "avg": 10},
+        }
+        out = mr.ranking_lines(groups, "테스트 순위", 5)
+        self.assertIn("1. a", out[1])
+        self.assertIn("2. b", out[2])
+        self.assertIn("3. c", out[3])
+
+    def test_ranking_skips_undersampled_groups(self):
+        groups = {"a": {"count": 5, "total": 500, "avg": 100}, "b": {"count": 1, "total": 1, "avg": 1}}
+        self.assertEqual(mr.ranking_lines(groups, "제목", 5), [])
+
+    def test_monetization_shows_remaining_and_eta(self):
+        out = "\n".join(mr.monetization_progress(
+            {"subscriberCount": 250, "viewCount": 9000}, None, {"subscriberCount": 200}))
+        self.assertIn("250 / 1,000명", out)
+        self.assertIn("750명 남음", out)
+        self.assertIn("15개월 후 도달", out)
+
+    def test_monetization_no_eta_when_flat(self):
+        out = "\n".join(mr.monetization_progress(
+            {"subscriberCount": 5}, None, {"subscriberCount": 5}))
+        self.assertIn("추정할 수 없습니다", out)
+
+    def test_monetization_reports_watch_hours_when_analytics_on(self):
+        analytics = {"summary": {"estimatedMinutesWatched": 6000}}
+        out = "\n".join(mr.monetization_progress({"subscriberCount": 10}, analytics, None))
+        self.assertIn("100.0시간", out)
 
 
 if __name__ == "__main__":

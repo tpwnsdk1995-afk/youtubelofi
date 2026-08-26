@@ -373,6 +373,74 @@ def fmt_avg(n):
     return f"{n:+.1f}" if abs(n) < 10 else f"{n:+.0f}"
 
 
+def build_headline(channel_stats, sub_delta, view_delta, new_video_count, analytics):
+    """리포트 맨 위 한 줄 요약. 바빠서 이것만 읽어도 이번 주가 어땠는지 알 수 있어야 한다."""
+    bits = []
+    if view_delta is not None:
+        bits.append(f"조회수 {fmt_delta(view_delta)}회")
+    if sub_delta is not None:
+        bits.append(f"구독자 {fmt_delta(sub_delta)}명")
+    bits.append(f"업로드 {new_video_count}/7편")
+    if analytics:
+        imp = analytics["summary"].get("videoThumbnailImpressions")
+        if imp is not None:
+            bits.append(f"노출 {imp:,}회")
+    return "한 줄 요약: " + " · ".join(bits)
+
+
+def week_trend_lines(history, weeks=4):
+    """최근 몇 주 조회수 증가 추이. 이번 주가 좋아지는 중인지 나빠지는 중인지 본다."""
+    entries = [h for h in history or [] if h.get("weekly_view_delta") is not None]
+    if len(entries) < 2:
+        return []
+    recent = entries[-weeks:]
+    lines = ["[최근 추이 (주간 조회수 증가)]"]
+    for e in recent:
+        at = e.get("at", "")[:10]
+        lines.append(f"- {at}: {fmt_delta(e['weekly_view_delta'])}회 (누적 구독 {fmt_num(e.get('subscriberCount'))}명)")
+    first, last = recent[0]["weekly_view_delta"], recent[-1]["weekly_view_delta"]
+    if last > first:
+        lines.append("→ 증가 추세입니다. 지금 하는 것을 유지하세요.")
+    elif last < first:
+        lines.append("→ 감소 추세입니다. 업로드 누락이 없었는지부터 확인하세요.")
+    else:
+        lines.append("→ 변동 없음.")
+    return lines
+
+
+def build_next_week_plan(new_video_count, library_counts, analytics, analytics_error, total_delta):
+    """다음 주 실행 계획. 사장님이 직접 하실 일과 자동으로 되는 일을 분리해
+    '내가 뭘 해야 하지'가 한눈에 보이게 한다."""
+    manual = []
+    auto = ["매일 17:15 영상 생성 → 19:14 자동 공개 (응답 안 하셔도 공개됨)",
+            "다음 월요일 09:00 주간 리포트 발송"]
+
+    if library_counts:
+        for name, n in sorted(library_counts.items()):
+            if n < RECOMMENDED_LIBRARY_SIZE:
+                need = RECOMMENDED_LIBRARY_SIZE - n
+                manual.append(f"Suno에서 {name} 음원 {need}곡 이상 뽑아 Drive의 {name}/ 폴더에 넣기 (현재 {n}곡)")
+    if analytics_error:
+        manual.append("노출수·클릭률 분석 켜기 — SETUP.md 8절 재인증 (안 켜면 원인 진단이 계속 비어 있습니다)")
+    if new_video_count < 7:
+        manual.append(f"업로드 누락 {7 - new_video_count}일분 원인 확인 (한도초과였는지, 워크플로우 실패였는지)")
+
+    lines = ["[다음 주 계획]"]
+    lines.append("▶ 사장님이 하실 일")
+    if manual:
+        for i, item in enumerate(manual, 1):
+            lines.append(f"  {i}. {item}")
+    else:
+        lines.append("  없음 — 이번 주는 손댈 것이 없습니다.")
+    lines.append("▶ 자동으로 처리됨")
+    for item in auto:
+        lines.append(f"  · {item}")
+    if total_delta < MIN_TOTAL_DELTA:
+        lines.append("▶ 하지 말아야 할 일")
+        lines.append("  · 무드 비중·씬·썸네일 문구 수정 (표본 부족 — 효과를 측정할 수 없습니다)")
+    return lines
+
+
 def build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by_id, genre_lookup,
                  library_counts=None, history=None, analytics=None, prev_analytics_summary=None,
                  analytics_error=None):
@@ -438,8 +506,11 @@ def build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by
         lines.append("(없음)")
     for vid, v, published in new_videos:
         genre = infer_genre(vid, recent_by_id, description_by_id, genre_lookup) or "?"
+        entry = recent_by_id.get(vid) or {}
+        style = entry.get("style")
+        tag = f"{genre}/{style}" if style else genre
         title_short = v["title"][:40] + ("…" if len(v["title"]) > 40 else "")
-        lines.append(f"- ({genre}) {title_short}")
+        lines.append(f"- {published.strftime('%m/%d')} ({tag}) {title_short}")
         lines.append(f"  조회수 {fmt_num(v['viewCount'])}회 · 좋아요 {fmt_num(v['likeCount'])} · youtu.be/{vid}")
     lines.append("")
 
@@ -520,8 +591,21 @@ def build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by
         len(new_videos), library_counts, history,
     )
     if recommendations:
-        lines.append("[이번 주 조치 제안]")
+        lines.append("[이번 주 진단]")
         lines.extend(recommendations)
+        lines.append("")
+
+    trend = week_trend_lines(history)
+    if trend:
+        lines.extend(trend)
+        lines.append("")
+
+    lines.extend(build_next_week_plan(
+        len(new_videos), library_counts, analytics, analytics_error, total_delta))
+
+    # 헤드라인은 맨 마지막에 계산해 맨 앞에 끼워 넣는다 (집계 결과가 다 나온 뒤라야 정확)
+    headline = build_headline(channel_stats, sub_delta, view_delta, len(new_videos), analytics)
+    lines.insert(1, headline)
 
     return "\n".join(lines)
 
