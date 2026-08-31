@@ -101,3 +101,16 @@ jobs:
         run: |
           python3 scripts/send_telegram_message.py "--text=⏰ 응답이 없어 예정대로 자동 공개됨: ${{ steps.find.outputs.title }}
           https://youtu.be/${{ steps.find.outputs.video_id }}"
+
+      # 19:30 schedule이 실제로 공개를 처리했다 = 19:14 주 트리거(Routine)가 그날
+      # 공개를 못 했다는 뜻이다 (Routine이 정상이면 19:14에 이미 공개돼 여기서는
+      # 이슈가 안 잡힌다). 보조가 조용히 메우면 Routine 사망을 모르므로 경고를 보낸다.
+      # 드물게 생성이 늦어 19:14 이후에 이슈가 열린 날은 오탐일 수 있다 — 경고를
+      # 받으면 Routine/세션 상태만 확인하면 된다.
+      - name: Warn Telegram that backup schedule took over
+        if: steps.find.outputs.found == 'true' && github.event_name == 'schedule'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" -d "chat_id=${TELEGRAM_CHAT_ID}" --data-urlencode "text=⚠️ 이번 자동 공개는 보조 스케줄(19:30)이 처리했습니다. 19:14 주 트리거(Claude Routine)가 돌지 않았다는 신호이니 Claude 세션/Routine 상태를 확인해 주세요." || echo "텔레그램 경고 전송 실패"
