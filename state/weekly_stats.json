@@ -1,14 +1,34 @@
 {
-  "snapshot_at": "2026-08-26T16:11:47.444313+09:00",
+  "snapshot_at": "2026-08-31T09:43:20.285208+09:00",
   "channel": {
     "subscriberCount": 0,
-    "viewCount": 15,
-    "videoCount": 9
+    "viewCount": 31,
+    "videoCount": 13
   },
   "videos": {
-    "UoaLbtt3WBk": {
-      "viewCount": 4,
+    "ZTkIIjOHaA8": {
+      "viewCount": 0,
       "likeCount": 0
+    },
+    "QdY813Vwzeo": {
+      "viewCount": 0,
+      "likeCount": 0
+    },
+    "-yzR-yJvNqA": {
+      "viewCount": 1,
+      "likeCount": 0
+    },
+    "a1Hfc_vuYwU": {
+      "viewCount": 6,
+      "likeCount": 0
+    },
+    "_HJztggf0lw": {
+      "viewCount": 0,
+      "likeCount": 0
+    },
+    "UoaLbtt3WBk": {
+      "viewCount": 13,
+      "likeCount": 2
     },
     "x79goIG7WfE": {
       "viewCount": 1,
@@ -115,17 +135,20 @@
   ],
   "analytics": {
     "period": [
-      "2026-08-19",
-      "2026-08-25"
+      "2026-08-24",
+      "2026-08-30"
     ],
     "summary": {
-      "views": 7,
-      "estimatedMinutesWatched": 1,
-      "averageViewDuration": 14,
+      "views": 17,
+      "estimatedMinutesWatched": 168,
+      "averageViewDuration": 843,
       "subscribersGained": 0
     },
     "traffic_sources": {
-      "YT_SEARCH": 7
+      "YT_SEARCH": 10,
+      "PLAYLIST": 4,
+      "NO_LINK_OTHER": 2,
+      "YT_CHANNEL": 1
     }
   }
 }
