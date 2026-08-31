@@ -520,7 +520,8 @@ def format_traffic_sources(sources):
 
 
 def build_recommendations(channel_stats, channel_prev, total_delta, genre_groups,
-                          style_groups, new_video_count, library_counts, history):
+                          style_groups, new_video_count, library_counts, history,
+                          expected_uploads=7):
     """리포트 하단의 "이번 주 조치 제안". 데이터가 뒷받침하는 것만 제안하고,
     표본이 모자라면 '아직 바꾸지 말 것'을 분명히 말한다."""
     lines = []
@@ -531,9 +532,9 @@ def build_recommendations(channel_stats, channel_prev, total_delta, genre_groups
         return lines
 
     # 1) 업로드 지속성 — 알고리즘 학습에 가장 기본이 되는 축
-    if new_video_count < 7:
-        missed = 7 - new_video_count
-        lines.append(f"• 이번 주 업로드 {new_video_count}/7편 ({missed}일 누락). 매일 같은 시각 업로드가 "
+    if new_video_count < expected_uploads:
+        missed = expected_uploads - new_video_count
+        lines.append(f"• 이번 주 업로드 {new_video_count}/{expected_uploads}편 ({missed}일 누락). 매일 같은 시각 업로드가 "
                      f"노출에 가장 크게 작용하니 누락 원인(워크플로우 실패/한도초과)을 확인하세요.")
 
     # 2) 음원 재고 — 곡이 모자라면 영상 간 중복이 늘어 반복 콘텐츠 정책에 불리
@@ -638,14 +639,15 @@ def fmt_duration(seconds):
     return f"{seconds // 60}분 {seconds % 60}초"
 
 
-def build_headline(channel_stats, sub_delta, view_delta, new_video_count, analytics):
+def build_headline(channel_stats, sub_delta, view_delta, new_video_count, analytics,
+                   expected_uploads=7):
     """리포트 맨 위 한 줄 요약. 바빠서 이것만 읽어도 이번 주가 어땠는지 알 수 있어야 한다."""
     bits = []
     if view_delta is not None:
         bits.append(f"조회수 {fmt_delta(view_delta)}회")
     if sub_delta is not None:
         bits.append(f"구독자 {fmt_delta(sub_delta)}명")
-    bits.append(f"업로드 {new_video_count}/7편")
+    bits.append(f"업로드 {new_video_count}/{expected_uploads}편")
     if analytics:
         summary = analytics["summary"]
         imp = summary.get("videoThumbnailImpressions")
@@ -677,7 +679,8 @@ def week_trend_lines(history, weeks=4):
     return lines
 
 
-def build_next_week_plan(new_video_count, library_counts, analytics, analytics_error, total_delta):
+def build_next_week_plan(new_video_count, library_counts, analytics, analytics_error, total_delta,
+                         expected_uploads=7):
     """다음 주 실행 계획. 사장님이 직접 하실 일과 자동으로 되는 일을 분리해
     '내가 뭘 해야 하지'가 한눈에 보이게 한다."""
     manual = []
@@ -693,8 +696,8 @@ def build_next_week_plan(new_video_count, library_counts, analytics, analytics_e
                               f"실행하시면 뽑을 프롬프트를 텔레그램으로 보내드립니다")
     if analytics_error:
         manual.append("노출수·클릭률 분석 켜기 — SETUP.md 8절 재인증 (안 켜면 원인 진단이 계속 비어 있습니다)")
-    if new_video_count < 7:
-        manual.append(f"업로드 누락 {7 - new_video_count}일분 원인 확인 (한도초과였는지, 워크플로우 실패였는지)")
+    if new_video_count < expected_uploads:
+        manual.append(f"업로드 누락 {expected_uploads - new_video_count}일분 원인 확인 (한도초과였는지, 워크플로우 실패였는지)")
 
     lines = ["[다음 주 계획]"]
     lines.append("▶ 사장님이 하실 일")
@@ -714,8 +717,16 @@ def build_next_week_plan(new_video_count, library_counts, analytics, analytics_e
 
 def build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by_id, genre_lookup,
                  library_counts=None, history=None, analytics=None, prev_analytics_summary=None,
-                 analytics_error=None):
-    week_start = now - timedelta(days=7)
+                 analytics_error=None, week_start=None):
+    # 집계 구간은 "직전 리포트(스냅샷) 시점 ~ 지금"이다. 증가분이 스냅샷 차이로
+    # 계산되므로 이 구간이 실제 측정 구간이고, 리포트가 한 주 걸러뛴 경우에도
+    # (한도초과 등) 그 사이의 신작·데이터가 빠짐없이 다음 리포트에 들어간다.
+    # 사장님 기준: 리포트 사이에 누락되는 데이터가 있어서는 안 된다.
+    if week_start is None:
+        week_start = now - timedelta(days=7)
+    # "업로드 N/M편"의 분모도 실제 구간 길이에 맞춘다 (2주치 리포트에 /7편이라고
+    # 쓰면 14편이 초과 달성처럼 보인다).
+    expected_uploads = max(1, round((now - week_start).total_seconds() / 86400))
     lines = []
     lines.append(f"📊 조선로파이 주간 리포트 ({week_start.strftime('%m/%d')} ~ {now.strftime('%m/%d')})")
     lines.append("")
@@ -764,7 +775,7 @@ def build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by
     public_videos = {vid: v for vid, v in videos.items() if v["privacyStatus"] == "public"}
     description_by_id = {vid: v.get("description", "") for vid, v in public_videos.items()}
 
-    # 이번 주 신작 (published_at이 7일 이내)
+    # 이번 주 신작 (집계 구간 안에 게시된 영상 전부)
     new_videos = []
     for vid, v in public_videos.items():
         published = datetime.fromisoformat(v["publishedAt"].replace("Z", "+00:00")).astimezone(KST)
@@ -800,13 +811,13 @@ def build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by
     style_groups = group_stats(deltas, recent_by_id, "style")
 
     if genre_groups:
-        lines.append("[무드별 반응 (최근 7일 조회수 증가분)]")
+        lines.append("[무드별 반응 (지난 리포트 이후 증가분)]")
         for genre, b in sorted(genre_groups.items(), key=lambda kv: -kv[1]["total"]):
             lines.append(f"- {genre}: 영상 {b['count']}개, 합계 {fmt_delta(b['total'])}회, 평균 {fmt_avg(b['avg'])}회/영상")
         lines.append("")
 
     if style_groups:
-        lines.append("[그림체별 반응 (최근 7일 조회수 증가분)]")
+        lines.append("[그림체별 반응 (지난 리포트 이후 증가분)]")
         for style, b in sorted(style_groups.items(), key=lambda kv: -kv[1]["total"]):
             lines.append(f"- {style}: 영상 {b['count']}개, 합계 {fmt_delta(b['total'])}회, 평균 {fmt_avg(b['avg'])}회/영상")
         lines.append("")
@@ -827,7 +838,7 @@ def build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by
             if vid not in {v[0] for v in new_videos}
         ]
         if stale_candidates:
-            lines.append("[반응 저조 (게시 7일+ 경과, 이번 주 증가 하위 3)]")
+            lines.append("[반응 저조 (지난 리포트 이전 게시, 이번 주 증가 하위 3)]")
             for vid, delta in stale_candidates[-3:]:
                 v = public_videos[vid]
                 title_short = v["title"][:40] + ("…" if len(v["title"]) > 40 else "")
@@ -868,7 +879,7 @@ def build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by
     total_delta = view_delta if view_delta is not None else (sum(deltas.values()) if deltas else 0)
     recommendations = build_recommendations(
         channel_stats, channel_prev, total_delta, genre_groups, style_groups,
-        len(new_videos), library_counts, history,
+        len(new_videos), library_counts, history, expected_uploads=expected_uploads,
     )
     if recommendations:
         lines.append("[이번 주 진단]")
@@ -881,10 +892,12 @@ def build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by
         lines.append("")
 
     lines.extend(build_next_week_plan(
-        len(new_videos), library_counts, analytics, analytics_error, total_delta))
+        len(new_videos), library_counts, analytics, analytics_error, total_delta,
+        expected_uploads=expected_uploads))
 
     # 헤드라인은 맨 마지막에 계산해 맨 앞에 끼워 넣는다 (집계 결과가 다 나온 뒤라야 정확)
-    headline = build_headline(channel_stats, sub_delta, view_delta, len(new_videos), analytics)
+    headline = build_headline(channel_stats, sub_delta, view_delta, len(new_videos), analytics,
+                              expected_uploads=expected_uploads)
     lines.insert(1, headline)
 
     return "\n".join(lines)
@@ -929,10 +942,22 @@ def main():
     analytics, analytics_error = youtube_analytics.safe_fetch(credentials, now)
     prev_analytics_summary = (prev_snapshot.get("analytics") or {}).get("summary")
 
+    # 집계 구간의 시작 = 직전 스냅샷 시점. 리포트가 한 주 걸러뛰어도 그 사이
+    # 신작·데이터가 빠짐없이 이번 리포트에 들어가게 한다 (없으면 7일 전으로 폴백).
+    week_start = None
+    prev_at = prev_snapshot.get("snapshot_at")
+    if prev_at:
+        try:
+            week_start = datetime.fromisoformat(prev_at)
+        except ValueError:
+            week_start = None
+    if week_start is None or week_start >= now:
+        week_start = now - timedelta(days=7)
+
     report = build_report(now, channel_stats, channel_prev, videos, video_prev, recent_by_id,
                           genre_lookup, library_counts=library_counts, history=history,
                           analytics=analytics, prev_analytics_summary=prev_analytics_summary,
-                          analytics_error=analytics_error)
+                          analytics_error=analytics_error, week_start=week_start)
 
     with open(args.output, "w", encoding="utf-8") as f:
         f.write(report)
