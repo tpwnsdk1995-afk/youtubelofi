@@ -33,13 +33,15 @@
 
 | 시각 | 담당 | 동작 |
 |---|---|---|
-| 17:15 | Routine `trig_01P2h6jdukbjN9byV49DXUGG` (cron `15 8 * * *` UTC) | 오늘 실행 기록 없으면 `publish-video.yml` 1회 dispatch |
+| 17:15 | Routine `trig_015tmKwDa4FowQTAiFxKFNgB` (cron `15 8 * * *` UTC) | 오늘 실행 기록 없으면 `publish-video.yml` 1회 dispatch |
 | ~17:55 | publish-video.yml | 생성 완료 → 비공개 업로드 → pending-confirmation 이슈 + 텔레그램 승인/거부 버튼 발송 |
 | (버튼 누르면) | n8n 웹훅 → `handle-telegram-decision.yml` | 즉시(~15초) 공개 전환 or 삭제, 이슈 닫기 |
-| 19:14 | Routine `trig_01646XuLcE2nw4LuXL2ddVEG` (cron `14 10 * * *` UTC) | `auto-publish.yml` dispatch — 무응답 이슈가 있으면 자동 공개 |
+| 19:14 | Routine `trig_01VeCYxSKNr7LmLuKiTDxwpe` (cron `14 10 * * *` UTC) | `auto-publish.yml` dispatch — 무응답 이슈가 있으면 자동 공개 |
 
-- 트리거는 전적으로 Claude Code Remote Routine (세션 `session_01X5WRFHPYNZxAWS9qqi9WyD`에 바인딩).
-  GitHub Actions 자체 `schedule:` cron은 스킵/수시간 지연이 반복돼 **제거했고 다시 쓰지 않는다.**
+- 주 트리거는 Claude Code Remote Routine — 현 관리 세션 `session_01XnbhUTiAZ9EKgtsUA5vMAt`에
+  바인딩 (2026-08-31 재바인딩, 아래 '관리 세션 이관' 참고). GitHub Actions 자체 `schedule:`
+  cron은 스킵/수시간 지연이 반복돼 **주 트리거로는 다시 쓰지 않고** 보조로만 쓴다
+  (아래 '트리거 이중화' 참고).
 - Routine 프롬프트 안에 위 절대 규칙(지각 도착 시 스킵, 재시도 금지)이 이미 내장되어 있다.
 - 정상 소요시간: 생성 전체 35~45분. 1시간 넘게 in_progress면 이상 신호.
 
@@ -121,11 +123,30 @@ schedule은 Routine이 이미 실행한 뒤 뒤늦게 발동해 **같은 날 영
 정시 업로드가 깨지는 건 손해지만, 그날 영상이 아예 없는 것보다는 낫다는 판단.
 
 
+## 관리 세션 이관 (2026-08-31)
+
+- **무슨 일이 있었나.** 저장소 이름이 `test` → `youtubelofi`로 바뀌면서 구 관리 세션
+  (`session_01X5WRFHPYNZxAWS9qqi9WyD`)이 초기화 불능이 됐다 — 세션 소스가 옛 이름
+  `tpwnsdk1995-afk/test`의 `main` ref로 고정돼 있어 `ref_not_found`(복구 불가) 발생.
+  8/29 17:15 KST 발동부터 실패했고, Routine 4개가 전부 그 세션에 바인딩돼 있어
+  8/29~8/31 주 트리거가 전멸했다. **보조 GitHub schedule이 전부 메꿨다** (이중화가
+  설계 의도대로 작동 — 8/29·8/30 영상은 18:10 보조로 생성, 8/31 주간 리포트는
+  09:40 보조로 발송).
+- **조치 (2026-08-31).** 새 관리 세션 `session_01XnbhUTiAZ9EKgtsUA5vMAt`에 Routine
+  4개를 같은 프롬프트로 재등록하고 (트리거 ID는 각 섹션 표 참고) 구 트리거 4개는
+  삭제했다. Routine의 `persistent_session_id`는 수정할 수 없어서 재생성이 유일한
+  방법이다.
+- **재발 시 대응.** 저장소 이름을 또 바꾸면 그 시점의 관리 세션이 같은 방식으로
+  죽는다. 새 세션에서 `list_triggers`로 기존 프롬프트를 회수해 재등록하고 구
+  트리거를 삭제할 것. 공백 기간은 보조 schedule이 메꾼다 (그날 생성이 18:10으로
+  늦어질 뿐 누락은 없다).
+
+
 ## 주간 리포트 (매주 월요일 09:00 KST)
 
 | 시각 | 담당 | 동작 |
 |---|---|---|
-| 월요일 09:00 | Routine `trig_01Ks8E9B2Ax569HW4TAvqP2F` (cron `0 0 * * 1` UTC) | 오늘(월요일) 실행 기록 없으면 `weekly-report.yml` 1회 dispatch |
+| 월요일 09:00 | Routine `trig_012x6wA49H5YvMeJSvJGKzB8` (cron `0 0 * * 1` UTC) | 오늘(월요일) 실행 기록 없으면 `weekly-report.yml` 1회 dispatch |
 
 - `scripts/weekly_report.py`가 채널 전체(구독자/총 조회수)와 공개 영상별 조회수를
   집계해 텔레그램으로 직접 보낸다 (일간 파이프라인과 동일하게 워크플로우 자체가
@@ -182,7 +203,7 @@ schedule은 Routine이 이미 실행한 뒤 뒤늦게 발동해 **같은 날 영
 
 | 시각 | 담당 | 동작 |
 |---|---|---|
-| 매달 1일 09:00 | Routine (cron `0 0 1 * *` UTC) | 그 달 실행 기록 없으면 `monthly-report.yml` 1회 dispatch |
+| 매달 1일 09:00 | Routine `trig_01PL2tb7UeYbQqrrg7tgHoWN` (cron `0 0 1 * *` UTC) | 그 달 실행 기록 없으면 `monthly-report.yml` 1회 dispatch |
 
 - `scripts/monthly_report.py`. **주간과 집계 방식 자체가 다르다.**
   - 주간 = 지난주 스냅샷 대비 **증가분**. 그래서 스냅샷이 필수다.
@@ -225,7 +246,10 @@ schedule은 Routine이 이미 실행한 뒤 뒤늦게 발동해 **같은 날 영
 
 ## 저장소 구성
 
-- 브랜치: `claude/youtube-lofi-playlist-automation-959lx5` (유일한 작업 브랜치)
+- 브랜치: `claude/youtube-lofi-playlist-automation-959lx5` — **기본 브랜치이자 자동화 본체**
+  (워크플로우, state 커밋, Routine dispatch ref, 보조 schedule 전부 여기서 돈다).
+  관리 세션의 문서 커밋은 각 세션에 지정된 작업 브랜치로 간다
+  (현 세션: `claude/youtube-lofi-automation-w5s8ns`).
 - 워크플로우:
   - `publish-video.yml` — 메인 파이프라인 (Drive 동기화 → 곡 조립 → Gemini 이미지 →
     ffmpeg → 업로드 → 이슈/텔레그램)
@@ -233,7 +257,7 @@ schedule은 Routine이 이미 실행한 뒤 뒤늦게 발동해 **같은 날 영
   - `auto-publish.yml` — 19:14 무응답 자동 공개 (자체 텔레그램 알림 포함 → Routine이
     중복 알림 보내면 안 됨)
   - `weekly-report.yml` — 매주 월요일 09:00 KST 주간 리포트 (Routine
-    `trig_01Ks8E9B2Ax569HW4TAvqP2F`, cron `0 0 * * 1` UTC). 조회수/구독자 증감,
+    `trig_012x6wA49H5YvMeJSvJGKzB8`, cron `0 0 * * 1` UTC). 조회수/구독자 증감,
     무드·그림체별 반응, 음원 재고, 원인 진단, 조치 제안을 텔레그램으로 발송.
     자체 알림을 보내므로 Routine이 중복 알림 보내면 안 됨.
   - `finalize-publish.yml`, `check-video-status.yml`, `list-channel-videos.yml` — 수동 도구
@@ -265,9 +289,9 @@ schedule은 Routine이 이미 실행한 뒤 뒤늦게 발동해 **같은 날 영
   인앱 검색에는 "조선 로파이 | AlIN Music"(구독 39), "조선 로파이(Joseon Lo-fi)"(구독 4)
   두 개 존재, @조선로파이 핸들도 선점됨). 이름/핸들 확인은 반드시 유튜브 인앱 검색과
   핸들 입력창으로만 확정하고, 웹 검색 결과는 "대형 선점자 없음" 정도로만 해석할 것.
-- 커밋 후 푸시는 `git push -u origin claude/youtube-lofi-playlist-automation-959lx5`.
-  로컬 클론은 세션 스크래치패드에 있고 컨테이너 재생성 시 사라진다 — 푸시 안 한
-  작업은 유실된다.
+- 커밋 후 푸시는 **그 세션에 지정된 작업 브랜치**로 `git push -u origin <브랜치>`
+  (현 관리 세션: `claude/youtube-lofi-automation-w5s8ns`). 로컬 클론은 세션
+  스크래치패드에 있고 컨테이너 재생성 시 사라진다 — 푸시 안 한 작업은 유실된다.
 
 ## 현재 상태: 조선 리브랜딩 (2026-08-12 기준)
 
