@@ -58,6 +58,7 @@ jobs:
         env:
           FORCE: ${{ inputs.force }}
           DRY_RUN: ${{ inputs.dry_run }}
+          EVENT_NAME: ${{ github.event_name }}
         with:
           script: |
             const kstDate = (iso) =>
@@ -74,6 +75,23 @@ jobs:
               core.setOutput('skip', 'false');
               core.setOutput('reason', '리허설(dry_run=true)');
               return;
+            }
+
+            // 보조 cron이 심하게 지연되면 자정을 넘겨 도착해 "다음 날" 영상을
+            // 새벽에 만들어 버린다 (실제로 8/31분 18:10 cron이 9/1 02:02에 발동해
+            // 새벽 생성 + 02:40 즉시 공개 사고 발생 — 날짜 가드는 자정이 지나면
+            // 어제 이슈를 못 보기 때문). 보조의 역할은 "그날 저녁의 누락 방지"
+            // 이므로 유효 시간대(17~23시 KST) 밖이면 건너뛴다. 새 날의 생성은
+            // 그날의 주 트리거(17:15 Routine)와 제 시간의 보조가 담당한다.
+            if (process.env.EVENT_NAME === 'schedule') {
+              const kstHour = new Date(Date.now() + 9 * 3600 * 1000).getUTCHours();
+              if (kstHour < 17 || kstHour >= 23) {
+                core.setOutput('skip', 'true');
+                core.setOutput('reason',
+                  `보조 cron이 유효 시간대(17~23시 KST) 밖에 도착 (KST ${kstHour}시) - 건너뜀`);
+                core.notice(`지연 cron 무시: KST ${kstHour}시`);
+                return;
+              }
             }
 
             const today = kstDate(new Date().toISOString());
