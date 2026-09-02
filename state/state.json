@@ -8,52 +8,7 @@
         "달빛 장단_3.mp3",
         "07f9ace5.mp3",
         "199d5aa2.mp3",
-        "430db230.mp3",
-        "4c926172.mp3",
-        "6db5d40d.mp3",
-        "9f70340e.mp3",
-        "Bamboo Bounce.mp3",
-        "Bamboo Bounce_1.mp3",
-        "Bamboo Drum Parade.mp3",
-        "Bamboo Drum Parade_1.mp3",
-        "Bamboo Groove.mp3",
-        "Bamboo Groove_1.mp3",
-        "Bamboo Noon Drift.mp3",
-        "Bamboo Noon Drift_1.mp3",
-        "Bamboo Parade.mp3",
-        "Bamboo Parade_1.mp3",
-        "Bamboo Skip.mp3",
-        "Bamboo Skip_1.mp3",
-        "Cheonggye Drum Parade.mp3",
-        "Cheongsa Stalls.mp3",
-        "Cheongsa Stalls_1.mp3",
-        "Cherry Steps.mp3",
-        "Cherry Steps_1.mp3",
-        "Chuseok Bounce.mp3",
-        "Chuseok Bounce_1.mp3",
-        "Daegeum Sunday Ride.mp3",
-        "Daegeum Sunday Ride_1.mp3",
-        "Daejeum Street Parade.mp3",
-        "Daejeum Street Parade_1.mp3",
-        "Dalbit Jangdan.mp3",
-        "Dalbit Jangdan_1.mp3",
-        "Dancing Janggu Street.mp3",
-        "Dancing Janggu Street_1.mp3",
-        "Dandelion Steps.mp3",
-        "Dano Drum Loop.mp3",
-        "Dano Drum Loop_1.mp3",
-        "Gaya Bounce.mp3",
-        "Gaya Bounce_1.mp3",
-        "Gayageum Groove_1.mp3",
-        "Geomungo Walk.mp3",
-        "Geomungo Walk_1.mp3",
-        "Han River Bounce.mp3",
-        "Han River Bounce_1.mp3",
-        "Han River Bounce_2.mp3",
-        "Han River Bounce_3.mp3",
-        "Han River Bounce_4.mp3",
-        "Han River Bounce_5.mp3",
-        "Han River Bounce_6.mp3"
+        "430db230.mp3"
       ],
       "history": [
         "한지 골목_1.mp3",
@@ -104,7 +59,52 @@
         "Han River Market Loop.mp3",
         "Han River Loops_1.mp3",
         "Han River Loops.mp3",
-        "Han River Bounce_7.mp3"
+        "Han River Bounce_7.mp3",
+        "Han River Bounce_6.mp3",
+        "Han River Bounce_5.mp3",
+        "Han River Bounce_4.mp3",
+        "Han River Bounce_3.mp3",
+        "Han River Bounce_2.mp3",
+        "Han River Bounce_1.mp3",
+        "Han River Bounce.mp3",
+        "Geomungo Walk_1.mp3",
+        "Geomungo Walk.mp3",
+        "Gayageum Groove_1.mp3",
+        "Gaya Bounce_1.mp3",
+        "Gaya Bounce.mp3",
+        "Dano Drum Loop_1.mp3",
+        "Dano Drum Loop.mp3",
+        "Dandelion Steps.mp3",
+        "Dancing Janggu Street_1.mp3",
+        "Dancing Janggu Street.mp3",
+        "Dalbit Jangdan_1.mp3",
+        "Dalbit Jangdan.mp3",
+        "Daejeum Street Parade_1.mp3",
+        "Daejeum Street Parade.mp3",
+        "Daegeum Sunday Ride_1.mp3",
+        "Daegeum Sunday Ride.mp3",
+        "Chuseok Bounce_1.mp3",
+        "Chuseok Bounce.mp3",
+        "Cherry Steps_1.mp3",
+        "Cherry Steps.mp3",
+        "Cheongsa Stalls_1.mp3",
+        "Cheongsa Stalls.mp3",
+        "Cheonggye Drum Parade.mp3",
+        "Bamboo Skip_1.mp3",
+        "Bamboo Skip.mp3",
+        "Bamboo Parade_1.mp3",
+        "Bamboo Parade.mp3",
+        "Bamboo Noon Drift_1.mp3",
+        "Bamboo Noon Drift.mp3",
+        "Bamboo Groove_1.mp3",
+        "Bamboo Groove.mp3",
+        "Bamboo Drum Parade_1.mp3",
+        "Bamboo Drum Parade.mp3",
+        "Bamboo Bounce_1.mp3",
+        "Bamboo Bounce.mp3",
+        "9f70340e.mp3",
+        "6db5d40d.mp3",
+        "4c926172.mp3"
       ]
     },
     "scene": {
@@ -175,12 +175,12 @@
         "🍵",
         "✍️",
         "📖",
-        "🏮",
-        "🍶"
+        "🏮"
       ],
       "history": [
         "☔",
-        "🕯️"
+        "🕯️",
+        "🍶"
       ]
     },
     "description_blurb": {
@@ -195,44 +195,41 @@
     },
     "tag": {
       "remaining": [
-        "playlist",
-        "조선"
+        "국악로파이",
+        "가야금",
+        "hanok",
+        "사극감성",
+        "브금"
       ],
       "history": [
+        "korealofi",
+        "lofimusic",
+        "kpop",
+        "lofi",
         "플레이리스트",
         "조선로파이",
-        "hanok",
-        "대금",
-        "가야금",
-        "브금",
-        "lofimusic",
-        "lofi",
-        "korealofi",
-        "사극감성",
         "국악",
-        "국악로파이",
-        "kpop",
+        "koreanlofi",
         "한국풍",
-        "koreanlofi"
+        "대금"
       ]
     },
     "image_lighting": {
       "remaining": [
         "cool pale moonlight with deep blue shadows",
-        "golden sunset light with long shadows",
-        "warm flickering candle and oil lamp glow"
+        "golden sunset light with long shadows"
       ],
       "history": [
         "bright soft light reflected off fresh snow",
         "overcast rainy-day light with glistening wet surfaces",
         "soft misty dawn light in gold and pink",
-        "festival night glow from many paper lanterns"
+        "festival night glow from many paper lanterns",
+        "warm flickering candle and oil lamp glow"
       ]
     },
     "image_detail": {
       "remaining": [
-        "cherry blossom petals drifting through the air",
-        "glowing paper lanterns in the background"
+        "cherry blossom petals drifting through the air"
       ],
       "history": [
         "an inkstone and brushes arranged on the desk",
@@ -242,14 +239,16 @@
         "steam rising from a celadon teacup",
         "a few glowing fireflies floating past",
         "autumn maple leaves fluttering down",
-        "a small cat watching quietly nearby"
+        "a small cat watching quietly nearby",
+        "glowing paper lanterns in the background"
       ]
     },
     "genre": {
-      "remaining": [],
+      "remaining": [
+        "calm",
+        "calm"
+      ],
       "history": [
-        "calm",
-        "calm",
         "groove"
       ]
     },
@@ -266,8 +265,7 @@
         "empty_jumak_night",
         "hanok_alley_nightwalk",
         "river_boat_daegeum",
-        "rooftop_haegeum",
-        "moon_pavilion_lanterns"
+        "rooftop_haegeum"
       ],
       "history": [
         "tiger_night_stroll",
@@ -275,21 +273,20 @@
         "tiger_gayageum_band",
         "rain_giwa_tiles",
         "firefly_courtyard",
-        "gungnyeo_selfie"
+        "moon_pavilion_lanterns"
       ]
     },
     "image_style": {
       "remaining": [],
       "history": [
-        "photoreal"
+        "painterly"
       ]
     },
     "situation_groove": {
       "remaining": [
         "night_stroll",
         "joseon_drive",
-        "makgeolli_time",
-        "jumo_offwork"
+        "makgeolli_time"
       ],
       "history": [
         "spring_picnic",
@@ -297,26 +294,29 @@
         "geupje_party",
         "palace_party",
         "midnight_bar",
-        "rainy_jumak"
+        "rainy_jumak",
+        "jumo_offwork"
       ]
     },
     "tagline_groove": {
-      "remaining": [],
-      "history": [
-        "흥 오르는 조선 로파이 믹스",
-        "기분 좋아지는 한옥 감성 그루브",
+      "remaining": [
         "무드 잡을 때 트는 조선 브금",
-        "어깨 들썩이는 국악 로파이",
+        "기분 좋아지는 한옥 감성 그루브",
         "드라이브 국룰 가야금 힙합",
+        "흥 오르는 조선 로파이 믹스",
+        "어깨 들썩이는 국악 로파이"
+      ],
+      "history": [
         "산책할 때 듣는 신나는 조선 로파이"
       ]
     },
     "blurb_groove": {
-      "remaining": [],
+      "remaining": [
+        "막걸리 한 잔 하고 싶어지는 흥겨운 국악 로파이예요.",
+        "어깨가 먼저 반응하는 가야금 힙합 믹스입니다."
+      ],
       "history": [
-        "어깨가 먼저 반응하는 가야금 힙합 믹스입니다.",
-        "밤 산책과 드라이브에 어울리는 신나는 조선 로파이 믹스입니다.",
-        "막걸리 한 잔 하고 싶어지는 흥겨운 국악 로파이예요."
+        "밤 산책과 드라이브에 어울리는 신나는 조선 로파이 믹스입니다."
       ]
     },
     "situation_calm": {
@@ -619,6 +619,15 @@
       "genre": "groove",
       "situation_id": "rainy_jumak",
       "style": "photoreal"
+    },
+    {
+      "video_id": "ua4XEHbhc5E",
+      "title": "Playlist 주모가 마감하고 듣는 신나는 로파이 🍶 산책할 때 듣는 신나는 조선 로파이",
+      "description": "#조선로파이 #플레이리스트 #lofi\n\n밤 산책과 드라이브에 어울리는 신나는 조선 로파이 믹스입니다.\n\nTracklist🎧\n0:00 Warmfield\n2:18 Calmhollow\n4:58 Mistycurrent\n7:58 Quietsway\n9:37 Rainrest\n11:47 Cottonform\n12:56 Mellure\n15:00 Warmgleam\n16:01 Amberglow\n17:43 Murmurmere\n19:55 Hushsway\n22:20 Moonell\n24:08 Faintthrum\n25:27 Amberdrift\n27:33 Quietglow\n30:39 Mistywave\n31:46 Dimglow\n33:15 Softtone\n33:57 Submere\n35:46 Fadingthrum\n36:49 Gentleshade\n38:51 Moonshade\n39:55 Calmfloe\n41:14 Mistylet\n42:16 Bassdrift\n45:53 Deepthos\n46:47 Nightthrum\n47:53 Subdrift\n49:18 Gentlesway\n50:37 Velure\n52:05 Tenderveil\n54:34 Ambersway\n56:56 Warmvale\n58:15 Paleveil\n59:51 Quiettone\n1:02:35 Bassshade\n1:04:02 Dusklet\n1:05:32 Paleloom\n1:06:53 Warmloom\n1:07:26 Cottonfold\n1:09:28 Dimrest\n1:11:00 Gentlewave\n1:13:15 Slowsway\n1:15:19 Fadingfloe\n1:18:07 Dimmurmur\n\n호랑이 담배 피우던 시절... 사실 그 호랑이, 담배가 아니라 음악을 즐겼다네. 🐯🎧\n모든 가락은 AI(Suno)의 도움으로 짓고 직접 다듬었습니다.\n\n💬 마음에 드는 가락은 댓글로 알려주시게.\n👍 좋아요와 구독은 다음 가락을 짓는 큰 힘이 됩니다.\n\n🏮 조선로파이\nMusic arranged with AI-assisted composition. Cover art generated with AI.\n© Copyright 조선로파이. All rights reserved.\n\n#산책음악 #드라이브음악 #드라이브팝 #기분전환음악 #신나는음악 #무드음악 #국악힙합 #chillhop #조선 #playlist #korealofi #lofimusic #kpop #lofi #플레이리스트 #조선로파이 #국악 #koreanlofi #한국풍 #대금",
+      "scene_id": "moon_pavilion_lanterns",
+      "genre": "groove",
+      "situation_id": "jumo_offwork",
+      "style": "painterly"
     }
   ],
   "track_names": {
@@ -899,7 +908,26 @@
     "Moon Jar Market.mp3": "Cottonmurmur",
     "마을잔치 루프.mp3": "Cottoncurrent",
     "Moonlit Geomungo.mp3": "Quietfield",
-    "Han River Loops.mp3": "Quietform"
+    "Han River Loops.mp3": "Quietform",
+    "Geomungo Walk_1.mp3": "Warmfield",
+    "Bamboo Groove_1.mp3": "Rainrest",
+    "Bamboo Groove.mp3": "Mellure",
+    "Bamboo Drum Parade.mp3": "Amberglow",
+    "Geomungo Walk.mp3": "Moonell",
+    "Cheongsa Stalls.mp3": "Amberdrift",
+    "9f70340e.mp3": "Mistywave",
+    "Bamboo Bounce_1.mp3": "Fadingthrum",
+    "6db5d40d.mp3": "Gentleshade",
+    "Dano Drum Loop_1.mp3": "Moonshade",
+    "4c926172.mp3": "Bassdrift",
+    "Bamboo Bounce.mp3": "Deepthos",
+    "Dano Drum Loop.mp3": "Subdrift",
+    "Dalbit Jangdan_1.mp3": "Gentlesway",
+    "Bamboo Noon Drift.mp3": "Tenderveil",
+    "Cheongsa Stalls_1.mp3": "Paleveil",
+    "Dalbit Jangdan.mp3": "Dusklet",
+    "Bamboo Noon Drift_1.mp3": "Gentlewave",
+    "Bamboo Drum Parade_1.mp3": "Dimmurmur"
   },
   "playlist_ids": {
     "night": "PLY0I9sQhFIXA",
