@@ -1,25 +1,53 @@
 {
-  "snapshot_at": "2026-09-07T09:09:09.717413+09:00",
+  "snapshot_at": "2026-09-14T09:03:11.480180+09:00",
   "channel": {
     "subscriberCount": 0,
-    "viewCount": 55,
-    "videoCount": 20
+    "viewCount": 93,
+    "videoCount": 27
   },
   "videos": {
-    "bKxGzK8Uc0I": {
+    "bPQKBpg3ukE": {
       "viewCount": 0,
+      "likeCount": 0
+    },
+    "8riEdfAmyc8": {
+      "viewCount": 4,
+      "likeCount": 0
+    },
+    "uExu68gmRx4": {
+      "viewCount": 1,
+      "likeCount": 0
+    },
+    "3QQcDZtd2gM": {
+      "viewCount": 0,
+      "likeCount": 0
+    },
+    "0--dODsfLDI": {
+      "viewCount": 1,
+      "likeCount": 0
+    },
+    "sHm2M0smQTs": {
+      "viewCount": 2,
+      "likeCount": 0
+    },
+    "om8rqTbswxE": {
+      "viewCount": 1,
+      "likeCount": 0
+    },
+    "bKxGzK8Uc0I": {
+      "viewCount": 3,
       "likeCount": 0
     },
     "F7RjF35qEdQ": {
-      "viewCount": 0,
+      "viewCount": 3,
       "likeCount": 0
     },
     "lUmNm1ptxfI": {
-      "viewCount": 0,
+      "viewCount": 2,
       "likeCount": 0
     },
     "Jh_OhmJU9Oc": {
-      "viewCount": 0,
+      "viewCount": 1,
       "likeCount": 0
     },
     "ua4XEHbhc5E": {
@@ -31,11 +59,11 @@
       "likeCount": 0
     },
     "ZTkIIjOHaA8": {
-      "viewCount": 1,
+      "viewCount": 4,
       "likeCount": 0
     },
     "QdY813Vwzeo": {
-      "viewCount": 7,
+      "viewCount": 10,
       "likeCount": 0
     },
     "-yzR-yJvNqA": {
@@ -47,19 +75,19 @@
       "likeCount": 0
     },
     "_HJztggf0lw": {
-      "viewCount": 0,
+      "viewCount": 3,
       "likeCount": 0
     },
     "UoaLbtt3WBk": {
-      "viewCount": 22,
+      "viewCount": 31,
       "likeCount": 2
     },
     "x79goIG7WfE": {
-      "viewCount": 4,
+      "viewCount": 5,
       "likeCount": 0
     },
     "Gr-2_Mjq5rg": {
-      "viewCount": 1,
+      "viewCount": 2,
       "likeCount": 0
     },
     "kyrWEAXR4gs": {
@@ -79,7 +107,7 @@
       "likeCount": 0
     },
     "hZcH0jrYBXQ": {
-      "viewCount": 3,
+      "viewCount": 5,
       "likeCount": 0
     },
     "CBy-_xbO4ao": {
@@ -161,24 +189,29 @@
       "subscriberCount": 0,
       "viewCount": 55,
       "weekly_view_delta": 24
+    },
+    {
+      "at": "2026-09-14T09:03:11.480180+09:00",
+      "subscriberCount": 0,
+      "viewCount": 93,
+      "weekly_view_delta": 38
     }
   ],
   "analytics": {
     "period": [
-      "2026-08-31",
-      "2026-09-06"
+      "2026-09-07",
+      "2026-09-13"
     ],
     "summary": {
-      "views": 22,
-      "estimatedMinutesWatched": 499,
-      "averageViewDuration": 1997,
+      "views": 20,
+      "estimatedMinutesWatched": 573,
+      "averageViewDuration": 4302,
       "subscribersGained": 0
     },
     "traffic_sources": {
-      "YT_SEARCH": 14,
-      "PLAYLIST": 6,
-      "NO_LINK_OTHER": 1,
-      "RELATED_VIDEO": 1
+      "YT_SEARCH": 13,
+      "PLAYLIST": 7,
+      "NO_LINK_OTHER": 0
     }
   }
 }
