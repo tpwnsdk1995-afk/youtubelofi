@@ -11,57 +11,7 @@
         "Charcoal Daegeum Loop.mp3",
         "Charcoal Daegeum Loop_1.mp3",
         "Charcoal Mist Walk.mp3",
-        "Charcoal Mist Walk_1.mp3",
-        "Daegeum Temple Drift.mp3",
-        "Daegeum Temple Drift_1.mp3",
-        "Gayageum Daegeum.mp3",
-        "Han River Afterglow.mp3",
-        "Han River Afterglow_1.mp3",
-        "Han River Drift.mp3",
-        "Han River Pages.mp3",
-        "Han River Pages_1.mp3",
-        "Han River Replay.mp3",
-        "Han River Replay_1.mp3",
-        "Han River Tape.mp3",
-        "Han River Tape_1.mp3",
-        "Hanji Rain Loop.mp3",
-        "Hanji Rain Loop_1.mp3",
-        "Hanji Rain Loop_2.mp3",
-        "Hanji Rain Loop_3.mp3",
-        "Hanok Desk Loop.mp3",
-        "Hanok Desk Loop_1.mp3",
-        "Hanok Study Loop.mp3",
-        "Hanok Study Loop_1.mp3",
-        "Moonlight on the River.mp3",
-        "Moonlit Daegeum Loop.mp3",
-        "Moonlit Daegeum Loop_1.mp3",
-        "Moonlit Gayageum Drift.mp3",
-        "Moonlit Gayageum Drift_1.mp3",
-        "Moonlit Gayageum.mp3",
-        "Moonlit Gayageum_1.mp3",
-        "Moonlit Gayageum_2.mp3",
-        "Moonlit Gayageum_3.mp3",
-        "Moonlit Gayageum_4.mp3",
-        "Moonlit Gayageum_5.mp3",
-        "Moonlit Grain.mp3",
-        "Moonlit Grain_1.mp3",
-        "Moonlit Haegeum.mp3",
-        "Moonlit Haegeum_1.mp3",
-        "Moonlit Han River.mp3",
-        "Moonlit Han River_1.mp3",
-        "Moonlit Hanok Drift.mp3",
-        "Moonlit Hanok Drift_1.mp3",
-        "Moonlit Hanok Drift_2.mp3",
-        "Moonlit Hanok Drift_3.mp3",
-        "Moonlit Hanok Drifts.mp3",
-        "Moonlit Hanok Drifts_1.mp3",
-        "Moonlit Hanok Tape.mp3",
-        "Moonlit Hanok Tape_1.mp3",
-        "Moonlit Hanok.mp3",
-        "Moonlit Onggi Room.mp3",
-        "Moonlit Onggi Room_1.mp3",
-        "Morning Mist Loop.mp3",
-        "Morning Mist Loop_1.mp3"
+        "Charcoal Mist Walk_1.mp3"
       ],
       "history": [
         "달빛 장단_3.mp3",
@@ -113,7 +63,57 @@
         "Paper Moon Drift_1.mp3",
         "Paper Moon Drift.mp3",
         "Paper Lantern Drift_1.mp3",
-        "Paper Lantern Drift.mp3"
+        "Paper Lantern Drift.mp3",
+        "Morning Mist Loop_1.mp3",
+        "Morning Mist Loop.mp3",
+        "Moonlit Onggi Room_1.mp3",
+        "Moonlit Onggi Room.mp3",
+        "Moonlit Hanok.mp3",
+        "Moonlit Hanok Tape_1.mp3",
+        "Moonlit Hanok Tape.mp3",
+        "Moonlit Hanok Drifts_1.mp3",
+        "Moonlit Hanok Drifts.mp3",
+        "Moonlit Hanok Drift_3.mp3",
+        "Moonlit Hanok Drift_2.mp3",
+        "Moonlit Hanok Drift_1.mp3",
+        "Moonlit Hanok Drift.mp3",
+        "Moonlit Han River_1.mp3",
+        "Moonlit Han River.mp3",
+        "Moonlit Haegeum_1.mp3",
+        "Moonlit Haegeum.mp3",
+        "Moonlit Grain_1.mp3",
+        "Moonlit Grain.mp3",
+        "Moonlit Gayageum_5.mp3",
+        "Moonlit Gayageum_4.mp3",
+        "Moonlit Gayageum_3.mp3",
+        "Moonlit Gayageum_2.mp3",
+        "Moonlit Gayageum_1.mp3",
+        "Moonlit Gayageum.mp3",
+        "Moonlit Gayageum Drift_1.mp3",
+        "Moonlit Gayageum Drift.mp3",
+        "Moonlit Daegeum Loop_1.mp3",
+        "Moonlit Daegeum Loop.mp3",
+        "Moonlight on the River.mp3",
+        "Hanok Study Loop_1.mp3",
+        "Hanok Study Loop.mp3",
+        "Hanok Desk Loop_1.mp3",
+        "Hanok Desk Loop.mp3",
+        "Hanji Rain Loop_3.mp3",
+        "Hanji Rain Loop_2.mp3",
+        "Hanji Rain Loop_1.mp3",
+        "Hanji Rain Loop.mp3",
+        "Han River Tape_1.mp3",
+        "Han River Tape.mp3",
+        "Han River Replay_1.mp3",
+        "Han River Replay.mp3",
+        "Han River Pages_1.mp3",
+        "Han River Pages.mp3",
+        "Han River Drift.mp3",
+        "Han River Afterglow_1.mp3",
+        "Han River Afterglow.mp3",
+        "Gayageum Daegeum.mp3",
+        "Daegeum Temple Drift_1.mp3",
+        "Daegeum Temple Drift.mp3"
       ]
     },
     "scene": {
@@ -180,8 +180,7 @@
     "title_emoji": {
       "remaining": [
         "🕯️",
-        "✍️",
-        "🏮"
+        "✍️"
       ],
       "history": [
         "📜",
@@ -189,7 +188,8 @@
         "📖",
         "🍵",
         "☔",
-        "🍶"
+        "🍶",
+        "🏮"
       ]
     },
     "description_blurb": {
@@ -207,24 +207,35 @@
         "브금",
         "lofimusic",
         "playlist",
-        "kpop",
-        "조선"
+        "kpop"
       ],
       "history": [
-        "조선로파이"
+        "조선로파이",
+        "대금",
+        "가야금",
+        "플레이리스트",
+        "lofi",
+        "hanok",
+        "korealofi",
+        "koreanlofi",
+        "한국풍",
+        "사극감성",
+        "국악",
+        "국악로파이",
+        "조선"
       ]
     },
     "image_lighting": {
       "remaining": [
         "cool pale moonlight with deep blue shadows",
         "soft misty dawn light in gold and pink",
-        "festival night glow from many paper lanterns",
-        "bright soft light reflected off fresh snow"
+        "festival night glow from many paper lanterns"
       ],
       "history": [
         "overcast rainy-day light with glistening wet surfaces",
         "golden sunset light with long shadows",
-        "warm flickering candle and oil lamp glow"
+        "warm flickering candle and oil lamp glow",
+        "bright soft light reflected off fresh snow"
       ]
     },
     "image_detail": {
@@ -236,19 +247,19 @@
         "light snow flakes falling gently",
         "a tall stack of traditional stitched-bound books",
         "an inkstone and brushes arranged on the desk",
-        "a crane flying across the sky in the distance",
-        "a few glowing fireflies floating past"
+        "a crane flying across the sky in the distance"
       ],
       "history": [
-        "a small cat watching quietly nearby"
+        "a small cat watching quietly nearby",
+        "a few glowing fireflies floating past"
       ]
     },
     "genre": {
       "remaining": [
-        "groove",
-        "calm"
+        "groove"
       ],
       "history": [
+        "calm",
         "calm"
       ]
     },
@@ -279,7 +290,7 @@
     "image_style": {
       "remaining": [],
       "history": [
-        "painterly"
+        "minhwa"
       ]
     },
     "situation_groove": {
@@ -321,8 +332,7 @@
     "situation_calm": {
       "remaining": [
         "gwageo_d1",
-        "king_allnight",
-        "yubae_writing"
+        "king_allnight"
       ],
       "history": [
         "snow_ondol",
@@ -333,7 +343,8 @@
         "donguibogam",
         "chaekgeori_done",
         "sungkyunkwan_4am",
-        "hunjang_secret"
+        "hunjang_secret",
+        "yubae_writing"
       ]
     },
     "scene_calm": {
@@ -347,33 +358,41 @@
         "rain_giwa_tiles",
         "tiger_study_headphones",
         "gwageo_exam_hall",
-        "dawn_bell_seowon"
+        "dawn_bell_seowon",
+        "jiphyeonjeon_library",
+        "candlelit_allnight",
+        "scribe_laptop_overtime",
+        "king_smartphone_night",
+        "moon_pavilion_lanterns",
+        "firefly_courtyard"
       ],
       "history": [
         "tiger_ramen_gag",
-        "morning_madang_book"
+        "morning_madang_book",
+        "tiger_moon_rest"
       ]
     },
     "tagline_calm": {
       "remaining": [
         "공부가 잘되는 조선 감성 믹스",
-        "집중력 풀충전 조선 로파이",
-        "먹 갈리는 소리까지 어울리는 공부 브금"
+        "집중력 풀충전 조선 로파이"
       ],
       "history": [
         "귀에 착 붙는 한옥 감성 로파이",
         "2시간 논스톱 몰입 사운드",
         "밤샘 공부용 국악 로파이",
         "시험기간 국룰 조선 브금",
-        "딴생각 사라지는 국악 로파이"
+        "딴생각 사라지는 국악 로파이",
+        "먹 갈리는 소리까지 어울리는 공부 브금"
       ]
     },
     "blurb_calm": {
-      "remaining": [],
-      "history": [
-        "조선 서당에서 흐를 것 같은 국악 로파이 믹스입니다.",
+      "remaining": [
         "선비처럼 앉아 책 펴고 싶어지는 잔잔한 믹스입니다.",
         "먹 냄새 나는 한옥 서재 감성의 논스톱 공부 배경음악이에요."
+      ],
+      "history": [
+        "조선 서당에서 흐를 것 같은 국악 로파이 믹스입니다."
       ]
     }
   },
@@ -729,6 +748,15 @@
       "genre": "calm",
       "situation_id": "hunjang_secret",
       "style": "painterly"
+    },
+    {
+      "video_id": "7AeRRjphk8M",
+      "title": "Playlist 유배지에서 책 500권 쓴 선비의 작업 브금 🏮 먹 갈리는 소리까지 어울리는 공부 브금",
+      "description": "#공부플리 #조선로파이 #lofi\n\n조선 서당에서 흐를 것 같은 국악 로파이 믹스입니다.\n\nTracklist🎧\n0:00 Fadingfield\n2:25 Rainmere\n4:39 Dimlight\n6:41 Lowthrum\n8:50 Moonhollow\n10:15 Duskcrest\n12:35 Murmurure\n14:33 Cottontone\n16:18 Duskhaze\n18:48 Dimform\n21:10 Amberwave\n23:20 Mellcrest\n25:28 Palevale\n27:51 Nightfold\n28:53 Calmgleam\n31:06 Ambercrest\n32:56 Faintmurmur\n35:21 Mutedfield\n37:41 Fadingfold\n39:47 Embercrest\n42:10 Rainhollow\n44:44 Slowtone\n46:58 Duskure\n49:02 Hushvale\n51:18 Duskune\n53:51 Stillure\n55:48 Warmthrum\n58:34 Lowdrift\n1:00:10 Stillmere\n1:02:23 Lowbloom\n1:04:46 Fadingmere\n1:06:46 Softthrum\n1:08:56 Subecho\n1:11:46 Melllight\n1:13:41 Slowfield\n1:15:15 Fainthaze\n1:17:24 Cottonvale\n1:19:34 Mellshade\n1:20:52 Stillune\n1:23:32 Tenderfield\n1:25:11 Basscrest\n1:27:45 Warmune\n1:29:55 Stillwave\n1:32:09 Subshade\n1:34:12 Mistyloom\n1:36:37 Deeplight\n1:38:51 Moonfold\n1:40:49 Faintbloom\n1:43:44 Cottonlight\n1:45:38 Rainthrum\n\n호랑이 담배 피우던 시절... 사실 그 호랑이, 담배가 아니라 음악을 즐겼다네. 🐯🎧\n모든 가락은 AI(Suno)의 도움으로 짓고 직접 다듬었습니다.\n\n💬 마음에 드는 가락은 댓글로 알려주시게.\n👍 좋아요와 구독은 다음 가락을 짓는 큰 힘이 됩니다.\n\n🏮 조선로파이\nMusic arranged with AI-assisted composition. Cover art generated with AI.\n© Copyright 조선로파이. All rights reserved.\n\n#공부할때듣는음악 #공부음악 #공부플레이리스트 #집중음악 #시험기간 #새벽공부 #studymotivation #focus #대금 #가야금 #플레이리스트 #lofi #hanok #korealofi #koreanlofi #한국풍 #사극감성 #국악 #국악로파이 #조선",
+      "scene_id": "tiger_moon_rest",
+      "genre": "calm",
+      "situation_id": "yubae_writing",
+      "style": "minhwa"
     }
   ],
   "track_names": {
