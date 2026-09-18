@@ -1,12 +1,20 @@
 {
   "permissions": {
     "allow": [
+      "Bash(TZ=Asia/Seoul date:*)",
+      "Bash(date:*)",
+      "Bash(sleep:*)",
       "mcp__github__actions_list",
       "mcp__github__actions_get",
+      "mcp__github__actions_run_trigger",
       "mcp__github__get_job_logs",
       "mcp__github__get_file_contents",
       "mcp__github__list_issues",
-      "mcp__Claude_Code_Remote__list_triggers"
+      "mcp__github__issue_read",
+      "mcp__Claude_Code_Remote__list_triggers",
+      "mcp__Claude_Code_Remote__send_later",
+      "mcp__Claude_Code_Remote__delete_trigger",
+      "mcp__Claude_Code_Remote__get_session"
     ]
   }
 }
