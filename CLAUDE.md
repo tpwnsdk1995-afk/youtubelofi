@@ -7,8 +7,8 @@
 ## 절대 규칙 (사용자가 명시적으로 지시함)
 
 1. **실패는 먼저 보고한다.** 워크플로우가 실패하면 사용자가 묻기 전에 원인을 확인해서
-   먼저 알린다. 조용히 넘어가는 것 금지. 성공도 트리거해놓고 결과 확인 없이 방치 금지
-   (`send_later`로 후속 확인 예약).
+   먼저 알린다. 조용히 넘어가는 것 금지. 성공도 트리거해놓고 결과 확인 없이 방치 금지 —
+   매일 18:15 고정 Routine이 확인한다. **`send_later`로 예약하지 말 것** (아래 함정 참고).
 2. **짧은 간격으로 재시도 금지.** 실패했다고 연달아 재트리거하면 GitHub 러너 할당이
    통째로 막힌다 (2026-08-06에 run #18~#21 연속 실패로 실증: `runner_id: 0`,
    billable 0ms 상태로 15분+ 큐잉 후 자동 취소). 실패하면 원인부터 파악해 보고하고,
@@ -35,6 +35,7 @@
 |---|---|---|
 | 17:15 | Routine `trig_015tmKwDa4FowQTAiFxKFNgB` (cron `15 8 * * *` UTC) | 오늘 실행 기록 없으면 `publish-video.yml` 1회 dispatch |
 | ~17:55 | publish-video.yml | 생성 완료 → 비공개 업로드 → pending-confirmation 이슈 + 텔레그램 승인/거부 버튼 발송 |
+| 18:15 | Routine `trig_01RDZmMSYsBZHuhS5yg1Vxgk` (cron `15 9 * * *` UTC) | 오늘 pending-confirmation 이슈가 열렸는지 확인. 없으면 실행 로그로 원인을 파악해 사용자에게 먼저 보고 |
 | (버튼 누르면) | n8n 웹훅 → `handle-telegram-decision.yml` | 즉시(~15초) 공개 전환 or 삭제, 이슈 닫기 |
 | 19:14 | Routine `trig_01VeCYxSKNr7LmLuKiTDxwpe` (cron `14 10 * * *` UTC) | `auto-publish.yml` dispatch — 무응답 이슈가 있으면 자동 공개 |
 
@@ -300,6 +301,14 @@ auto-publish는 schedule이 실제 공개를 처리했을 때 "⚠️ 보조로 
 
 ## 작업 시 함정 (전부 실제로 겪은 것)
 
+- **`send_later`는 쓰지 않는다 — 승인 프롬프트의 유일한 원인이었다 (2026-09-19 확인).**
+  사장님이 "자동이라면서 왜 허용이 뜨냐"고 두 번 지적했다. 세션 기록에서 호출→결과 시각
+  차이를 재 보니, 사람 승인을 기다린 도구는 `send_later`뿐이었다(22회 중 4회, 무작위).
+  `.claude/settings.json` 허용 목록에 넣어도 막히지 않는다. 나머지 도구(dispatch,
+  list_issues, actions_list, 백그라운드 `sleep` 등)는 전부 즉시 통과한다.
+  매일 18:15 결과 확인은 고정 Routine(`trig_01RDZmMSYsBZHuhS5yg1Vxgk`)으로 대체했다.
+  후속 확인이 더 필요하면 `Bash(sleep N)`을 `run_in_background`로 걸 것 — 끝나면 알림이
+  오고 승인이 걸리지 않는다. 허용 목록(44개)은 두 브랜치 모두에 커밋돼 있다.
 - **GitHub Actions `run: |` 블록 안에서 heredoc(`<< 'EOF'`) 금지.** YAML 들여쓰기
   규칙 때문에 종결자를 들여쓰면 bash가 인식 못 해 파일 끝까지 통째로 먹는다.
   긴 스크립트는 base64로 인코딩해 env로 넘기고 `base64 -d`로 복원할 것
