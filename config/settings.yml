@@ -33,6 +33,10 @@ youtube:
   privacy_status: "private"
   made_for_kids: false
   contains_synthetic_media: true # 음악/이미지에 AI가 관여했음을 유튜브에 공개 고지
+  # 콘텐츠 언어. 설정하지 않으면 유튜브가 업로드 계정 로케일을 따라 en-US로 잡아,
+  # 한국어 제목의 국악 연주곡이 "미국 영어 콘텐츠"로 등록된다. 2026-09-21에 기존
+  # 34편이 전부 그 상태인 것을 발견해 일괄 교정하고 업로드 경로에도 넣었다.
+  content_language: "ko"
 
 state_file: "state/state.json"
 music_library_dir: "music_library"

@@ -104,6 +104,7 @@ def build_metadata(state, chapters, templates, video_settings, scene_id=None, rn
         "privacyStatus": video_settings["youtube"]["privacy_status"],
         "madeForKids": video_settings["youtube"]["made_for_kids"],
         "containsSyntheticMedia": video_settings["youtube"].get("contains_synthetic_media", True),
+        "contentLanguage": video_settings["youtube"].get("content_language"),
         "scene_id": scene_id,
     }
 

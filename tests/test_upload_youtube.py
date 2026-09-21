@@ -150,3 +150,45 @@ class TestUploadYoutube(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestContentLanguageInRequestBody(unittest.TestCase):
+    """언어를 안 보내면 유튜브가 en-US를 붙인다.
+
+    2026-09-21에 공개 34편이 전부 defaultAudioLanguage='en-US'인 것을 발견했다.
+    한국어 제목의 국악 연주곡이 미국 영어 콘텐츠로 등록돼 있던 것이라, 업로드
+    시점에 못박아 같은 일이 매일 반복되지 않게 한다.
+    """
+
+    def _metadata(self, **over):
+        m = {
+            "title": "Playlist 과거시험 D-1 📖 조선 감성",
+            "description": "설명",
+            "tags": ["조선로파이"],
+            "categoryId": "10",
+            "privacyStatus": "private",
+            "madeForKids": False,
+            "contentLanguage": "ko",
+        }
+        m.update(over)
+        return m
+
+    def test_both_language_fields_are_sent(self):
+        body = uy.build_request_body(self._metadata())
+        self.assertEqual(body["snippet"]["defaultLanguage"], "ko")
+        self.assertEqual(body["snippet"]["defaultAudioLanguage"], "ko")
+
+    def test_other_snippet_fields_are_untouched(self):
+        m = self._metadata()
+        snippet = uy.build_request_body(m)["snippet"]
+        self.assertEqual(snippet["title"], m["title"])
+        self.assertEqual(snippet["description"], m["description"])
+        self.assertEqual(snippet["tags"], m["tags"])
+        self.assertEqual(snippet["categoryId"], "10")
+
+    def test_missing_language_omits_the_fields_rather_than_sending_blank(self):
+        """빈 값을 보내면 유튜브가 거부하거나 엉뚱하게 해석한다. 아예 빼는 게 맞다."""
+        for value in (None, ""):
+            snippet = uy.build_request_body(self._metadata(contentLanguage=value))["snippet"]
+            self.assertNotIn("defaultLanguage", snippet)
+            self.assertNotIn("defaultAudioLanguage", snippet)

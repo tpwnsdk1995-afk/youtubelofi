@@ -44,15 +44,20 @@ def build_request_body(metadata):
     if metadata.get("containsSyntheticMedia", True):
         status["containsSyntheticMedia"] = True
 
-    return {
-        "snippet": {
-            "title": metadata["title"][:100],
-            "description": metadata["description"],
-            "tags": metadata["tags"],
-            "categoryId": metadata["categoryId"],
-        },
-        "status": status,
+    snippet = {
+        "title": metadata["title"][:100],
+        "description": metadata["description"],
+        "tags": metadata["tags"],
+        "categoryId": metadata["categoryId"],
     }
+    # 언어를 안 실어 보내면 유튜브가 계정 로케일대로 en-US를 붙인다. 국악 연주곡이
+    # 영어 콘텐츠로 잡히면 한국 시청자 추천에서 불리하므로 명시한다.
+    language = metadata.get("contentLanguage")
+    if language:
+        snippet["defaultLanguage"] = language
+        snippet["defaultAudioLanguage"] = language
+
+    return {"snippet": snippet, "status": status}
 
 
 def upload_video(video_path, metadata, credentials, youtube_client=None, chunksize=8 * 1024 * 1024, num_retries=5):
