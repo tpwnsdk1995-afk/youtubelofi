@@ -45,16 +45,19 @@ MOOD_PLAYLIST_TITLE = {
 
 
 def build_branding_update(channel_resource, new_keywords):
-    """brandingSettings.channel을 통째로 보존한 채 keywords만 바꾼 body를 만든다.
+    """keywords만 바꾼 channels.update 요청 body를 통째로 만든다.
 
-    두 가지를 동시에 지켜야 한다.
+    두 가지를 지켜야 한다.
 
-    1. channels.update(part=brandingSettings)는 **보낸 객체로 통째로 덮어쓴다.**
-       keywords만 담아 보내면 채널 설명·국가·기본 언어가 지워진다. 그래서 읽어온
-       값을 복사한 뒤 한 필드만 교체한다.
-    2. 그런데 API는 읽을 때 title/description을 brandingSettings.channel이 아니라
-       snippet에만 담아 준다. 읽은 그대로 되돌려 보내면 그 둘이 빠져
-       `400 Required`로 거부된다 (2026-09-21 실제로 겪음). snippet 값으로 메운다.
+    1. **본문 모양.** part=brandingSettings로 업데이트하려면 body가
+       `{"id": ..., "brandingSettings": {"channel": {...}}}`여야 한다. 래퍼 없이
+       `{"channel": ...}`를 보내면 필드 이름도 없는 `400 Required`만 돌아온다
+       (2026-09-21에 네 번 실패하고서야 찾았다). 그래서 이 함수가 id를 뺀
+       **완성된 body 전체**를 만든다 — 호출부가 모양을 다시 조립하지 않게.
+    2. **덮어쓰기.** channels.update는 보낸 brandingSettings.channel로 통째로
+       갈아끼운다. keywords만 담아 보내면 채널 설명·국가가 지워지므로, 읽어온
+       값을 복사한 뒤 keywords 한 필드만 교체한다. title/description은 혹시
+       brandingSettings에 없으면 snippet에서 메운다.
     """
     branding = channel_resource.get("brandingSettings", {})
     snippet = channel_resource.get("snippet", {})
@@ -65,11 +68,7 @@ def build_branding_update(channel_resource, new_keywords):
     country = channel.get("country") or snippet.get("country")
     if country:
         channel["country"] = country
-    # 제목/설명을 보낼 때 언어가 없으면 거부되는 경우가 있어 채워 둔다.
-    channel["defaultLanguage"] = (
-        channel.get("defaultLanguage") or snippet.get("defaultLanguage") or "ko"
-    )
-    return {"channel": channel}
+    return {"brandingSettings": {"channel": channel}}
 
 
 def infer_mood(tags):
@@ -101,7 +100,7 @@ def set_keywords(youtube, channel, keywords, dry_run):
         return False
     body = build_branding_update(channel, keywords)
     body["id"] = channel["id"]
-    ch = body["channel"]
+    ch = body["brandingSettings"]["channel"]
     print(f"  보낼 항목: title={len(ch['title'])}자 / description={len(ch['description'])}자 "
           f"/ country={ch.get('country', '(없음)')}")
     if not ch["description"]:

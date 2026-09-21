@@ -32,16 +32,26 @@ class TestBuildBrandingUpdate(unittest.TestCase):
 
     def test_every_other_field_survives(self):
         body = acf.build_branding_update(self.current, '"조선 로파이"')
-        ch = body["channel"]
+        ch = body["brandingSettings"]["channel"]
         self.assertEqual(ch["title"], "조선로파이")
         self.assertEqual(ch["description"], self.current["brandingSettings"]["channel"]["description"])
         self.assertEqual(ch["country"], "KR")
         self.assertEqual(ch["defaultLanguage"], "ko")
         self.assertEqual(ch["unsubscribedTrailer"], "abc123")
 
+    def test_body_is_wrapped_in_brandingSettings(self):
+        """part=brandingSettings 업데이트는 이 래퍼가 없으면 400 Required로 거부된다.
+
+        앞서 body를 {"channel": ...}로 보내 네 번 실패했고, 그때 테스트가
+        body["channel"]을 검사하는 바람에 같은 실수를 그대로 통과시켰다.
+        """
+        body = acf.build_branding_update(self.current, "새 키워드")
+        self.assertEqual(set(body), {"brandingSettings"})
+        self.assertIn("channel", body["brandingSettings"])
+
     def test_keywords_are_replaced(self):
         body = acf.build_branding_update(self.current, '"조선 로파이"')
-        self.assertEqual(body["channel"]["keywords"], '"조선 로파이"')
+        self.assertEqual(body["brandingSettings"]["channel"]["keywords"], '"조선 로파이"')
 
     def test_does_not_mutate_the_fetched_channel(self):
         """원본을 건드리면 같은 응답을 재사용하는 호출부가 조용히 오염된다."""
@@ -54,33 +64,26 @@ class TestBuildBrandingUpdate(unittest.TestCase):
     def test_missing_branding_does_not_crash(self):
         body = acf.build_branding_update({}, "새 키워드")
         self.assertEqual(
-            body["channel"],
-            {"keywords": "새 키워드", "title": "", "description": "", "defaultLanguage": "ko"},
+            body["brandingSettings"]["channel"],
+            {"keywords": "새 키워드", "title": "", "description": ""},
         )
 
     def test_title_and_description_are_filled_from_snippet(self):
         """읽을 때 이 둘은 snippet에만 온다. 안 채우면 API가 400 Required로 거부한다."""
         resource = {"snippet": {"title": "조선로파이", "description": "설명 200자", "country": "KR"},
                     "brandingSettings": {"channel": {"keywords": "old"}}}
-        ch = acf.build_branding_update(resource, "new")["channel"]
+        ch = acf.build_branding_update(resource, "new")["brandingSettings"]["channel"]
         self.assertEqual(ch["title"], "조선로파이")
         self.assertEqual(ch["description"], "설명 200자")
         self.assertEqual(ch["country"], "KR")
 
     def test_branding_values_win_over_snippet_when_present(self):
-        ch = acf.build_branding_update(self.current, "new")["channel"]
+        ch = acf.build_branding_update(self.current, "new")["brandingSettings"]["channel"]
         self.assertEqual(ch["description"], self.current["brandingSettings"]["channel"]["description"])
-
-    def test_existing_default_language_is_kept(self):
-        """채널이 이미 언어를 정해 뒀으면 ko로 덮어쓰지 않는다."""
-        resource = {"snippet": {"title": "t", "description": "d"},
-                    "brandingSettings": {"channel": {"defaultLanguage": "en"}}}
-        ch = acf.build_branding_update(resource, "new")["channel"]
-        self.assertEqual(ch["defaultLanguage"], "en")
 
     def test_country_is_omitted_rather_than_blanked(self):
         """빈 문자열로 보내면 설정돼 있던 국가가 지워진다."""
-        ch = acf.build_branding_update({"snippet": {}, "brandingSettings": {}}, "new")["channel"]
+        ch = acf.build_branding_update({"snippet": {}, "brandingSettings": {}}, "new")["brandingSettings"]["channel"]
         self.assertNotIn("country", ch)
 
 
