@@ -1,0 +1,44 @@
+name: Search visibility
+
+# 노리는 검색어로 실제 검색해서 우리가 결과에 뜨는지 확인한다 (읽기 전용).
+# Analytics 스코프가 없어도 "노출이 안 되는 건지, 노출은 되는데 안 눌리는 건지"를
+# 상당 부분 가를 수 있는 유일한 수단이다.
+on:
+  workflow_dispatch:
+    inputs:
+      telegram:
+        description: "결과를 텔레그램으로도 받기"
+        type: boolean
+        default: false
+      queries:
+        description: "쉼표로 구분한 검색어 (비우면 기본 10개)"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        timeout-minutes: 5
+        run: pip install google-api-python-client google-auth
+      - name: Check search visibility
+        timeout-minutes: 5
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          QUERIES: ${{ inputs.queries }}
+        run: |
+          python3 scripts/search_visibility.py \
+            ${{ inputs.telegram && '--telegram' || '' }} --queries "$QUERIES"
