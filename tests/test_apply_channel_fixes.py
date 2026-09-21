@@ -53,7 +53,10 @@ class TestBuildBrandingUpdate(unittest.TestCase):
 
     def test_missing_branding_does_not_crash(self):
         body = acf.build_branding_update({}, "새 키워드")
-        self.assertEqual(body["channel"], {"keywords": "새 키워드", "title": "", "description": ""})
+        self.assertEqual(
+            body["channel"],
+            {"keywords": "새 키워드", "title": "", "description": "", "defaultLanguage": "ko"},
+        )
 
     def test_title_and_description_are_filled_from_snippet(self):
         """읽을 때 이 둘은 snippet에만 온다. 안 채우면 API가 400 Required로 거부한다."""
@@ -67,6 +70,13 @@ class TestBuildBrandingUpdate(unittest.TestCase):
     def test_branding_values_win_over_snippet_when_present(self):
         ch = acf.build_branding_update(self.current, "new")["channel"]
         self.assertEqual(ch["description"], self.current["brandingSettings"]["channel"]["description"])
+
+    def test_existing_default_language_is_kept(self):
+        """채널이 이미 언어를 정해 뒀으면 ko로 덮어쓰지 않는다."""
+        resource = {"snippet": {"title": "t", "description": "d"},
+                    "brandingSettings": {"channel": {"defaultLanguage": "en"}}}
+        ch = acf.build_branding_update(resource, "new")["channel"]
+        self.assertEqual(ch["defaultLanguage"], "en")
 
     def test_country_is_omitted_rather_than_blanked(self):
         """빈 문자열로 보내면 설정돼 있던 국가가 지워진다."""

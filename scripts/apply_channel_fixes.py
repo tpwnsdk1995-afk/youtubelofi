@@ -10,6 +10,7 @@
 """
 
 import argparse
+import json
 import os
 import sys
 
@@ -64,6 +65,10 @@ def build_branding_update(channel_resource, new_keywords):
     country = channel.get("country") or snippet.get("country")
     if country:
         channel["country"] = country
+    # 제목/설명을 보낼 때 언어가 없으면 거부되는 경우가 있어 채워 둔다.
+    channel["defaultLanguage"] = (
+        channel.get("defaultLanguage") or snippet.get("defaultLanguage") or "ko"
+    )
     return {"channel": channel}
 
 
@@ -177,13 +182,24 @@ def main(argv=None):
     if args.dry_run:
         print("=== DRY RUN — 아무것도 바꾸지 않습니다 ===\n")
 
+    failures = []
     if args.set_keywords:
         print("[채널 키워드]")
-        set_keywords(youtube, channel, JOSEON_KEYWORDS, args.dry_run)
+        # 키워드 교체가 실패해도 재생목록 정리는 독립적으로 해야 한다. 한 구간의
+        # 예외가 나머지를 통째로 막으면, 고칠 수 있는 것까지 안 고친 채로 끝난다.
+        try:
+            set_keywords(youtube, channel, JOSEON_KEYWORDS, args.dry_run)
+        except Exception as e:
+            failures.append(f"키워드 교체 실패: {e}")
+            print(f"  ✗ 실패: {e}")
+            print("  --- 진단용: 채널이 실제로 돌려준 값 ---")
+            print("  brandingSettings =", json.dumps(
+                channel.get("brandingSettings", {}), ensure_ascii=False, sort_keys=True))
+            print("  snippet keys =", sorted(channel.get("snippet", {})))
         print()
 
     if not (args.fix_orphans or args.delete_empty_playlists):
-        return 0
+        return 1 if failures else 0
 
     # 재생목록과 영상 상태를 모아 온다
     playlists, token = [], None
@@ -256,6 +272,11 @@ def main(argv=None):
             print(f"  → {n}개 삭제")
         print()
 
+    if failures:
+        print("실패한 작업:")
+        for f in failures:
+            print(f"  - {f}")
+        return 1
     return 0
 
 
