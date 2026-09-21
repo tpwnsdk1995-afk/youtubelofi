@@ -1,0 +1,44 @@
+name: Analytics 권한 받기
+
+# 노출수·CTR을 보려면 yt-analytics.readonly 스코프가 필요한데, Analytics API는
+# device flow를 지원하지 않아 최초 설정 절차를 재사용할 수 없다. 브라우저 구글
+# 로그인만 사람이 하고, 주소 조립과 토큰 교환은 이 워크플로우가 대신한다.
+#
+# 발급된 refresh token은 **텔레그램으로만** 보낸다. 워크플로우 로그는 저장소
+# 접근 권한이 있으면 볼 수 있으므로 절대 로그에 찍지 않는다.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "url = 로그인 주소 받기 / exchange = 받은 코드를 토큰으로 교환"
+        type: choice
+        options: [url, exchange]
+        default: url
+      code:
+        description: "exchange 모드에서만 — 로그인 후 주소창의 code= 값"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  auth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run auth helper
+        timeout-minutes: 5
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          AUTH_CODE: ${{ inputs.code }}
+        run: python3 scripts/setup_analytics_auth.py --mode "${{ inputs.mode }}" --code "$AUTH_CODE"
