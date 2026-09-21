@@ -8,6 +8,8 @@ import unittest
 from collections import Counter
 from pathlib import Path
 
+import yaml
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 import generate_image as gi
@@ -179,3 +181,48 @@ class TestMakeThumbnail(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestTitleLeadsWithTheSearchTerm(unittest.TestCase):
+    """제목 맨 앞은 검색 결과에서 안 잘리는 유일한 자리다.
+
+    2026-09-21 검색 확인: "조선 로파이"에서 우리가 상위에 떠 있는데 그 영상
+    조회수가 1회였고 바로 위 경쟁자는 678회였다. 떠 있는데 안 눌린 것이라,
+    앞자리를 영어 "Playlist"가 아니라 검색어가 쓰도록 바꿨다. 이 테스트는
+    누가 무심코 접두사를 되돌리는 것을 막는다.
+    """
+
+    def setUp(self):
+        config = Path(__file__).resolve().parents[1] / "config" / "title_templates_joseon.yml"
+        self.templates = yaml.safe_load(config.read_text(encoding="utf-8"))
+
+    def test_prefix_contains_the_channel_search_term(self):
+        self.assertIn("조선 로파이", self.templates["title_prefix"])
+
+    def test_every_generated_title_starts_with_it(self):
+        rng = random.Random(11)
+        state = {"shuffle_bags": {}}
+        for genre in self.templates["genres"]:
+            for _ in range(12):
+                title = gm.build_title(state, self.templates, rng=rng, genre=genre)
+                self.assertTrue(
+                    title.startswith(self.templates["title_prefix"]),
+                    f"제목이 접두사로 시작하지 않음: {title}",
+                )
+
+    def test_search_term_survives_result_truncation(self):
+        """검색 결과는 대략 앞 30자만 보인다. 그 안에 검색어가 있어야 한다."""
+        rng = random.Random(12)
+        state = {"shuffle_bags": {}}
+        for genre in self.templates["genres"]:
+            for _ in range(12):
+                title = gm.build_title(state, self.templates, rng=rng, genre=genre)
+                self.assertIn("조선 로파이", title[:30])
+
+    def test_titles_stay_within_the_youtube_limit(self):
+        rng = random.Random(13)
+        state = {"shuffle_bags": {}}
+        for genre in self.templates["genres"]:
+            for _ in range(20):
+                self.assertLessEqual(
+                    len(gm.build_title(state, self.templates, rng=rng, genre=genre)), 100)
