@@ -1,0 +1,41 @@
+name: Channel health check
+
+# 채널 단위 설정(이름/핸들/설명/키워드/배너/재생목록)이 제대로 돼 있는지 점검한다.
+# 파이프라인은 영상만 올리고 이 영역은 사람이 유튜브 스튜디오에서 설정해야 하는데,
+# 적용됐는지 확인할 방법이 없어 "영상은 매일 올라가는데 구독자가 0명"인 상태의
+# 원인을 못 좁히고 있었다. 읽기 전용이라 언제 돌려도 안전하다.
+on:
+  workflow_dispatch:
+    inputs:
+      telegram:
+        description: "결과를 텔레그램으로도 받기"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        timeout-minutes: 5
+        run: pip install google-api-python-client google-auth
+
+      - name: Check channel
+        timeout-minutes: 5
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 scripts/channel_health.py ${{ inputs.telegram && '--telegram' || '' }}
