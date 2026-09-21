@@ -1,0 +1,55 @@
+name: Channel fix (apply)
+
+# channel-health.yml이 지목한 채널 단위 문제를 실제로 고친다.
+# health 쪽은 읽기 전용이고, 채널을 **바꾸는** 것은 전부 여기로 모았다.
+# 기본값이 dry_run=true라, 실수로 눌러도 무엇을 할지만 출력하고 끝난다.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "미리보기만 (실제로 바꾸지 않음)"
+        type: boolean
+        default: true
+      set_keywords:
+        description: "채널 키워드를 조선 컨셉으로 교체"
+        type: boolean
+        default: false
+      fix_orphans:
+        description: "재생목록에 없는 공개 영상을 무드별 목록에 추가"
+        type: boolean
+        default: false
+      delete_empty_playlists:
+        description: "공개 영상이 없는 재생목록 삭제 (되돌릴 수 없음)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        timeout-minutes: 5
+        run: pip install google-api-python-client google-auth
+
+      - name: Apply fixes
+        timeout-minutes: 5
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          python3 scripts/apply_channel_fixes.py \
+            ${{ inputs.dry_run && '--dry-run' || '' }} \
+            ${{ inputs.set_keywords && '--set-keywords' || '' }} \
+            ${{ inputs.fix_orphans && '--fix-orphans' || '' }} \
+            ${{ inputs.delete_empty_playlists && '--delete-empty-playlists' || '' }}
