@@ -43,16 +43,27 @@ MOOD_PLAYLIST_TITLE = {
 }
 
 
-def build_branding_update(current_branding, new_keywords):
+def build_branding_update(channel_resource, new_keywords):
     """brandingSettings.channel을 통째로 보존한 채 keywords만 바꾼 body를 만든다.
 
-    channels.update(part=brandingSettings)는 **보낸 객체로 통째로 덮어쓴다.**
-    keywords만 담아 보내면 채널 설명·국가·기본 언어가 전부 지워진다. 실제로 지금
-    채널 설명 200자와 국가 KR이 들어 있으므로, 읽어온 값을 그대로 복사한 뒤 한
-    필드만 교체해서 돌려보낸다. 이 함수가 하는 일의 전부가 그 보존이다.
+    두 가지를 동시에 지켜야 한다.
+
+    1. channels.update(part=brandingSettings)는 **보낸 객체로 통째로 덮어쓴다.**
+       keywords만 담아 보내면 채널 설명·국가·기본 언어가 지워진다. 그래서 읽어온
+       값을 복사한 뒤 한 필드만 교체한다.
+    2. 그런데 API는 읽을 때 title/description을 brandingSettings.channel이 아니라
+       snippet에만 담아 준다. 읽은 그대로 되돌려 보내면 그 둘이 빠져
+       `400 Required`로 거부된다 (2026-09-21 실제로 겪음). snippet 값으로 메운다.
     """
-    channel = dict(current_branding.get("channel", {}))
+    branding = channel_resource.get("brandingSettings", {})
+    snippet = channel_resource.get("snippet", {})
+    channel = dict(branding.get("channel", {}))
     channel["keywords"] = new_keywords
+    channel["title"] = channel.get("title") or snippet.get("title") or ""
+    channel["description"] = channel.get("description") or snippet.get("description") or ""
+    country = channel.get("country") or snippet.get("country")
+    if country:
+        channel["country"] = country
     return {"channel": channel}
 
 
@@ -83,8 +94,14 @@ def set_keywords(youtube, channel, keywords, dry_run):
     if dry_run:
         print("  → (dry-run) 실제로 바꾸지 않았습니다")
         return False
-    body = build_branding_update(channel.get("brandingSettings", {}), keywords)
+    body = build_branding_update(channel, keywords)
     body["id"] = channel["id"]
+    ch = body["channel"]
+    print(f"  보낼 항목: title={len(ch['title'])}자 / description={len(ch['description'])}자 "
+          f"/ country={ch.get('country', '(없음)')}")
+    if not ch["description"]:
+        # 설명이 빈 채로 보내면 지금 걸려 있는 200자 설명이 지워진다.
+        raise RuntimeError("채널 설명을 읽지 못했습니다 — 설명이 지워질 수 있어 중단합니다")
     youtube.channels().update(part="brandingSettings", body=body).execute()
     print("  → 변경했습니다")
     return True
