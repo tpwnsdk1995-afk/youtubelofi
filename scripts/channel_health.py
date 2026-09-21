@@ -123,7 +123,7 @@ def fetch_playlist_video_ids(youtube, playlist_id):
     return ids
 
 
-def diagnose(channel, playlists, videos, in_playlists):
+def diagnose(channel, playlists, videos, playlist_members):
     """채널 상태에서 '고쳐야 할 것'만 뽑는다. 정상 항목은 굳이 말하지 않는다.
 
     반환은 (심각도, 문구) 목록이고 심각도가 높은 순으로 정렬돼 나온다. 리포트가
@@ -153,12 +153,22 @@ def diagnose(channel, playlists, videos, in_playlists):
         problems.append((1, "국가 설정 없음 — 한국 시청자 추천에 불리"))
 
     public = [v for v in videos if v["privacy"] == "public"]
+    public_ids = {v["video_id"] for v in public}
     if not playlists:
         problems.append((3, "재생목록이 하나도 없음 — 한 영상을 본 사람을 다음 영상으로 넘길 수단이 없음"))
     else:
-        orphans = [v for v in public if v["video_id"] not in in_playlists]
+        in_any = set().union(*playlist_members.values()) if playlist_members else set()
+        orphans = [v for v in public if v["video_id"] not in in_any]
         if orphans:
             problems.append((2, f"재생목록에 안 들어간 공개 영상 {len(orphans)}편 — 연속 재생에서 빠짐"))
+
+        # 담긴 영상이 전부 비공개면 방문자에게는 빈 목록으로 보인다. 리브랜딩 후
+        # 구 영상을 비공개로 돌리면 그 시절 재생목록이 이 상태로 남는데, 채널
+        # 홈에 껍데기 목록이 진열돼 "관리 안 되는 채널"로 보이게 된다.
+        empty = [p for p in playlists if not (playlist_members.get(p["id"], set()) & public_ids)]
+        if empty:
+            names = ", ".join(p["snippet"]["title"] for p in empty[:4])
+            problems.append((2, f"공개 영상이 하나도 없는 재생목록 {len(empty)}개 ({names}) — 방문자에게 빈 목록으로 보임"))
 
     no_tags = [v for v in public if v["tag_count"] == 0]
     if no_tags:
@@ -176,7 +186,7 @@ def diagnose(channel, playlists, videos, in_playlists):
     return problems
 
 
-def build_report(channel, playlists, videos, in_playlists, problems):
+def build_report(channel, playlists, videos, playlist_members, problems):
     snippet = channel.get("snippet", {})
     stats = channel.get("statistics", {})
     branding = channel.get("brandingSettings", {}).get("channel", {})
@@ -194,7 +204,7 @@ def build_report(channel, playlists, videos, in_playlists, problems):
     desc = (branding.get("description") or snippet.get("description") or "").strip()
     lines.append(f"설명: {len(desc)}자" + (f" — {desc.splitlines()[0][:40]}" if desc else " (비어 있음)"))
     kw = (branding.get("keywords") or "").strip()
-    lines.append(f"키워드: {kw[:60] if kw else '(비어 있음)'}")
+    lines.append(f"키워드: {kw if kw else '(비어 있음)'}")
     lines.append(f"국가: {snippet.get('country') or '(미설정)'}")
     lines.append("")
 
@@ -207,8 +217,12 @@ def build_report(channel, playlists, videos, in_playlists, problems):
 
     lines.append("[재생목록]")
     if playlists:
+        public_ids = {v["video_id"] for v in public}
         for p in playlists:
-            lines.append(f"· {p['snippet']['title']} — {p['contentDetails']['itemCount']}편")
+            n_public = len(playlist_members.get(p["id"], set()) & public_ids)
+            total = p["contentDetails"]["itemCount"]
+            flag = "  ⚠️ 공개 0편" if n_public == 0 else ""
+            lines.append(f"· {p['snippet']['title']} — 공개 {n_public}편 / 전체 {total}편{flag}")
     else:
         lines.append("(없음)")
     lines.append("")
@@ -251,12 +265,10 @@ def main(argv=None):
     playlists = fetch_playlists(youtube)
     videos = fetch_uploads(youtube, channel["contentDetails"]["relatedPlaylists"]["uploads"])
 
-    in_playlists = set()
-    for p in playlists:
-        in_playlists |= fetch_playlist_video_ids(youtube, p["id"])
+    playlist_members = {p["id"]: fetch_playlist_video_ids(youtube, p["id"]) for p in playlists}
 
-    problems = diagnose(channel, playlists, videos, in_playlists)
-    report = build_report(channel, playlists, videos, in_playlists, problems)
+    problems = diagnose(channel, playlists, videos, playlist_members)
+    report = build_report(channel, playlists, videos, playlist_members, problems)
     print(report)
 
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
