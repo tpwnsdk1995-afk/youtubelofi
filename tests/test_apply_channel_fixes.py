@@ -130,3 +130,68 @@ class TestMainRefusesWithoutWork(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestBuildVideoLanguageUpdate(unittest.TestCase):
+    """videos.update도 보낸 snippet으로 통째로 덮어쓴다.
+
+    언어 두 필드만 담아 보내면 제목·설명·태그가 34편에서 한꺼번에 날아간다.
+    되돌릴 방법이 없으므로 보존을 테스트로 못박는다.
+    """
+
+    def _video(self, **snippet_overrides):
+        snippet = {
+            "title": "Playlist 과거시험 D-1 📖 공부가 잘되는 조선 감성",
+            "description": "#공부플리 #조선로파이\n\nTracklist🎧\n0:00 첫 곡",
+            "categoryId": "10",
+            "tags": ["조선로파이", "국악로파이", "가야금"],
+            "thumbnails": {"default": {"url": "https://example.invalid/t.jpg"}},
+        }
+        snippet.update(snippet_overrides)
+        return {"id": "vid123", "snippet": snippet}
+
+    def test_title_description_tags_and_category_survive(self):
+        video = self._video()
+        body = acf.build_video_language_update(video, "ko")
+        sn = body["snippet"]
+        self.assertEqual(sn["title"], video["snippet"]["title"])
+        self.assertEqual(sn["description"], video["snippet"]["description"])
+        self.assertEqual(sn["tags"], video["snippet"]["tags"])
+        self.assertEqual(sn["categoryId"], "10")
+
+    def test_both_language_fields_are_set(self):
+        body = acf.build_video_language_update(self._video(), "ko")
+        self.assertEqual(body["snippet"]["defaultLanguage"], "ko")
+        self.assertEqual(body["snippet"]["defaultAudioLanguage"], "ko")
+
+    def test_id_is_included(self):
+        self.assertEqual(acf.build_video_language_update(self._video(), "ko")["id"], "vid123")
+
+    def test_does_not_mutate_the_fetched_video(self):
+        video = self._video()
+        acf.build_video_language_update(video, "ko")
+        self.assertNotIn("defaultLanguage", video["snippet"])
+
+    def test_refuses_when_required_fields_are_missing(self):
+        """title이나 categoryId 없이 보내면 API가 그 필드를 지운다. 아예 막는다."""
+        with self.assertRaises(ValueError):
+            acf.build_video_language_update(self._video(title=""), "ko")
+        with self.assertRaises(ValueError):
+            acf.build_video_language_update(self._video(categoryId=None), "ko")
+
+
+class TestPlaylistDescriptions(unittest.TestCase):
+    def test_every_mood_playlist_has_a_description(self):
+        for title in acf.MOOD_PLAYLIST_TITLE.values():
+            self.assertIn(title, acf.PLAYLIST_DESCRIPTIONS)
+
+    def test_descriptions_carry_the_niche_keywords(self):
+        for text in acf.PLAYLIST_DESCRIPTIONS.values():
+            self.assertIn("조선", text)
+            self.assertTrue("국악" in text or "가야금" in text)
+
+    def test_descriptions_use_our_voice_not_the_reference_channel(self):
+        """하게체(~다네/~주시게)가 우리 말투다. 조선재즈의 하오체(~다오)는 금지."""
+        for text in acf.PLAYLIST_DESCRIPTIONS.values():
+            self.assertNotIn("다오", text)
+            self.assertTrue("라네" in text or "주시게" in text)

@@ -22,6 +22,14 @@ on:
         description: "공개 영상이 없는 재생목록 삭제 (되돌릴 수 없음)"
         type: boolean
         default: false
+      set_video_language:
+        description: "공개 영상의 콘텐츠 언어를 한국어로 설정"
+        type: boolean
+        default: false
+      set_playlist_descriptions:
+        description: "무드별 재생목록에 검색용 설명 채우기"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -52,4 +60,6 @@ jobs:
             ${{ inputs.dry_run && '--dry-run' || '' }} \
             ${{ inputs.set_keywords && '--set-keywords' || '' }} \
             ${{ inputs.fix_orphans && '--fix-orphans' || '' }} \
-            ${{ inputs.delete_empty_playlists && '--delete-empty-playlists' || '' }}
+            ${{ inputs.delete_empty_playlists && '--delete-empty-playlists' || '' }} \
+            ${{ inputs.set_video_language && '--set-video-language' || '' }} \
+            ${{ inputs.set_playlist_descriptions && '--set-playlist-descriptions' || '' }}

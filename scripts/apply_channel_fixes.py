@@ -43,6 +43,24 @@ MOOD_PLAYLIST_TITLE = {
     "groove": "조선 로파이 | 산책·드라이브",
 }
 
+# 영상 언어. 안 정해두면 유튜브가 콘텐츠 언어를 모르고, 한국 시청자 추천에서
+# 불리해진다. 우리 영상은 가사 없는 국악 로파이지만 제목·설명이 한국어다.
+CONTENT_LANGUAGE = "ko"
+
+# 재생목록 설명. 재생목록도 검색 대상이라 비어 있으면 그만큼 노출 면적을 버린다.
+PLAYLIST_DESCRIPTIONS = {
+    "조선 로파이 | 공부·집중": (
+        "과거시험 앞둔 유생의 밤처럼 잔잔한 국악 로파이. "
+        "공부와 작업에 틀어놓기 좋은 조선 감성 플레이리스트라네.\n"
+        "가야금과 대금이 깔리는 한옥 브금 — 집중이 필요한 날에 주시게."
+    ),
+    "조선 로파이 | 산책·드라이브": (
+        "주모의 퇴근길처럼 흥겨운 가야금 힙합. "
+        "산책과 드라이브에 어울리는 조선 로파이라네.\n"
+        "국악 가락에 얹은 신나는 비트 — 기분 전환이 필요한 날에 주시게."
+    ),
+}
+
 
 def build_branding_update(channel_resource, new_keywords):
     """keywords만 바꾼 channels.update 요청 body를 통째로 만든다.
@@ -135,6 +153,64 @@ def add_orphans_to_playlists(youtube, orphans, playlist_by_title, dry_run):
     return added, skipped
 
 
+def build_video_language_update(video, language):
+    """언어 두 필드만 더한 videos.update용 snippet을 만든다.
+
+    videos.update(part=snippet)도 보낸 snippet으로 통째로 덮어쓴다. 언어만 담아
+    보내면 **제목·설명·태그가 전부 날아간다.** 34편이 한꺼번에 그렇게 되면 복구가
+    사실상 불가능하므로, 읽어온 snippet을 복사해 두 필드만 더한다.
+    categoryId와 title은 API가 요구하는 필수값이라 없으면 호출 자체를 막는다.
+    """
+    snippet = dict(video["snippet"])
+    if not snippet.get("title") or not snippet.get("categoryId"):
+        raise ValueError(f"{video['id']}: title/categoryId가 없어 안전하게 보낼 수 없습니다")
+    snippet["defaultLanguage"] = language
+    snippet["defaultAudioLanguage"] = language
+    return {"id": video["id"], "snippet": snippet}
+
+
+def set_video_languages(youtube, videos, language, dry_run):
+    need = [v for v in videos
+            if v["snippet"].get("defaultAudioLanguage") != language
+            or v["snippet"].get("defaultLanguage") != language]
+    print(f"  공개 영상 {len(videos)}편 중 언어 미설정 {len(need)}편")
+    if not need:
+        return 0
+    done = 0
+    for v in need:
+        cur = (v["snippet"].get("defaultLanguage"), v["snippet"].get("defaultAudioLanguage"))
+        print(f"  · {v['id']} {v['snippet']['title'][:38]} — 현재 {cur} → ({language}, {language})")
+        if dry_run:
+            continue
+        youtube.videos().update(part="snippet", body=build_video_language_update(v, language)).execute()
+        done += 1
+    return done
+
+
+def set_playlist_descriptions(youtube, playlists, dry_run):
+    changed = 0
+    for p in playlists:
+        title = p["snippet"]["title"]
+        wanted = PLAYLIST_DESCRIPTIONS.get(title)
+        if not wanted:
+            continue
+        current = (p["snippet"].get("description") or "").strip()
+        if current == wanted:
+            print(f"  · {title} — 이미 동일")
+            continue
+        print(f"  · {title} — 현재 {len(current)}자 → {len(wanted)}자")
+        if dry_run:
+            continue
+        # playlists.update도 snippet을 통째로 덮어쓴다. title이 빠지면 목록 이름이
+        # 지워지므로 읽어온 값을 그대로 싣는다.
+        youtube.playlists().update(part="snippet", body={
+            "id": p["id"],
+            "snippet": {"title": title, "description": wanted},
+        }).execute()
+        changed += 1
+    return changed
+
+
 def delete_playlists(youtube, playlists, dry_run):
     deleted = 0
     for p in playlists:
@@ -154,12 +230,19 @@ def main(argv=None):
     parser.add_argument("--fix-orphans", action="store_true", help="재생목록에 없는 공개 영상을 무드별 목록에 추가")
     parser.add_argument("--delete-empty-playlists", action="store_true",
                         help="공개 영상이 하나도 없는 재생목록 삭제 (되돌릴 수 없음)")
+    parser.add_argument("--set-video-language", action="store_true",
+                        help="공개 영상의 콘텐츠 언어를 한국어로 설정")
+    parser.add_argument("--set-playlist-descriptions", action="store_true",
+                        help="무드별 재생목록에 검색용 설명을 채움")
     parser.add_argument("--dry-run", action="store_true", help="무엇을 할지만 출력하고 실제로는 안 바꿈")
     args = parser.parse_args(argv)
 
-    if not (args.set_keywords or args.fix_orphans or args.delete_empty_playlists):
+    todo = (args.set_keywords or args.fix_orphans or args.delete_empty_playlists
+            or args.set_video_language or args.set_playlist_descriptions)
+    if not todo:
         print("할 일이 지정되지 않았습니다. --set-keywords / --fix-orphans / "
-              "--delete-empty-playlists 중 하나 이상을 주세요.", file=sys.stderr)
+              "--delete-empty-playlists / --set-video-language / "
+              "--set-playlist-descriptions 중 하나 이상을 주세요.", file=sys.stderr)
         return 2
 
     try:
@@ -197,7 +280,8 @@ def main(argv=None):
             print("  snippet keys =", sorted(channel.get("snippet", {})))
         print()
 
-    if not (args.fix_orphans or args.delete_empty_playlists):
+    if not (args.fix_orphans or args.delete_empty_playlists
+            or args.set_video_language or args.set_playlist_descriptions):
         return 1 if failures else 0
 
     # 재생목록과 영상 상태를 모아 온다
@@ -238,9 +322,11 @@ def main(argv=None):
         for item in r.get("items", []):
             videos.append({
                 "video_id": item["id"],
+                "id": item["id"],
                 "title": item["snippet"]["title"],
                 "privacy": item["status"].get("privacyStatus"),
                 "tags": item["snippet"].get("tags") or [],
+                "snippet": item["snippet"],
             })
 
     public = [v for v in videos if v["privacy"] == "public"]
@@ -269,6 +355,26 @@ def main(argv=None):
         else:
             n = delete_playlists(youtube, empty, args.dry_run)
             print(f"  → {n}개 삭제")
+        print()
+
+    if args.set_playlist_descriptions:
+        print("[재생목록 설명]")
+        try:
+            n = set_playlist_descriptions(youtube, playlists, args.dry_run)
+            print(f"  → {n}개 변경")
+        except Exception as e:
+            failures.append(f"재생목록 설명 실패: {e}")
+            print(f"  ✗ 실패: {e}")
+        print()
+
+    if args.set_video_language:
+        print("[영상 콘텐츠 언어]")
+        try:
+            n = set_video_languages(youtube, public, CONTENT_LANGUAGE, args.dry_run)
+            print(f"  → {n}편 변경")
+        except Exception as e:
+            failures.append(f"영상 언어 설정 실패: {e}")
+            print(f"  ✗ 실패: {e}")
         print()
 
     if failures:
