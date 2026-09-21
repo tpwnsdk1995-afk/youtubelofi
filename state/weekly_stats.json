@@ -1,17 +1,45 @@
 {
-  "snapshot_at": "2026-09-14T09:03:11.480180+09:00",
+  "snapshot_at": "2026-09-21T09:08:07.287498+09:00",
   "channel": {
     "subscriberCount": 0,
-    "viewCount": 93,
-    "videoCount": 27
+    "viewCount": 144,
+    "videoCount": 34
   },
   "videos": {
+    "4Qq_GUHpPhE": {
+      "viewCount": 1,
+      "likeCount": 0
+    },
+    "BjmveaySkzg": {
+      "viewCount": 0,
+      "likeCount": 0
+    },
+    "Azt9_m_Mf38": {
+      "viewCount": 0,
+      "likeCount": 0
+    },
+    "KJZX6sYwjNs": {
+      "viewCount": 0,
+      "likeCount": 0
+    },
+    "wZK8ctNQsro": {
+      "viewCount": 3,
+      "likeCount": 0
+    },
+    "7AeRRjphk8M": {
+      "viewCount": 2,
+      "likeCount": 0
+    },
+    "snk6M3LNi_U": {
+      "viewCount": 2,
+      "likeCount": 0
+    },
     "bPQKBpg3ukE": {
       "viewCount": 0,
       "likeCount": 0
     },
     "8riEdfAmyc8": {
-      "viewCount": 4,
+      "viewCount": 5,
       "likeCount": 0
     },
     "uExu68gmRx4": {
@@ -19,7 +47,7 @@
       "likeCount": 0
     },
     "3QQcDZtd2gM": {
-      "viewCount": 0,
+      "viewCount": 3,
       "likeCount": 0
     },
     "0--dODsfLDI": {
@@ -27,47 +55,47 @@
       "likeCount": 0
     },
     "sHm2M0smQTs": {
-      "viewCount": 2,
+      "viewCount": 5,
       "likeCount": 0
     },
     "om8rqTbswxE": {
-      "viewCount": 1,
-      "likeCount": 0
-    },
-    "bKxGzK8Uc0I": {
-      "viewCount": 3,
-      "likeCount": 0
-    },
-    "F7RjF35qEdQ": {
-      "viewCount": 3,
-      "likeCount": 0
-    },
-    "lUmNm1ptxfI": {
       "viewCount": 2,
       "likeCount": 0
     },
-    "Jh_OhmJU9Oc": {
-      "viewCount": 1,
-      "likeCount": 0
-    },
-    "ua4XEHbhc5E": {
-      "viewCount": 1,
-      "likeCount": 0
-    },
-    "shG0DUIcMuA": {
-      "viewCount": 1,
-      "likeCount": 0
-    },
-    "ZTkIIjOHaA8": {
+    "bKxGzK8Uc0I": {
       "viewCount": 4,
       "likeCount": 0
     },
+    "F7RjF35qEdQ": {
+      "viewCount": 4,
+      "likeCount": 0
+    },
+    "lUmNm1ptxfI": {
+      "viewCount": 4,
+      "likeCount": 0
+    },
+    "Jh_OhmJU9Oc": {
+      "viewCount": 2,
+      "likeCount": 0
+    },
+    "ua4XEHbhc5E": {
+      "viewCount": 3,
+      "likeCount": 0
+    },
+    "shG0DUIcMuA": {
+      "viewCount": 2,
+      "likeCount": 0
+    },
+    "ZTkIIjOHaA8": {
+      "viewCount": 6,
+      "likeCount": 0
+    },
     "QdY813Vwzeo": {
-      "viewCount": 10,
+      "viewCount": 13,
       "likeCount": 0
     },
     "-yzR-yJvNqA": {
-      "viewCount": 1,
+      "viewCount": 2,
       "likeCount": 0
     },
     "a1Hfc_vuYwU": {
@@ -79,15 +107,15 @@
       "likeCount": 0
     },
     "UoaLbtt3WBk": {
-      "viewCount": 31,
+      "viewCount": 44,
       "likeCount": 2
     },
     "x79goIG7WfE": {
-      "viewCount": 5,
+      "viewCount": 7,
       "likeCount": 0
     },
     "Gr-2_Mjq5rg": {
-      "viewCount": 2,
+      "viewCount": 5,
       "likeCount": 0
     },
     "kyrWEAXR4gs": {
@@ -95,7 +123,7 @@
       "likeCount": 0
     },
     "w8NwE1YoteY": {
-      "viewCount": 1,
+      "viewCount": 2,
       "likeCount": 0
     },
     "_W7d_vwzmUI": {
@@ -195,23 +223,32 @@
       "subscriberCount": 0,
       "viewCount": 93,
       "weekly_view_delta": 38
+    },
+    {
+      "at": "2026-09-21T09:08:07.287498+09:00",
+      "subscriberCount": 0,
+      "viewCount": 144,
+      "weekly_view_delta": 51
     }
   ],
   "analytics": {
     "period": [
-      "2026-09-07",
-      "2026-09-13"
+      "2026-09-14",
+      "2026-09-20"
     ],
     "summary": {
-      "views": 20,
-      "estimatedMinutesWatched": 573,
-      "averageViewDuration": 4302,
+      "views": 44,
+      "estimatedMinutesWatched": 592,
+      "averageViewDuration": 1315,
       "subscribersGained": 0
     },
     "traffic_sources": {
-      "YT_SEARCH": 13,
+      "YT_SEARCH": 25,
       "PLAYLIST": 7,
-      "NO_LINK_OTHER": 0
+      "NO_LINK_OTHER": 4,
+      "RELATED_VIDEO": 4,
+      "SUBSCRIBER": 3,
+      "EXT_URL": 1
     }
   }
 }
