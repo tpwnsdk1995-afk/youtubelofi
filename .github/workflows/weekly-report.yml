@@ -5,11 +5,6 @@ name: Weekly channel report
 # 반복돼 이미 제거한 전례가 있어(README 참고) 처음부터 schedule을 두지 않는다.
 on:
   workflow_dispatch: {}
-  # 보조 트리거. 주 트리거는 Routine이고, 이건 Routine이 한도초과 등으로
-  # 깨어나지 못한 날을 메우기 위한 것이다. 월요일 09:40 KST (Routine의 09:00보다 40분 뒤)
-  # 평소에는 guard가 즉시 건너뛰므로 아무 일도 하지 않는다.
-  schedule:
-    - cron: "40 0 * * 1"
 
 concurrency:
   group: weekly-report
